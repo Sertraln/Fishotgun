@@ -4,14 +4,14 @@
 
 ### Panda3D
 
-Ce projet nécessite Panda3D (SDK 1.10.15).
+Ce projet nécessite **Panda3D (SDK 1.10.15)**.
 
-- Téléchargement officiel :
+#### Téléchargement officiel
 
-	https://www.panda3d.org/download/sdk-1-10-15/
+[https://www.panda3d.org/download/sdk-1-10-15/](https://www.panda3d.org/download/sdk-1-10-15/)
 
-- Installation alternative via pip (si vous préférez) :
+#### Installation via pip (alternative)
 
-	```powershell
-	pip install panda3d
-	```
+```bash
+pip install panda3d
+```
