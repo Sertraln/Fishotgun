@@ -1,0 +1,17 @@
+# Projet Jeu Vidéo EPITA
+
+## Requirements
+
+### Panda3D
+
+Ce projet nécessite **Panda3D (SDK 1.10.15)**.
+
+#### Téléchargement officiel
+
+[https://www.panda3d.org/download/sdk-1-10-15/](https://www.panda3d.org/download/sdk-1-10-15/)
+
+#### Installation via pip (alternative)
+
+```bash
+pip install panda3d
+```
