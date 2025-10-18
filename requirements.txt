@@ -1,1 +1,2 @@
 panda3d
+types-panda3d
