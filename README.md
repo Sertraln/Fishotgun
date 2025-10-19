@@ -2,7 +2,7 @@
 
 ## Requirements
 
-### Panda3D
+### Ursina Engine
 
 Ce projet nécessite **ursina engine**.
 
