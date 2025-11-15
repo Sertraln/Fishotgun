@@ -1,5 +1,6 @@
 from ursina import *
-from ursina.prefabs.first_person_controller import FirstPersonController
+from player import ThirdPersonController
+from spot import FishingSpot
 
 app = Ursina()
 
@@ -12,39 +13,48 @@ ground = Entity(
     collider='box')
 
 # Create player
-player = FirstPersonController(
+player = ThirdPersonController(
     position=(0,4,0),
-    jump_height = 8,
-    gravity = 2.5)
+    jump_height = 5,
+    jump_up_duration = 1,
+    fall_after = .4,
+    gravity = 0.7)
 
 # Set cursor white cause pink ugly af
 player.cursor.color = color.white
 
-# Create its shape (body)
-body = Entity(
-    parent=player,
-    model='cube',
-    scale=(1,1.5,1),
-    y=0.75
-)
 
-# Set third person
-camera.z = -5
+# Create a fishing spot
+spot = FishingSpot(position=(0,2,0))
+
 
 # Set basic sky
 Sky(color=color.violet)
 
 def update():
     # Make player respawn if he falls
-    if player.y < -20:
+    if player.y < -10:
         player.position = (0,4,0)
+    
+    # Kick player if flies example
+    if player.air_time > 10:
+        pass
     
     # Sprints if shift is held
     if held_keys['shift']:
-        body.color = color.red
+        player.body.color = color.red
         player.speed = 20
     else:
-        body.color = color.blue
+        player.body.color = color.blue
         player.speed = 10
+    
+    # Gotta check this for all spots in the map constantly (will need a list later)
+    if distance(spot.position, player.position) < spot.interaction_range:
+        if held_keys['e']:
+            spot.interact()
+        else: 
+            spot.color = color.white
+    else:
+        spot.color = color.white
 
 app.run()
