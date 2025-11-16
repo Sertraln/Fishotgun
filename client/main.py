@@ -61,4 +61,13 @@ def update():
     else:
         spot.color = color.white
 
+    # Check if the camera is clipping anywhere
+    hit_camera = camera.intersects()
+    if hit_camera:
+        camera.set_z(camera.get_z() + 0.1)
+    else:
+        if camera.get_z() > -5.0:
+            camera.set_z(camera.get_z() - 0.1)
+
+
 app.run()

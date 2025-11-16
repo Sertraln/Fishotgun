@@ -12,6 +12,7 @@ class ThirdPersonController(FirstPersonController):
             y=0.75)
         
         camera.z = self.camera_offset
+        camera.collider = 'box'
         # Additional third person setup can go here
 
     def update(self):
