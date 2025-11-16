@@ -39,6 +39,10 @@ def update():
     # Kick player if flies example
     if player.air_time > 10:
         pass
+
+    # Kick player if too fast
+    if player.speed > 21:
+        pass
     
     # Sprints if shift is held
     if held_keys['shift']:
