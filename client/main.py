@@ -7,7 +7,7 @@ app = Ursina()
 # Create ground
 ground = Entity(
     model='cube',
-    scale=(100,1,100),
+    scale=(100,10,100),
     texture='grass',
     texture_scale=(10,10),
     collider='box')
@@ -62,12 +62,14 @@ def update():
         spot.color = color.white
 
     # Check if the camera is clipping anywhere
-    hit_camera = camera.intersects()
-    if hit_camera:
-        camera.set_z(camera.get_z() + 0.1)
+    direction = camera.forward * -1
+    offset_clipping = 0.05
+    hit_camera = raycast(player.camera_pivot.world_position,direction,-player.camera_offset+offset_clipping,ignore=[player,player.body,camera,spot])
+    if hit_camera.hit :
+        print(hit_camera.distance,hit_camera.point)
+        camera.z_setter(-hit_camera.distance+offset_clipping)
     else:
-        if camera.get_z() > -5.0:
-            camera.set_z(camera.get_z() - 0.1)
+        camera.z_setter(player.camera_offset)
 
 
 app.run()
