@@ -1,6 +1,9 @@
 from ursina import *
 from player import ThirdPersonController
 from spot import FishingSpot
+import networking
+from networking import rpc_peer as con
+from data import player
 
 app = Ursina()
 
@@ -13,12 +16,7 @@ ground = Entity(
     collider='box')
 
 # Create player
-player = ThirdPersonController(
-    position=(0,4,0),
-    jump_height = 5,
-    jump_up_duration = 1,
-    fall_after = .4,
-    gravity = 0.7)
+
 
 # Set cursor white cause pink ugly af
 player.cursor.color = color.white
@@ -69,7 +67,11 @@ def update():
         print(hit_camera.distance,hit_camera.point)
         camera.z_setter(-hit_camera.distance+offset_clipping)
     else:
-        camera.z_setter(player.camera_offset)
+        camera.z_setter(con.get_connections()[0],player.camera_offset)
+    con.position(player.world_position)
+    networking.update()
 
-
+    
+networking.start()
+con.initialise_player(con.get_connections()[0], "Player1")
 app.run()
