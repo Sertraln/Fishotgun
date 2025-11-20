@@ -1,6 +1,8 @@
 from ursina import *
 from ursina.prefabs.first_person_controller import FirstPersonController
 
+player_map = {}
+
 class ThirdPersonController(FirstPersonController):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -18,3 +20,19 @@ class ThirdPersonController(FirstPersonController):
     def update(self):
         super().update()
         # Additional third person update can go here
+    
+    def set_id(self, id: int):
+        self.player_id = id
+        player_map[id] = self
+
+class Player(Entity):
+    def __init__(self, id : int):
+        super().__init__()
+        self.model = 'cube'
+        self.color = color.violet
+        self.scale=(1,1.5,1),
+        self.player_id = id
+
+def get_player(id: int):
+    return player_map.get(id)
+        
