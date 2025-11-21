@@ -1,41 +1,84 @@
-from ursina.networking import *
+from socket import socket
 from player import Player
+import threading as th
+from .client import Client
+from .packet.serverbound import ServerBoundPseudoPacket
+from .packet import clientbound as cb
 
-rpc_peer = RPCPeer()
+def get_local_ip():
+    #ON NE TOUCHE PAS
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        ip = s.getsockname()[0]
+        s.close()
+        return ip
+    except:
+        return "127.0.0.1"
+    
+class Server:
+    used_ports = []
+    def __init__(self, port:int =5555, ip:str = None):
+        #ON NE TOUCHE PAS
+        self.port = port if port not in Server.used_ports else 5555+len(Server.used_ports)
+        self.ip = ip if ip else get_local_ip()
+        self.soket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.threadlist : list[th.Thread] = []
+        self.lastpid = 0
+        self.stopevent = th.Event()
+        try:
+            self.soket.bind((self.ip, port))
+        except socket.error as e:
+            print("server :error binding :",e)
+        self.soket.listen(5)
+        self.connectionthread = th.Thread(name="connlistener",target=self.connectionListener)
+        self.connectionthread.start()
 
-map_connections = {}
-next_player_id = 1
+    def startTread(self,thread:th.Thread):
+        self.threadlist.append(thread)
+        thread.start()
 
-@rpc(rpc_peer)
-def on_connect(connection:Connection, time_connected):
-	print("This is run when a connect happens.")
-	map_connections[connection.uid] = Player(next_player_id)
-	global next_player_id
-	next_player_id += 1
+    def connectionListener(self):
+        while not self.stopevent.is_set():
+            try:
+                print("Server : En attente de nouvelle connexion...")
+                conn, addr = self.soket.accept()
+                print("Server : Connecté à : ", addr)
+                thread = th.Thread(target=self.connection, args=(conn,addr))
+                thread.start()
+            except Exception as e:
+                print("Server : Erreur de connexion :",e)
+            
+    def connection(self,conn:socket.socket,ip):
+        try:
+            client = Client(conn,ip,self.lastpid,self)
+            self.lastpid += 1
+            packet : ServerBoundPseudoPacket = client.sendRecv(cb.ClientBoundIdPacket(client.id))[0]
+            player = Player(packet.name,client)
+            self.game.join_player(player)
+            self.threadlist.append(client.thread)
+            client.thread.start()
+        except Exception as e:
+            print("Server : Erreur creation", e)
 
-@rpc(rpc_peer)
-def on_disconnect(connection: Connection, time_disconnected):
-	print("This is run when a disconnect happens.")
-
-@rpc(rpc_peer)
-def initialise_player(connection: Connection, time_received, name: str):
-	player = map_connections.get(connection.uid)
-	if player:
-		player.initialise(name)
-		print(f"Player {player.player_id} initialised with name: {name}")
-
-@rpc(rpc_peer)
-def position(connection: Connection, time_received, position: Vec3):
-	player = map_connections.get(connection.uid)
-	if player and player.initialised:
-		print(f"Received position {position} from player {player.player_id}")
-
-def update():
-	# Handle networking events, run this every update.
-	rpc_peer.update()
-
-rpc_peer.start("localhost", 8080, is_host=True)
-print("Server started, waiting for connections...")
-
-while rpc_peer.is_running():
-	rpc_peer.update()
+    def broadcast(self,packet:cb.ClientBoundPacket,ignored:list[int] = []):
+        for player in self.game.players.values():
+            if player.client.id not in ignored:
+                player.client.send(packet)
+                print("broadcast : sent packet to player :",player.client.id)
+    
+    def stop(self):
+        try :
+            # DO NOT TUCHE PLEASE
+            self.stopevent.set()
+            self.game.stop()
+            if self.soket:
+                self.soket.close()
+            for thread in self.threadlist:
+                if thread.is_alive():
+                    thread.join()
+            self.connectionthread.join()
+            self.threadlist = []
+            print("Server stopped")
+        except Exception as e:
+            print("Server : Erreur de fermeture :",e)
