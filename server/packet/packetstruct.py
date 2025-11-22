@@ -4,6 +4,7 @@ from server.packet import packetlist as pl
 
 packet_id_map = {}
 
+#===== CLIENT BOUND PACKETS =====#
 class ClientBoundPacket:
     def get_id(self):
         if packet_id_map.get(self.__class__) is None:
@@ -24,6 +25,14 @@ class ClientBoundDataPacket(ClientBoundPacket):
         packet = utils.parser(self.get_id(),self.data)
         conn.send(packet)
 
+class ClientBoundDataListPacket(ClientBoundDataPacket):
+    def __init__(self,datas:list):
+        endode_datas = []
+        for data in datas:
+            endode_datas.append(data.encode())
+        super().__init__(datas=endode_datas)
+
+#===== SERVER BOUND PACKETS =====#
 class ServerBoundPacket:
     def get_id(self):
         if packet_id_map.get(self.__class__) is None:
@@ -36,3 +45,4 @@ class ServerBoundPacket:
 class ServerBoundDataPacket(ServerBoundPacket):
     def __init__(self,data:list[str]):
         self.data = data
+

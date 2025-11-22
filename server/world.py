@@ -1,12 +1,17 @@
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from server.player import Player
+    from server.entity import Entity
 
 class World:
 
     def __init__(self):
-        self.entities = {}
+        self.entities : dict[int,'Entity'] = {}
         self.next_entity_id = 0
-        self.players = {}
+        self.players : dict[int,'Player'] = {}
 
-    def join_player(self, player):
+    def join_player(self, player:'Player') -> int:
         pid = player.client.id
         self.players[pid] = player
         print(f"World: player joined {pid}")

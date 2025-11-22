@@ -7,17 +7,15 @@ if _ROOT not in sys.path:
     sys.path.insert(0, _ROOT)
 
 from ursina import *
-from player import ThirdPersonController
 from spot import FishingSpot
 import network
-from data import player
 import data
 
-ip = input("Enter server IP (default localhost): ")
+ip = input("Enter server IP (default 192.168.64.9): ")
 port = input("Enter server port (default 5555): ")
 name = input("Enter your player name: ")
 if ip == "":
-    ip = "localhost"
+    ip = "192.168.64.9"
 if port == "":
     port = "5555"
 if name == "":
@@ -44,7 +42,15 @@ ground = Entity(
     collider='box')
 
 # Create player
+from client.data import player
+from client.player import ThirdPersonController
 
+player = ThirdPersonController(
+    position=(0,4,0),
+    jump_height = 5,
+    jump_up_duration = 1,
+    fall_after = .4,
+    gravity = 0.7)
 
 # Set cursor white cause pink ugly af
 player.cursor.color = color.white

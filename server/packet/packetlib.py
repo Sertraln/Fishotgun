@@ -4,8 +4,8 @@ from server.packet.packetstruct import *
 from server.packet import packetlist as pl
 
 def init_packetlib():
-    pl.clientBoundPacketList = get_defined_classes("client/packet/clientbound.py")
-    pl.serverBoundPacketList = get_defined_classes("client/packet/serverbound.py")
+    pl.clientBoundPacketList = get_defined_classes("server/packet/clientbound.py")
+    pl.serverBoundPacketList = get_defined_classes("server/packet/serverbound.py")
     utils.clientBoundDataPacket = [issubclass(packet,ClientBoundDataPacket) for packet in pl.clientBoundPacketList]
     utils.serverBoundDataPacket = [issubclass(packet,ServerBoundDataPacket) for packet in pl.serverBoundPacketList]
 

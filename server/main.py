@@ -8,7 +8,7 @@ if _ROOT not in sys.path:
     sys.path.insert(0, _ROOT)
 from player import Player
 import threading as th
-from client import Client
+from server.client import Client
 from packet.serverbound import ServerBoundPseudoPacket
 from packet import clientbound as cb
 from world import World
@@ -28,13 +28,15 @@ class Server:
     used_ports = []
     def __init__(self, port:int =5555, ip:str = None):
         #ON NE TOUCHE PAS
+        from server.packet.packetlib import init_packetlib
+        init_packetlib()
         self.port = port if port not in Server.used_ports else 5555+len(Server.used_ports)
         self.ip = ip if ip else get_local_ip()
         self.soket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.threadlist : list[th.Thread] = []
         self.lastpid = 0
         self.stopevent = th.Event()
-        self.game = World()
+        self.world = World()
         try:
             self.soket.bind((self.ip, port))
         except socket.error as e:
@@ -66,14 +68,14 @@ class Server:
             self.lastpid += 1
             packet : ServerBoundPseudoPacket = client.sendRecv(cb.ClientBoundIdPacket(client.id))[0]
             player = Player(packet.name,client)
-            self.game.join_player(player)
+            self.world.join_player(player)
             self.threadlist.append(client.thread)
             client.thread.start()
         except Exception as e:
             print("Server : Erreur creation", e)
 
     def broadcast(self,packet:cb.ClientBoundPacket,ignored:list[int] = []):
-        for player in self.game.players.values():
+        for player in self.world.players.values():
             if player.client.id not in ignored:
                 player.client.send(packet)
                 print("broadcast : sent packet to player :",player.client.id)
@@ -82,7 +84,7 @@ class Server:
         try :
             # DO NOT TUCHE PLEASE
             self.stopevent.set()
-            self.game.stop()
+            self.world.stop()
             if self.soket:
                 self.soket.shutdown(socket.SHUT_RDWR)
                 self.soket.close()

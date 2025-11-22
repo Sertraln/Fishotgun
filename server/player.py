@@ -1,8 +1,11 @@
-from client import Client
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from server.client import Client
 
 
 class Player:
-    def __init__(self, player_name:str, client: Client):
+    def __init__(self, player_name:str, client: 'Client'):
         self.player_id = player_name
         self.client = client
         

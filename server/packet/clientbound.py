@@ -1,15 +1,8 @@
 import socket
-from server.packet.packetstruct import ClientBoundDataPacket,ClientBoundPacket
+from server.packet.packetstruct import ClientBoundDataPacket,ClientBoundPacket,ClientBoundDataListPacket
 
 #ClientBound server -> client
 #ServerBound client -> server
-
-class ClientBoundDataListPacket(ClientBoundDataPacket):
-    def __init__(self,datas:list):
-        endode_datas = []
-        for data in datas:
-            endode_datas.append(data.encode())
-        super().__init__(datas=endode_datas)
 
 class ClientBoundIdPacket(ClientBoundPacket):
     def __init__(self,id:int):

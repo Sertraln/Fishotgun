@@ -74,7 +74,6 @@ class Network:
             self.send(ServerBoundMessagePacket(f"@{self.name} a quitté la partie"))
         except:
             pass
-        
         self.stop_event.set()
         try:
             self.conn.shutdown(socket.SHUT_RDWR)

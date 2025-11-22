@@ -47,7 +47,7 @@ class Client:
                     print(f"packet : error handling: {e}")
         finally:
             try:
-                self.server.game.left_player(self.id)
+                self.server.world.left_player(self.id)
                 self.conn.close()
             except:
                 pass
