@@ -1,9 +1,9 @@
 
-from client.player import ThirdPersonController
+from player import ThirdPersonController
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from client.network import Network
+    from network import Network
 
 player = ThirdPersonController(
     position=(0,4,0),
@@ -12,4 +12,4 @@ player = ThirdPersonController(
     fall_after = .4,
     gravity = 0.7)
 
-network : Network = None
+network : 'Network' = None

@@ -8,6 +8,7 @@ class Network:
         self.name = name
         from client.packet import packetlib
         packetlib.init_packetlib()
+        print("server bound packets :",packetlib.packetlist.serverBoundPacketList)
         self.conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server = ip
         self.stop_event = th.Event()
@@ -38,7 +39,7 @@ class Network:
             raise
     
     def packetListener(self):
-        from packet.clientbound import getClientBoundPacket
+        from packet.packetlib import getClientBoundPacket
         while not self.stop_event.is_set():
             try:
                 data = self.conn.recv(2048)

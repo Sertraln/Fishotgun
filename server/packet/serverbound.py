@@ -1,9 +1,9 @@
-import server.packet.clientbound as cb
-from server.packet.packetstruct import ServerBoundDataPacket,ServerBoundPacket
+import packet.clientbound as cb
+from packet.packetstruct import ServerBoundDataPacket,ServerBoundPacket
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from server.client import Client
+    from client import Client
 
 #client_bound server -> client
 #server_bound client -> server
@@ -19,6 +19,6 @@ class ServerBoundMessagePacket(ServerBoundDataPacket):
         super().__init__(data)
         self.message = data[0]
 
-    def handle(self, client : Client):
+    def handle(self, client : 'Client'):
         print("server : message get :",self.message, flush=True)
         client.server.broadcast(cb.ClientBoundMessagePacket(self.message),[client.id])

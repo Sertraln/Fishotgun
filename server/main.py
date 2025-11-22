@@ -1,10 +1,17 @@
 import socket
+import os
+import sys
+
+# Ensure project root is on sys.path so sibling packages like `shared` can be imported
+_ROOT = os.path.dirname(os.path.dirname(__file__))
+if _ROOT not in sys.path:
+    sys.path.insert(0, _ROOT)
 from player import Player
 import threading as th
-from .client import Client
-from .packet.serverbound import ServerBoundPseudoPacket
-from .packet import clientbound as cb
-from server.world import World
+from client import Client
+from packet.serverbound import ServerBoundPseudoPacket
+from packet import clientbound as cb
+from world import World
 
 def get_local_ip():
     #ON NE TOUCHE PAS
@@ -27,7 +34,7 @@ class Server:
         self.threadlist : list[th.Thread] = []
         self.lastpid = 0
         self.stopevent = th.Event()
-        self.world = World()
+        self.game = World()
         try:
             self.soket.bind((self.ip, port))
         except socket.error as e:
@@ -50,7 +57,8 @@ class Server:
                 thread = th.Thread(target=self.connection, args=(conn,addr))
                 thread.start()
             except Exception as e:
-                print("Server : Erreur de connexion :",e)
+                if not self.stopevent.is_set():
+                    print("Server : Erreur de connexion :",e)
             
     def connection(self,conn:socket.socket,ip):
         try:
@@ -76,12 +84,19 @@ class Server:
             self.stopevent.set()
             self.game.stop()
             if self.soket:
+                self.soket.shutdown(socket.SHUT_RDWR)
                 self.soket.close()
             for thread in self.threadlist:
                 if thread.is_alive():
-                    thread.join()
-            self.connectionthread.join()
+                    thread.join(10)
+            self.connectionthread.join(10)
             self.threadlist = []
             print("Server stopped")
         except Exception as e:
             print("Server : Erreur de fermeture :",e)
+
+if __name__ == "__main__":
+    server = Server()
+    while input("") != "stop":
+        pass
+    server.stop()

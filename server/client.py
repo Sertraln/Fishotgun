@@ -1,15 +1,15 @@
 import socket
-from server.packet.packetstruct import ClientBoundPacket,ServerBoundPacket
-from server.packet.packetlib import getServerBoundPacket
+from packet.packetstruct import ClientBoundPacket,ServerBoundPacket
+from packet.packetlib import getServerBoundPacket
 import threading as th
 
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from server.main import Server
+    from main import Server
 
 class Client:
-    def __init__(self,conn:socket.socket,ip ,id:int,server:Server):
+    def __init__(self,conn:socket.socket,ip ,id:int,server:'Server'):
         self.ip = ip
         self.conn = conn
         self.id = id

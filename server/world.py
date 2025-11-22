@@ -6,6 +6,25 @@ class World:
         self.next_entity_id = 0
         self.players = {}
 
+    def join_player(self, player):
+        pid = player.client.id
+        self.players[pid] = player
+        print(f"World: player joined {pid}")
+        return pid
+
+    def left_player(self, pid:int):
+        if pid in self.players:
+            del self.players[pid]
+            print(f"World: player left {pid}")
+
+    def stop(self):
+        for pid, player in list(self.players.items()):
+            try:
+                player.client.kick()
+            except Exception:
+                pass
+        self.players.clear()
+
     def add_entity(self, entity):
         entity_id = self.next_entity_id
         self.entities[entity_id] = entity

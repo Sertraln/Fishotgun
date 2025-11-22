@@ -1,3 +1,11 @@
+import os
+import sys
+
+# Ensure project root is on sys.path so sibling packages like `shared` can be imported
+_ROOT = os.path.dirname(os.path.dirname(__file__))
+if _ROOT not in sys.path:
+    sys.path.insert(0, _ROOT)
+
 from ursina import *
 from player import ThirdPersonController
 from spot import FishingSpot
@@ -5,7 +13,27 @@ import network
 from data import player
 import data
 
+ip = input("Enter server IP (default localhost): ")
+port = input("Enter server port (default 5555): ")
+name = input("Enter your player name: ")
+if ip == "":
+    ip = "localhost"
+if port == "":
+    port = "5555"
+if name == "":
+    name = "default"
+
+data.network = network.Network(ip,int(port),name)
+
 app = Ursina()
+
+original_quit = application.quit
+
+def custom_quit():
+    data.network.disconnect()
+    original_quit()
+
+application.quit = custom_quit
 
 # Create ground
 ground = Entity(
@@ -67,16 +95,6 @@ def update():
         print(hit_camera.distance,hit_camera.point)
         camera.z_setter(-hit_camera.distance+offset_clipping)
     else:
-        camera.z_setter(con.get_connections()[0],player.camera_offset)
+        camera.z_setter(player.camera_offset)
 
-ip = input("Enter server IP (default localhost): ")
-port = input("Enter server port (default 5555): ")
-name = input("Enter your player name: ")
-if ip == "":
-    ip = "localhost"
-if port == "":
-    port = "5555"
-if name == "":
-    name = "default"
-data.network = network.Network(ip,int(port),name)
 app.run()

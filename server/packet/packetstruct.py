@@ -1,18 +1,17 @@
 import socket
 import shared.utils as utils
-from server.packet.packetlist import serverBoundPacketList
-from server.packet.packetlist import clientBoundPacketList
+from server.packet import packetlist as pl
 
 packet_id_map = {}
 
 class ClientBoundPacket:
     def get_id(self):
         if packet_id_map.get(self.__class__) is None:
-            packet_id_map[self.__class__] = clientBoundPacketList.index(self.__class__)
+            packet_id_map[self.__class__] = pl.clientBoundPacketList.index(self.__class__)
         return packet_id_map[self.__class__]
     
     def send(self,conn:socket.socket):
-        conn.send(bytes([clientBoundPacketList.index(self.__class__)]))
+        conn.send(bytes([pl.clientBoundPacketList.index(self.__class__)]))
 
 class ClientBoundDataPacket(ClientBoundPacket):
     def __init__(self,*data:str,datas:list[str] = None ):
@@ -28,7 +27,7 @@ class ClientBoundDataPacket(ClientBoundPacket):
 class ServerBoundPacket:
     def get_id(self):
         if packet_id_map.get(self.__class__) is None:
-            packet_id_map[self.__class__] = serverBoundPacketList.index(self.__class__)
+            packet_id_map[self.__class__] = pl.serverBoundPacketList.index(self.__class__)
         return packet_id_map[self.__class__]
     
     def handle(self,client):
