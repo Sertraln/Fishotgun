@@ -1,9 +1,9 @@
 from ursina import *
 from player import ThirdPersonController
 from spot import FishingSpot
-import networking
-from networking import rpc_peer as con
+import network
 from data import player
+import data
 
 app = Ursina()
 
@@ -68,10 +68,15 @@ def update():
         camera.z_setter(-hit_camera.distance+offset_clipping)
     else:
         camera.z_setter(con.get_connections()[0],player.camera_offset)
-    con.position(player.world_position)
-    networking.update()
 
-    
-networking.start()
-con.initialise_player(con.get_connections()[0], "Player1")
+ip = input("Enter server IP (default localhost): ")
+port = input("Enter server port (default 5555): ")
+name = input("Enter your player name: ")
+if ip == "":
+    ip = "localhost"
+if port == "":
+    port = "5555"
+if name == "":
+    name = "default"
+data.network = network.Network(ip,int(port),name)
 app.run()

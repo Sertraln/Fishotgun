@@ -1,9 +1,10 @@
-from socket import socket
+import socket
 from player import Player
 import threading as th
 from .client import Client
 from .packet.serverbound import ServerBoundPseudoPacket
 from .packet import clientbound as cb
+from server.world import World
 
 def get_local_ip():
     #ON NE TOUCHE PAS
@@ -26,10 +27,12 @@ class Server:
         self.threadlist : list[th.Thread] = []
         self.lastpid = 0
         self.stopevent = th.Event()
+        self.world = World()
         try:
             self.soket.bind((self.ip, port))
         except socket.error as e:
             print("server :error binding :",e)
+        print(f"Server started on {self.ip}:{self.port}")
         self.soket.listen(5)
         self.connectionthread = th.Thread(name="connlistener",target=self.connectionListener)
         self.connectionthread.start()

@@ -1,9 +1,10 @@
-from packetlib import ClientBoundPacket, ClientBoundDataPacket
+from client.packet.packetstruct import ClientBoundPacket,ClientBoundDataPacket
 #client_bound server -> client
 #server_bound client -> server
 
-class ClientBoundIdPacket(ClientBoundPacket):
+class ClientBoundIdPacket(ClientBoundDataPacket):
     def __init__(self,data:list[str]):
+        super().__init__(data)
         self.id = int(data[0])
 
     def handle(self):

@@ -1,5 +1,5 @@
 clientBoundDataPacket : list[bool] = []
-ServerBoundDataPacket : list[bool] = []
+serverBoundDataPacket : list[bool] = []
 
 def unparse(data:bytes,clientbound:bool) -> list[tuple[int,list[str]]]:
     result = []
@@ -11,11 +11,11 @@ def unparse(data:bytes,clientbound:bool) -> list[tuple[int,list[str]]]:
         elif clientbound and not clientBoundDataPacket[data[0]]:
             result.append(one_unparse(data[:1]))
             data = data[1:]
-        elif not clientbound and ServerBoundDataPacket[data[0]]:
+        elif not clientbound and serverBoundDataPacket[data[0]]:
             taille = 2+sum(data[2:2+data[1]])+data[1]
             result.append(one_unparse(data[:taille]))
             data = data[taille:]
-        elif not clientbound and not ServerBoundDataPacket[data[0]]:
+        elif not clientbound and not serverBoundDataPacket[data[0]]:
             result.append(one_unparse(data[:1]))
             data = data[1:]
     return result
@@ -47,8 +47,9 @@ def parser(id:int,data:list[str]) -> bytes:
     return bytes(prefix)+b"".join(parsed_data)
 
 
-def test():
+if __name__ == "__main__":
     print("parser : out : ",parser(0,["test","test2"]))
     print(unparse(parser(0,["test","test2"])))
 
 #test()
+
