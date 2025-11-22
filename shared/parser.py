@@ -5,3 +5,11 @@ class Parser:
 
     def encode(self) -> str:
         raise NotImplementedError("You must implement encode method")
+    
+class Wrapper:
+    
+    def decode(self):
+        raise NotImplementedError("You must implement decode method")
+    
+    def encode(self) -> str:
+        raise NotImplementedError("You must implement encode method")

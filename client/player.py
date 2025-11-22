@@ -26,8 +26,10 @@ class ThirdPersonController(FirstPersonController):
         player_map[id] = self
 
 class Player(Entity):
-    def __init__(self, id : int):
+    def __init__(self, id : int, name : str, position :Vec3 = Vec3(0,0,0)):
         super().__init__()
+        self.position = position
+        self.name = name
         self.model = 'cube'
         self.color = color.violet
         self.scale=(1,1.5,1),
