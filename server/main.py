@@ -6,12 +6,13 @@ import sys
 _ROOT = os.path.dirname(os.path.dirname(__file__))
 if _ROOT not in sys.path:
     sys.path.insert(0, _ROOT)
-from player import Player
+from server.player import Player
 import threading as th
 from server.client import Client
-from packet.serverbound import ServerBoundPseudoPacket
-from packet import clientbound as cb
-from world import World
+from server.packet.serverbound import ServerBoundPseudoPacket
+from server.packet import clientbound as cb
+from server.world import World
+import server.data as data
 
 def get_local_ip():
     #ON NE TOUCHE PAS
@@ -98,7 +99,9 @@ class Server:
             print("Server : Erreur de fermeture :",e)
 
 if __name__ == "__main__":
-    server = Server()
-    while input("") != "stop":
+    data.server = Server()
+    cmd = input("")
+    while cmd != "stop" or cmd != "exit":
+        cmd = input("")
         pass
-    server.stop()
+    data.server.stop()

@@ -1,3 +1,5 @@
+from shared.parser import Parser,Wrapper
+
 clientBoundDataPacket : list[bool] = []
 serverBoundDataPacket : list[bool] = []
 
@@ -35,13 +37,18 @@ def one_unparse(data:bytes) -> tuple[int,list[str]]:
         count += size
     return id,out
 
-def parser(id:int,data:list[str]) -> bytes:
+def parser(id:int,data:list[str | Parser | Wrapper]) -> bytes:
     print("parser : ",data)
     prefix = [id]
     parsed_data = []
     prefix.append(len(data))
     for e in data:
-        encode = e.encode("utf-8")
+        if isinstance(e,Wrapper):
+            encode = e.encode().encode("utf-8")
+        elif isinstance(e,Parser):
+            encode = e.encode().encode("utf-8")
+        else:
+            encode = e.encode("utf-8")
         prefix.append(len(encode))
         parsed_data.append(encode)
     return bytes(prefix)+b"".join(parsed_data)
@@ -50,6 +57,4 @@ def parser(id:int,data:list[str]) -> bytes:
 if __name__ == "__main__":
     print("parser : out : ",parser(0,["test","test2"]))
     print(unparse(parser(0,["test","test2"])))
-
-#test()
 

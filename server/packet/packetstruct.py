@@ -1,6 +1,7 @@
 import socket
 import shared.utils as utils
 from server.packet import packetlist as pl
+from shared.parser import Parser,Wrapper
 
 packet_id_map = {}
 
@@ -26,7 +27,7 @@ class ClientBoundDataPacket(ClientBoundPacket):
         conn.send(packet)
 
 class ClientBoundDataListPacket(ClientBoundDataPacket):
-    def __init__(self,datas:list):
+    def __init__(self,datas:list[str | Parser | Wrapper]):
         endode_datas = []
         for data in datas:
             endode_datas.append(data.encode())

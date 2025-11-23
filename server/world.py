@@ -1,11 +1,12 @@
 from typing import TYPE_CHECKING
+from server import data
+from server.packet.clientbound import ClientBoundSpawnPlayerPacket,ClientBoundPlayerListPacket
 
 if TYPE_CHECKING:
     from server.player import Player
     from server.entity import Entity
 
 class World:
-
     def __init__(self):
         self.entities : dict[int,'Entity'] = {}
         self.next_entity_id = 0
@@ -15,6 +16,8 @@ class World:
         pid = player.client.id
         self.players[pid] = player
         print(f"World: player joined {pid}")
+        player.client.send(ClientBoundPlayerListPacket(self.players.values()))
+        data.server.broadcast(ClientBoundSpawnPlayerPacket(player),[player.client.id])
         return pid
 
     def left_player(self, pid:int):
@@ -30,8 +33,12 @@ class World:
                 pass
         self.players.clear()
 
-    def add_entity(self, entity):
-        entity_id = self.next_entity_id
+    def add_entity(self, entity:'Entity') -> int:
+        entity_id = self.get_next_entity_id()
         self.entities[entity_id] = entity
-        self.next_entity_id += 1
+        entity.id = entity_id
         return entity_id
+    
+    def get_next_entity_id(self):
+        self.next_entity_id += 1
+        return self.next_entity_id

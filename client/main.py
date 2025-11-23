@@ -41,7 +41,6 @@ ground = Entity(
     texture_scale=(10,10),
     collider='box')
 
-# Create player
 from client.data import player
 from client.player import ThirdPersonController
 
