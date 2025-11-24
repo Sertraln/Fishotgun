@@ -10,6 +10,7 @@ from ursina import *
 from spot import FishingSpot
 import network
 import data
+from ursina import application as appli
 
 ip = input("Enter server IP (default 192.168.64.9): ")
 port = input("Enter server port (default 5555): ")
@@ -23,15 +24,16 @@ if name == "":
 
 data.network = network.Network(ip,int(port),name)
 
-app = Ursina()
-
-original_quit = application.quit
+original_quit = appli.quit
 
 def custom_quit():
+    print("Disconnecting from server...")
     data.network.disconnect()
     original_quit()
 
-application.quit = custom_quit
+app = Ursina()
+
+appli.quit = custom_quit
 
 # Create ground
 ground = Entity(

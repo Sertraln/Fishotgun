@@ -17,6 +17,7 @@ class Network:
         self.id = self.connect()
         print("client : id : "+str(self.id))
         self.thread = th.Thread(name="clientpacketlistner",target=self.packetListener)
+        self.thread.daemon = True
         self.thread.start()
         self.send(ServerBoundPseudoPacket(name))
 

@@ -47,8 +47,10 @@ def parser(id:int,data:list[str | Parser | Wrapper]) -> bytes:
             encode = e.encode().encode("utf-8")
         elif isinstance(e,Parser):
             encode = e.encode().encode("utf-8")
-        else:
+        elif isinstance(e,str):
             encode = e.encode("utf-8")
+        else:
+            raise Exception("parser: unsupported data type :"+str(type(e)))
         prefix.append(len(encode))
         parsed_data.append(encode)
     return bytes(prefix)+b"".join(parsed_data)

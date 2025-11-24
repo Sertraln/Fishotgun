@@ -1,14 +1,27 @@
 from typing import TYPE_CHECKING
 
-from server.entity import Entity,EntityType
+from server.entity import Entity
+from shared.entity import EntityType
+from shared.parser import Parser
+from shared.parsedata.vec3data import Vec3Data
 
 if TYPE_CHECKING:
     from server.client import Client
 
-class Player(Entity):
+class Player(Entity,Parser):
     def __init__(self, player_name:str, client: 'Client'):
-        super().__init__(EntityType.PLAYER,0)
+        Entity.__init__(EntityType.PLAYER,0)
         self.player_id = player_name
         self.client = client
         self.position = (0,0,0)
+
+    def encode(self) -> str:
+        return f"{self.player_id};{Vec3Data.encode(self.position)}"
+    
+    @staticmethod
+    def decode(data:str) -> 'Player':
+        player_name,position_data = data.split(';',1)
+        player = Player(player_name,None)
+        player.position = Vec3Data.decode(position_data)
+        return player
 
