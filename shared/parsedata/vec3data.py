@@ -1,14 +1,17 @@
 from ursina import Vec3
 from shared.parser import Wrapper
+import struct
+from shared.utils import register_wrapper
 
+@register_wrapper(Vec3)
 class Vec3Data(Wrapper):
 
     @staticmethod
-    def decode(data:str) -> Vec3:
-        x,y,z = map(float,data.split(','))
+    def decode(data:bytes) -> Vec3:
+        x,y,z = struct.unpack(">fff",data,'big')
         return Vec3(x,y,z)
 
     @staticmethod
-    def encode(vec:Vec3) -> str:
-        return f"{vec[0]},{vec[1]},{vec[2]}"
+    def encode(vec:Vec3) -> bytes:
+        return struct.pack('>fff', vec.x, vec.y, vec.z)
     

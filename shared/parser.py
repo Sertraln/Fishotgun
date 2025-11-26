@@ -1,15 +1,17 @@
 class Parser:
     @staticmethod
-    def decode(data:str):
-        raise NotImplementedError("You must implement decode method")
+    def decode(data:bytes):
+        raise NotImplementedError("You must implement decode method for ", data)
 
-    def encode(self) -> str:
-        raise NotImplementedError("You must implement encode method")
+    @staticmethod
+    def encode(data) -> str:
+        raise NotImplementedError("You must implement encode method for ", data.__class__.__name__)
     
 class Wrapper:
+    @staticmethod
+    def decode(data:bytes):
+        raise NotImplementedError("You must implement decode method for ", data)
     
-    def decode(self):
-        raise NotImplementedError("You must implement decode method")
-    
-    def encode(self) -> str:
-        raise NotImplementedError("You must implement encode method")
+    @staticmethod
+    def encode(data) -> str:
+        raise NotImplementedError("You must implement encode method for ", data.__class__.__name__)

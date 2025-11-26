@@ -15,13 +15,4 @@ class Player(Entity,Parser):
         self.client = client
         self.position = (0,0,0)
 
-    def encode(self) -> str:
-        return f"{self.player_id};{Vec3Data.encode(self.position)}"
-    
-    @staticmethod
-    def decode(data:str) -> 'Player':
-        player_name,position_data = data.split(';',1)
-        player = Player(player_name,None)
-        player.position = Vec3Data.decode(position_data)
-        return player
 

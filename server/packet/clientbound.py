@@ -23,13 +23,13 @@ class ClientBoundMessagePacket(ClientBoundDataPacket):
 class ClientBoundSpawnPlayerPacket(ClientBoundDataPacket):
     def __init__(self, player: 'Player'):
         datas = [
-            str(player.id),
+            player.id,
             player.player_id,
-            Vec3Data.encode(player.position)
+            player.position
         ]
         super().__init__(datas=datas)
 
 class ClientBoundPlayerListPacket(ClientBoundDataListPacket):
     def __init__(self, datas:list['Player']):
-        super().__init__(datas)
+        super().__init__(datas,lambda player: [player.id,player.player_id,player.position])
     
