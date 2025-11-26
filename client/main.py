@@ -32,6 +32,8 @@ spot = FishingSpot(position=(0,2,0))
 Sky(color=color.violet)
 
 def update():
+    # apres une dure labeure, la premiere methode a echoue mais je reviens plus fort promis
+
     # Make player respawn if he falls
     if player.y < -10:
         player.position = (0,4,0)
