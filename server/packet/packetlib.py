@@ -1,14 +1,14 @@
-from shared import utils
-from shared.packetlib import get_defined_classes
+from shared import packetlib
+from shared.loadfile import get_defined_classes
 from server.packet.packetstruct import *
 from server.packet import packetlist as pl
 
 def init_packetlib():
     pl.clientBoundPacketList = get_defined_classes("server/packet/clientbound.py")
     pl.serverBoundPacketList = get_defined_classes("server/packet/serverbound.py")
-    utils.clientBoundDataPacket = [issubclass(packet,ClientBoundDataPacket) for packet in pl.clientBoundPacketList]
-    utils.serverBoundDataPacket = [issubclass(packet,ServerBoundDataPacket) for packet in pl.serverBoundPacketList]
-    utils.init()
+    packetlib.clientBoundDataPacket = [issubclass(packet,ClientBoundDataPacket) for packet in pl.clientBoundPacketList]
+    packetlib.serverBoundDataPacket = [issubclass(packet,ServerBoundDataPacket) for packet in pl.serverBoundPacketList]
+    packetlib.init()
 
 def getClientBoundPacket(id:int,data:str = "") -> ClientBoundPacket:
     print("client : clientboundget :",data)
@@ -22,7 +22,7 @@ def getClientBoundPacket(id:int,data:str = "") -> ClientBoundPacket:
 def getServerBoundPacket(data:bytes) -> list[ServerBoundPacket]:
     print("server : serverboundget :",data)
     result = []
-    list = utils.unparse(data,False)
+    list = packetlib.unparse(data,False)
     for id,decode in list:
         packet = pl.serverBoundPacketList[id]
         if issubclass(packet,ServerBoundDataPacket):

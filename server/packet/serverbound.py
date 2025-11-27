@@ -33,5 +33,5 @@ class ServerBoundMessagePacket(ServerBoundDataPacket):
         client.server.broadcast(cb.ClientBoundMessagePacket(self.message),[client.id])
 
 if __name__ == "__main__":
-    from shared.packetlib import get_defined_classes
+    from shared.loadfile import get_defined_classes
     print(issubclass(get_defined_classes("server/packet/serverbound.py")[0],ServerBoundDataPacket))

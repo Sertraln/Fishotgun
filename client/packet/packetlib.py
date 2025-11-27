@@ -7,22 +7,22 @@ if __name__ == "__main__":
     if _ROOT not in sys.path:
         sys.path.insert(0, _ROOT)
 
-from shared import utils
-from shared.packetlib import get_defined_classes
+from shared import packetlib
+from shared.loadfile import get_defined_classes
 from client.packet.packetstruct import *
 from client.packet import packetlist
 
 def init_packetlib():
     packetlist.clientBoundPacketList = get_defined_classes("client/packet/clientbound.py")
     packetlist.serverBoundPacketList = get_defined_classes("client/packet/serverbound.py")
-    utils.clientBoundDataPacket = [issubclass(packet,ClientBoundDataPacket) for packet in packetlist.clientBoundPacketList]
-    utils.serverBoundDataPacket = [issubclass(packet,ServerBoundDataPacket) for packet in packetlist.serverBoundPacketList]
-    utils.init()
+    packetlib.clientBoundDataPacket = [issubclass(packet,ClientBoundDataPacket) for packet in packetlist.clientBoundPacketList]
+    packetlib.serverBoundDataPacket = [issubclass(packet,ServerBoundDataPacket) for packet in packetlist.serverBoundPacketList]
+    packetlib.init()
 
 def getClientBoundPacket(data:bytes) -> list[ClientBoundPacket]:
     print("client : clientboundget :",data)
     result = []
-    list = utils.unparse(data,True)
+    list = packetlib.unparse(data,True)
     for id,decode in list:
         packet = pl.clientBoundPacketList[id]
         if issubclass(packet,ClientBoundDataPacket):
