@@ -1,7 +1,7 @@
 from ursina import Vec3
 from shared.parser import Wrapper
 import struct
-from shared.utils import register_wrapper
+from shared.packetlib import register_wrapper
 
 @register_wrapper(Vec3)
 class Vec3Data(Wrapper):

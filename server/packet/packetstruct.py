@@ -1,5 +1,5 @@
 import socket
-import shared.utils as utils
+import shared.packetlib as packetlib
 from server.packet import packetlist as pl
 from shared.parser import Parser,Wrapper
 from abc import abstractmethod
@@ -24,7 +24,7 @@ class ClientBoundDataPacket(ClientBoundPacket):
             self.data = data
 
     def send(self, conn):
-        packet = utils.parser(self.data,self.get_id())
+        packet = packetlib.parser(self.data,self.get_id())
         conn.send(packet)
 
 class ClientBoundDataListPacket(ClientBoundDataPacket):

@@ -1,5 +1,5 @@
 import socket
-import shared.utils as utils
+import shared.packetlib as packetlib
 from client.packet import packetlist as pl
 
 packet_id_map = {}
@@ -35,5 +35,5 @@ class ServerBoundDataPacket(ServerBoundPacket):
 
     def send(self, conn):
         print("packetlist:",pl.serverBoundPacketList)
-        packet = utils.parser(self.data,self.get_id())
+        packet = packetlib.parser(self.data,self.get_id())
         conn.send(packet)
