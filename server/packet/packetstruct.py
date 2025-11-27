@@ -17,11 +17,9 @@ class ClientBoundPacket:
         conn.send(bytes([pl.clientBoundPacketList.index(self.__class__)]))
 
 class ClientBoundDataPacket(ClientBoundPacket):
-    def __init__(self,*data:str,datas:list = None):
-        if datas is not None:
-            self.data = datas
-        else:
-            self.data = data
+    def __init__(self,*data:str,func = None,datas:list = None):
+        self.data = datas if datas else data
+        self.data = func(self.data) if func else self.data
 
     def send(self, conn):
         packet = packetlib.parser(self.data,self.get_id())
