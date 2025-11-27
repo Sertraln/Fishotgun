@@ -9,6 +9,10 @@ from shared.parser import Parser,Wrapper
 import struct
 from typing import Callable, Any,get_type_hints
 
+class ParsingException(Exception):   
+    def __init__(self, message: str):
+        super().__init__("packet : "+message)
+
 #init parser
 def init():
     global _id_type
@@ -176,11 +180,7 @@ def _unparse_data(data:bytes):
 
 if __name__ == "__main__":
     from ursina import Vec3
-    sys.modules["shared.utils"] = sys.modules[__name__]
+    sys.modules["shared.packetlib"] = sys.modules[__name__]
     init()
-    print("parser : out : ",_parse_data([1,2,3000000000000000000000000000]).hex(':'))
-    print(_unparse_data(_parse_data([1,2,3000000000000000000000000000])))
-
-class ParsingException(Exception):   
-    def __init__(self, message: str):
-        super().__init__("packet : "+message)
+    print("parser : out : ",_parse_data(Vec3(1,2,3)).hex(':'))
+    print(_unparse_data(_parse_data(Vec3(1,2,3))))

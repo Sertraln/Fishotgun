@@ -22,7 +22,7 @@ class ClientBoundDataPacket(ClientBoundPacket):
         self.data = func(self.data) if func else self.data
 
     def send(self, conn):
-        packet = packetlib.parser(self.data,self.get_id())
+        packet = packetlib.parser(self.get_id(),self.data)
         conn.send(packet)
 
 class ClientBoundDataListPacket(ClientBoundDataPacket):
