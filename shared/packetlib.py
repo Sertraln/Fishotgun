@@ -145,7 +145,7 @@ def _generate_func(func:Callable[[Any],bytes | list | tuple]) -> Callable[[Any],
     elif return_type == bytes:
         return func
     else:
-        raise ParsingException("Unsupported return type for parser function")
+        raise ParsingException("Unsupported return type for parser function : " + str(return_type))
 
 def _register(cls,wcls = None):
     if wcls is None:
@@ -156,7 +156,7 @@ def _register(cls,wcls = None):
     if hasattr(cls, "encode") and callable(getattr(cls, "encode")):
         _parse_table[wcls] = _generate_func(cls.encode)
     if hasattr(cls, "decode") and callable(getattr(cls, "decode")):
-        _unparse_table[wcls] = _generate_func(cls.decode)
+        _unparse_table[wcls] = cls.decode
     return cls
 
 def _parse_data(data)->bytes:
