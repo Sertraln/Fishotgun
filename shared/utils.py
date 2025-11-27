@@ -1,7 +1,21 @@
+if __name__ == "__main__" :
+    import os
+    import sys
+    _ROOT = os.path.dirname(os.path.dirname(__file__))
+    if _ROOT not in sys.path:
+        sys.path.insert(0, _ROOT)
+
 from shared.parser import Parser,Wrapper
 import struct
-from typing import cast, Callable
-import zlib
+from typing import Callable, Any,get_type_hints
+
+#init parser
+def init():
+    global id_type
+    import shared.parsedata.vec3data
+    # Générer type_id avec les indices
+    global type_id
+    type_id = {cls: idx for idx, cls in enumerate(id_type)}
 
 clientBoundDataPacket : list[bool] = []
 serverBoundDataPacket : list[bool] = []
@@ -27,7 +41,6 @@ def unparse(data:bytes,clientbound:bool) -> list[tuple[int,list[str]]]:
     return result
 
 def one_unparse(data:bytes) -> tuple[int,list]:
-    print("unparse : in ",data)
     id = data[0]
     if len(data) == 1:
         return id,[]
@@ -39,33 +52,36 @@ def unparse_blob(data:bytes) -> list:
     count = 0
     out = []
     for i in range(nb):
-        size = data[i+2]
+        size = data[i+1]
         out.append(unparse_data(elements[count:count+size]))
         count += size
     return out
 
-def parser(id:int,data:list | tuple) -> bytes:
-    print("parser : ",data)
+def parser(data:list | tuple,id:int = None) -> bytes:
     size = len(data)
-    prefix = [id,size]
-    encode = [] * size
+    if id is None:
+        prefix = [size]
+    else:
+        prefix = [id,size]
+    encode = b''
     for e in data:
-        encode.append(parse_data(e))
-        prefix.append(len(encode))
-    return bytes(prefix)+encode
+        encoded = parse_data(e)
+        encode += encoded
+        prefix.append(len(encoded))
+    return bytes(prefix)+ encode
 
 def parse_int(data:int) -> bytes:
     size = (data.bit_length() + 8) // 8
     if size >= 256:
-        raise PacketException("Integer too large to parse")
+        raise ParsingException("Integer too large to parse")
     return data.to_bytes(size, "big", signed=True)
 
-parse_table = {
+parse_table : dict[type,Callable[[Any],bytes]] = {
     str: lambda s: bytes(s,"utf-8"),
     int: parse_int,
     float: lambda f: struct.pack('>f',f),
-    list: lambda l: parser(type_id[l.__class__],l),
-    tuple: lambda t: parser(type_id[t.__class__],t),
+    list: lambda l: parser(l),
+    tuple: lambda t: parser(t),
 }
 
 unparse_table = {
@@ -76,58 +92,82 @@ unparse_table = {
     tuple: lambda b: tuple(unparse_blob(b)),
 }
 
-type_id = {
-    str: zlib.crc32(b'str'),
-    int: zlib.crc32(b'int'),
-    float: zlib.crc32(b'float'),
-    list: zlib.crc32(b'list'),
-    tuple: zlib.crc32(b'tuple'),
-}
+id_type = [float,int,list,tuple,str]
 
-id_type = {v: k for k, v in type_id.items()}
+type_id = {}
+
+def _insert_sorted_by_qualname(cls):
+    """Insère une classe dans id_type en maintenant l'ordre alphabétique des __qualname__"""
+    if cls in id_type:
+        return
+    
+    qualname = cls.__qualname__
+    insert_pos = len(id_type)
+    
+    for i, existing_cls in enumerate(id_type):
+        if existing_cls.__qualname__ > qualname:
+            insert_pos = i
+            break
+    
+    id_type.insert(insert_pos, cls)
 
 def register_wrapper(original):
     def decorator(cls):
         if not issubclass(cls, Wrapper):
-            raise PacketException("Can only register subclasses of Wrapper")
-        return register(cls,original)
+            raise ParsingException("Can only register subclasses of Wrapper")
+        return _register(cls,original)
+    
     return decorator
 
 def register_parser(cls):
     if not issubclass(cls, Parser):
-        raise PacketException("Can only register subclasses of Parser")
-    return register(cls)
+        raise ParsingException("Can only register subclasses of Parser")
+    return _register(cls)
 
-def register(cls,wcls = None):
+def _generate_func(func:Callable[[Any],bytes | list | tuple]) -> Callable[[Any],bytes]:
+    return_type = get_type_hints(func).get("return", None)
+    if return_type == list or return_type == tuple or None:
+        def wrapper(data:Any) -> bytes:
+            return parser(func(data))
+        return wrapper
+    elif return_type == bytes:
+        return func
+    else:
+        raise ParsingException("Unsupported return type for parser function")
+
+def _register(cls,wcls = None):
     if wcls is None:
         wcls = cls
-    type_byte = zlib.crc32(wcls.__qualname__.encode('utf-8'))
-    type_id[wcls] = type_byte
-    id_type[type_byte] = wcls
-    if hasattr(cls, "parse") and callable(getattr(cls, "parse")):
-        parse_table[cls] = cls.parse
-    if hasattr(cls, "unparse") and callable(getattr(cls, "unparse")):
-        unparse_table[cls] = cls.unparse
+    
+    _insert_sorted_by_qualname(wcls)
+    
+    if hasattr(cls, "encode") and callable(getattr(cls, "encode")):
+        parse_table[wcls] = _generate_func(cls.encode)
+    if hasattr(cls, "decode") and callable(getattr(cls, "decode")):
+        unparse_table[wcls] = _generate_func(cls.decode)
     return cls
 
 def parse_data(data)->bytes:
     data_type = data.__class__
     type_byte = type_id.get(data_type)
-    if not type_byte :
-        raise PacketException(f"Unsupported data type/non regitered: {data_type}")
+    if type_byte is None:
+        raise ParsingException(f"Unsupported data type/non regitered: {data_type}")
     return bytes([type_byte]) + parse_table[data_type](data)
 
 def unparse_data(data:bytes):
     type_byte = data[0]
-    data_type = id_type.get(type_byte)
-    if not data_type :
-        raise PacketException(f"Unsupported data type/non regitered: {data_type}")
+    if type_byte >= len(id_type):
+        raise ParsingException(f"Unsupported data type/non regitered: {type_byte}")
+    data_type = id_type[type_byte]
     return unparse_table[data_type](data[1:])
 
 if __name__ == "__main__":
-    print("parser : out : ",parser(0,["test","test2"]))
-    print(unparse(parser(0,["test","test2"])))
+    from ursina import Vec3
+    sys.modules["shared.utils"] = sys.modules[__name__]
+    init()
+    print("parser : out : ",parse_data([1,2,3000000000000000000000000000]).hex(':'))
+    print(unparse_data(parse_data([1,2,3000000000000000000000000000])))
 
-class PacketException(Exception):   
+class ParsingException(Exception):   
     def __init__(self, message: str):
         super().__init__("packet : "+message)

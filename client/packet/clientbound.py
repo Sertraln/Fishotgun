@@ -1,6 +1,5 @@
 from client.packet.packetstruct import ClientBoundPacket,ClientBoundDataPacket
 from ursina import Vec3
-from shared.parsedata.vec3data import Vec3Data
 #client_bound server -> client
 #server_bound client -> server
 
@@ -22,20 +21,21 @@ class ClientBoundMessagePacket(ClientBoundDataPacket):
         pass
 
 class ClientBoundPlayerListPacket(ClientBoundDataPacket):
-    def __init__(self,data:list[str]):
+    def __init__(self,data:list[list[int | str | Vec3]]):
         super().__init__(data)
 
     def handle(self):
+        print("player list :",self.data)
         pass
 
 class ClientBoundSpawnPlayerPacket(ClientBoundDataPacket):
-    def __init__(self,data:list[str]):
-        a = bytes("test","utf-8")[0]
+    def __init__(self,data:list):
         super().__init__(data)
-        self.id = int(data[0])
-        self.name = data[1]
-        self.position = Vec3Data.decode(data[2])
+        self.player_id : int = data[0]
+        self.name : str = data[1]
+        self.position : Vec3 = data[2]
 
     def handle(self):
+        print(f"Spawn player {self.name} at {self.position}")
         #TODO spawn player entity
         pass

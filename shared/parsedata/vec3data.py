@@ -8,7 +8,7 @@ class Vec3Data(Wrapper):
 
     @staticmethod
     def decode(data:bytes) -> Vec3:
-        x,y,z = struct.unpack(">fff",data,'big')
+        x,y,z = struct.unpack(">fff",data)
         return Vec3(x,y,z)
 
     @staticmethod

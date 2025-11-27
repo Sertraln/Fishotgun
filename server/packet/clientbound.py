@@ -1,7 +1,7 @@
 import socket
 from server.packet.packetstruct import ClientBoundDataPacket,ClientBoundPacket,ClientBoundDataListPacket
 from typing import TYPE_CHECKING
-from shared.parsedata.vec3data import Vec3Data
+from typing import Callable
 
 if TYPE_CHECKING:
     from server.player import Player
@@ -31,5 +31,6 @@ class ClientBoundSpawnPlayerPacket(ClientBoundDataPacket):
 
 class ClientBoundPlayerListPacket(ClientBoundDataListPacket):
     def __init__(self, datas:list['Player']):
-        super().__init__(datas,lambda player: [player.id,player.player_id,player.position])
+        func : Callable[['Player'],list] = lambda player: [player.id,player.player_id,player.position]
+        super().__init__(datas,func)
     

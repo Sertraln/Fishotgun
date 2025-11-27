@@ -17,6 +17,7 @@ def init_packetlib():
     packetlist.serverBoundPacketList = get_defined_classes("client/packet/serverbound.py")
     utils.clientBoundDataPacket = [issubclass(packet,ClientBoundDataPacket) for packet in packetlist.clientBoundPacketList]
     utils.serverBoundDataPacket = [issubclass(packet,ServerBoundDataPacket) for packet in packetlist.serverBoundPacketList]
+    utils.init()
 
 def getClientBoundPacket(data:bytes) -> list[ClientBoundPacket]:
     print("client : clientboundget :",data)

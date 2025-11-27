@@ -14,9 +14,10 @@ class World:
 
     def join_player(self, player:'Player') -> int:
         pid = player.client.id
+        
         self.players[pid] = player
-        print(f"World: player joined {pid}")
         player.client.send(ClientBoundPlayerListPacket(self.players.values()))
+        print(f"World: player joined {pid}")
         data.server.broadcast(ClientBoundSpawnPlayerPacket(player),[player.client.id])
         return pid
 

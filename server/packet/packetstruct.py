@@ -2,6 +2,7 @@ import socket
 import shared.utils as utils
 from server.packet import packetlist as pl
 from shared.parser import Parser,Wrapper
+from abc import abstractmethod
 
 packet_id_map = {}
 
@@ -16,22 +17,21 @@ class ClientBoundPacket:
         conn.send(bytes([pl.clientBoundPacketList.index(self.__class__)]))
 
 class ClientBoundDataPacket(ClientBoundPacket):
-    def __init__(self,*data:str,datas:list[str] = None ):
+    def __init__(self,*data:str,datas:list = None):
         if datas is not None:
             self.data = datas
         else:
             self.data = data
 
     def send(self, conn):
-        packet = utils.parser(self.get_id(),self.data)
+        packet = utils.parser(self.data,self.get_id())
         conn.send(packet)
 
 class ClientBoundDataListPacket(ClientBoundDataPacket):
-    def __init__(self,datas:list[str | Parser | Wrapper]):
-        endode_datas = []
-        for data in datas:
-            endode_datas.append(data.encode())
-        super().__init__(datas=endode_datas)
+    def __init__(self,datas:list[str | Parser | Wrapper],func = None):
+        if func:
+            datas = list(map(func,datas))
+        super().__init__(datas=datas)
 
 #===== SERVER BOUND PACKETS =====#
 class ServerBoundPacket:

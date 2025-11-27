@@ -19,7 +19,10 @@ class Client:
         
 
     def send(self,packet:ClientBoundPacket):
-        packet.send(self.conn)
+        try:
+            packet.send(self.conn)
+        except Exception as e:
+            print(f"client send error : {e}")
 
     def sendRecv(self,packet:ClientBoundPacket) -> ServerBoundPacket:
         print("packet : sending",flush=True)

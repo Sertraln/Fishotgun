@@ -101,7 +101,7 @@ class Server:
 if __name__ == "__main__":
     data.server = Server()
     cmd = input("")
-    while cmd != "stop" or cmd != "exit":
+    while cmd != "stop" and cmd != "exit":
         cmd = input("")
         pass
     data.server.stop()

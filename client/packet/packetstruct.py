@@ -35,5 +35,5 @@ class ServerBoundDataPacket(ServerBoundPacket):
 
     def send(self, conn):
         print("packetlist:",pl.serverBoundPacketList)
-        packet = utils.parser(self.get_id(),self.data)
+        packet = utils.parser(self.data,self.get_id())
         conn.send(packet)

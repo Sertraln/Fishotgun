@@ -69,12 +69,6 @@ class Network:
         return self.conn.recv(2048)
 
     def disconect(self):
-        try:
-            # Envoyer un message de déconnexion si possible
-            from packet.serverbound import ServerBoundMessagePacket
-            self.send(ServerBoundMessagePacket(f"@{self.name} a quitté la partie"))
-        except:
-            pass
         self.stop_event.set()
         try:
             self.conn.shutdown(socket.SHUT_RDWR)
@@ -82,8 +76,9 @@ class Network:
         except:
             pass
         
-        if self.thread and self.thread.is_alive():
-            self.thread.join(timeout=1.0)
+        current_thread = th.current_thread()
+        if self.thread and self.thread.is_alive() and self.thread != current_thread:
+            self.thread.join(timeout=3.0)
         print("client : Déconnexion")
 
 
