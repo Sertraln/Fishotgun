@@ -1,6 +1,7 @@
 from typing import TYPE_CHECKING
 from server import data
 from server.packet.clientbound import ClientBoundSpawnPlayerPacket,ClientBoundPlayerListPacket
+import threading as th
 
 if TYPE_CHECKING:
     from server.player import Player
@@ -11,6 +12,8 @@ class World:
         self.entities : dict[int,'Entity'] = {}
         self.next_entity_id = 0
         self.players : dict[int,'Player'] = {}
+        print("World: initialized")
+        th.Thread(target=self.game_loop, daemon=True).start()
 
     def join_player(self, player:'Player') -> int:
         pid = player.client.id
@@ -43,3 +46,9 @@ class World:
     def get_next_entity_id(self):
         self.next_entity_id += 1
         return self.next_entity_id
+    
+    def game_loop(self):
+        pass
+    
+    def save(self):
+        pass

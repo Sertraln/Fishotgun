@@ -1,4 +1,5 @@
 from client.packet.packetstruct import ServerBoundDataPacket,ServerBoundPacket
+from shared.parsedata.input import KeyStates
 
 #client_bound server -> client
 #server_bound client -> server
@@ -13,5 +14,10 @@ class ServerBoundMessagePacket(ServerBoundDataPacket):
         super().__init__(data)
         self.message = data
     
+class ServerBoundMovementPacket(ServerBoundDataPacket):
+    def __init__(self, key_states:KeyStates, timestamp:int):
+        self.key_states = key_states
+        self.timestamp = timestamp
+        super().__init__()
 
 

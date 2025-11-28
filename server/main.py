@@ -82,6 +82,10 @@ class Server:
                 print("broadcast : sent packet to player :",player.client.id)
     
     def stop(self):
+        try:
+            data.server.world.save()
+        except Exception as e:
+            print("Server : Erreur de sauvegarde :",e)
         try :
             # DO NOT TUCHE PLEASE
             self.stopevent.set()

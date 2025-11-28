@@ -7,7 +7,18 @@ if __name__ == "__main__" :
 
 from shared.parser import Parser,Wrapper
 import struct
-from typing import Callable, Any,get_type_hints
+from typing import Callable, Any,get_type_hints, Dict, Type, TypeVar
+
+T = TypeVar("T", bound=Parser)
+
+registry: Dict[str, Type[Parser]] = {}
+
+def register_parser(cls: Type[T]) -> Type[T]:
+    """Decorator to register a Parser subclass
+    *Exemple* : `@register_parser`"""
+    if not issubclass(cls, Parser):
+        raise ParsingException("Can only register subclasses of Parser")
+    return _register(cls)
 
 class ParsingException(Exception):   
     def __init__(self, message: str):
@@ -17,6 +28,7 @@ class ParsingException(Exception):
 def init():
     global _id_type
     import shared.parsedata.vec3data
+    import shared.parsedata.input
     # Générer type_id avec les indices
     global _type_id
     _type_id = {cls: idx for idx, cls in enumerate(_id_type)}
@@ -133,13 +145,6 @@ def register_wrapper(original):
     
     return decorator
 
-def register_parser(cls):
-    """Decorator to register a Parser subclass\n 
-    *Exemple* : `@register_parser`"""
-    if not issubclass(cls, Parser):
-        raise ParsingException("Can only register subclasses of Parser")
-    return _register(cls)
-
 def _generate_func(func:Callable[[Any],bytes | list | tuple]) -> Callable[[Any],bytes]:
     return_type = get_type_hints(func).get("return", None)
     if return_type == list or return_type == tuple or None:
@@ -151,7 +156,7 @@ def _generate_func(func:Callable[[Any],bytes | list | tuple]) -> Callable[[Any],
     else:
         raise ParsingException("Unsupported return type for parser function : " + str(return_type))
 
-def _register(cls,wcls = None):
+def _register(cls: Type[T], wcls: type | None = None) -> Type[T]:
     if wcls is None:
         wcls = cls
     

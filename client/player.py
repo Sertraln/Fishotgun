@@ -1,5 +1,9 @@
 from ursina import *
 from ursina.prefabs.first_person_controller import FirstPersonController
+from client.packet.serverbound import ServerBoundMovementPacket
+import threading as th
+from queue import Queue
+from shared.parsedata.input import KeyStates
 
 player_map = {}
 
@@ -15,11 +19,44 @@ class ThirdPersonController(FirstPersonController):
         
         camera.z = self.camera_offset
         camera.collider = 'box'
+        self._input_queue = Queue()
+        th.Thread(target=self.constant_update, daemon=True).start()
+
         # Additional third person setup can go here
 
     def update(self):
         super().update()
         # Additional third person update can go here
+
+    def input(self, key):
+        # make key configurable later
+        key_strokes:KeyStates = KeyStates()
+        if key == 'shift':
+            key_strokes.press(KeyStates.SPRINT)
+        if key == 'space':
+            key_strokes.press(KeyStates.JUMP)
+        if key == 'w':
+            key_strokes.press(KeyStates.FORWARD)
+        if key == 's':
+            key_strokes.press(KeyStates.BACKWARD)
+        if key == 'a':
+            key_strokes.press(KeyStates.LEFT)
+        if key == 'd':
+            key_strokes.press(KeyStates.RIGHT)
+        if key == 'control':
+            key_strokes.press(KeyStates.SNEAK)
+        self.key_states = key_strokes
+
+
+    def constant_update(self):
+        while True:
+            self._send_input()
+            time.sleep(0.05)
+        
+
+    def _send_input(self):
+        new_packet = ServerBoundMovementPacket(self.key_states, time.time())
+        self.client.send_packet(new_packet)
     
     def set_id(self, id: int):
         self.player_id = id
