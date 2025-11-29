@@ -145,8 +145,23 @@ def register_wrapper(original):
     
     return decorator
 
-def _generate_func(func:Callable[[Any],bytes | list | tuple]) -> Callable[[Any],bytes]:
-    return_type = get_type_hints(func).get("return", None)
+def _generate_func(func:Callable[[Any],bytes | list | tuple], *owner_types:type | None) -> Callable[[Any],bytes]:
+    """Wrap parser encode helpers while resolving forward references safely."""
+    localns: Dict[str, type] = {}
+    for owner in owner_types:
+        if owner is None:
+            continue
+        localns[owner.__name__] = owner
+
+    try:
+        return_type = get_type_hints(
+            func,
+            globalns=getattr(func, "__globals__", {}),
+            localns=localns or None,
+        ).get("return", None)
+    except NameError:
+        # If annotations reference symbols not yet defined, fall back gracefully.
+        return_type = None
     if return_type == list or return_type == tuple or None:
         def wrapper(data:Any) -> bytes:
             return parser(func(data))
@@ -163,7 +178,7 @@ def _register(cls: Type[T], wcls: type | None = None) -> Type[T]:
     _insert_sorted_by_qualname(wcls)
     
     if hasattr(cls, "encode") and callable(getattr(cls, "encode")):
-        _parse_table[wcls] = _generate_func(cls.encode)
+        _parse_table[wcls] = _generate_func(cls.encode, wcls)
     if hasattr(cls, "decode") and callable(getattr(cls, "decode")):
         _unparse_table[wcls] = cls.decode
     return cls
@@ -186,6 +201,7 @@ def _unparse_data(data:bytes):
 if __name__ == "__main__":
     from ursina import Vec3
     sys.modules["shared.packetlib"] = sys.modules[__name__]
+    from shared.parsedata.input import KeyStates
     init()
-    print("parser : out : ",_parse_data(Vec3(1,2,3)).hex(':'))
+    print("parser : out : ",_parse_data(KeyStates(1)).hex(':'))
     print(_unparse_data(_parse_data(Vec3(1,2,3))))

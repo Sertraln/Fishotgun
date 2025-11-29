@@ -10,7 +10,7 @@ if TYPE_CHECKING:
 class Player(Entity):
     def __init__(self, player_name:str, client: 'Client'):
         super().__init__(EntityType.PLAYER,client.id)
-        self.player_id = player_name
+        self.player_name = player_name
         self.client = client
         self.position = Vec3()
 

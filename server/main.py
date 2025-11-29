@@ -15,6 +15,9 @@ from server.world import World
 import server.data as data
 
 def get_local_ip():
+    """
+    Retourne l'adresse IP locale de la machine.
+    """
     #ON NE TOUCHE PAS
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -76,6 +79,9 @@ class Server:
             print("Server : Erreur creation", e)
 
     def broadcast(self,packet:cb.ClientBoundPacket,ignored:list[int] = []):
+        """
+        Send a packet to all connected players except those in ignored list
+        """
         for player in self.world.players.values():
             if player.client.id not in ignored:
                 player.client.send(packet)
