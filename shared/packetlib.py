@@ -39,22 +39,25 @@ serverBoundDataPacket : list[bool] = []
 def unparse(data:bytes,clientbound:bool) -> list[tuple[int,list[str]]]:
     """Decode une série de packets encodés"""
     result = []
-    while len(data) > 0:
-        packet_id = data[0]
-        if clientbound and clientBoundDataPacket[packet_id]:
-            taille = 2+sum(data[2:2+data[1]])+data[1]
-            result.append(one_unparse(data[:taille]))
-            data = data[taille:]
-        elif clientbound and not clientBoundDataPacket[packet_id]:
-            result.append(one_unparse(data[:1]))
-            data = data[1:]
-        elif not clientbound and serverBoundDataPacket[packet_id]:
-            taille = 2+sum(data[2:2+data[1]])+data[1]
-            result.append(one_unparse(data[:taille]))
-            data = data[taille:]
-        elif not clientbound and not serverBoundDataPacket[packet_id]:
-            result.append(one_unparse(data[:1]))
-            data = data[1:]
+    try:
+        while len(data) > 0:
+            packet_id = data[0]
+            if clientbound and clientBoundDataPacket[packet_id]:
+                taille = 2+sum(data[2:2+data[1]])+data[1]
+                result.append(one_unparse(data[:taille]))
+                data = data[taille:]
+            elif clientbound and not clientBoundDataPacket[packet_id]:
+                result.append(one_unparse(data[:1]))
+                data = data[1:]
+            elif not clientbound and serverBoundDataPacket[packet_id]:
+                taille = 2+sum(data[2:2+data[1]])+data[1]
+                result.append(one_unparse(data[:taille]))
+                data = data[taille:]
+            elif not clientbound and not serverBoundDataPacket[packet_id]:
+                result.append(one_unparse(data[:1]))
+                data = data[1:]
+    except IndexError:
+        raise ParsingException("Error while unparse packet data, probably packet list different from the client and server")
     return result
 
 def one_unparse(data:bytes) -> tuple[int,list]:
@@ -201,7 +204,6 @@ def _unparse_data(data:bytes):
 if __name__ == "__main__":
     from ursina import Vec3
     sys.modules["shared.packetlib"] = sys.modules[__name__]
-    from shared.parsedata.input import KeyStates
     init()
-    print("parser : out : ",_parse_data(KeyStates(1)).hex(':'))
-    print(_unparse_data(_parse_data(Vec3(1,2,3))))
+    print("parser : out : ",_parse_data("azd"))
+    print(_unparse_data(_parse_data("Hello World!")))

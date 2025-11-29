@@ -55,8 +55,9 @@ class ThirdPersonController(FirstPersonController):
         
 
     def _send_input(self):
-        new_packet = ServerBoundMovementPacket(self.key_states, time.time())
-        self.client.send_packet(new_packet)
+        #new_packet = ServerBoundMovementPacket(self.key_states, time.time())
+        #self.client.send_packet(new_packet)
+        pass
     
     def set_id(self, id: int):
         self.player_id = id

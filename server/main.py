@@ -45,6 +45,7 @@ class Server:
             self.soket.bind((self.ip, port))
         except socket.error as e:
             print("server :error binding :",e)
+            raise e
         print(f"Server started on {self.ip}:{self.port}")
         self.soket.listen(5)
         self.connectionthread = th.Thread(name="connlistener",target=self.connectionListener)
