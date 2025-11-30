@@ -14,11 +14,7 @@ ground = Entity(
 
 # Create player
 player = ThirdPersonController(
-    position=(0,4,0),
-    jump_height = 5,
-    jump_up_duration = 1,
-    fall_after = .4,
-    gravity = 0.7)
+    position=(0,4,0))
 
 # Set cursor white cause pink ugly af
 player.cursor.color = color.white
@@ -45,14 +41,6 @@ def update():
     # Kick player if too fast
     if player.speed > 21:
         pass
-    
-    # Sprints if shift is held
-    if held_keys['shift']:
-        player.body.color = color.red
-        player.speed = 20
-    else:
-        player.body.color = color.blue
-        player.speed = 10
     
     # Gotta check this for all spots in the map constantly (will need a list later)
     if distance(spot.position, player.position) < spot.interaction_range:
