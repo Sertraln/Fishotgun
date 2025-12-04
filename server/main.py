@@ -18,7 +18,6 @@ def get_local_ip():
     """
     Retourne l'adresse IP locale de la machine.
     """
-    #ON NE TOUCHE PAS
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         s.connect(("8.8.8.8", 80))
@@ -31,7 +30,6 @@ def get_local_ip():
 class Server:
     used_ports = []
     def __init__(self, port:int =5555, ip:str = None):
-        #ON NE TOUCHE PAS
         from server.packet.packetlib import init_packetlib
         init_packetlib()
         self.port = port if port not in Server.used_ports else 5555+len(Server.used_ports)
@@ -94,7 +92,6 @@ class Server:
         except Exception as e:
             print("Server : Erreur de sauvegarde :",e)
         try :
-            # DO NOT TUCHE PLEASE
             self.stopevent.set()
             self.world.stop()
             if self.soket:
