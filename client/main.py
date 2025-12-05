@@ -1,18 +1,51 @@
+import os
+import sys
+
+# Ensure project root is on sys.path so sibling packages like `shared` can be imported
+_ROOT = os.path.dirname(os.path.dirname(__file__))
+if _ROOT not in sys.path:
+    sys.path.insert(0, _ROOT)
+
 from ursina import *
-from player import ThirdPersonController
 from spot import FishingSpot
+import network
+import data
+from ursina import application as appli
+
+ip = input("Enter server IP (default 192.168.64.9): ")
+port = input("Enter server port (default 5555): ")
+name = input("Enter your player name: ")
+if ip == "":
+    ip = "192.168.64.9"
+if port == "":
+    port = "5555"
+if name == "":
+    name = "default"
+
+data.network = network.Network(ip,int(port),name)
+
+original_quit = appli.quit
+
+def custom_quit():
+    print("Disconnecting from server...")
+    data.network.disconnect()
+    original_quit()
 
 app = Ursina()
+
+appli.quit = custom_quit
 
 # Create ground
 ground = Entity(
     model='cube',
-    scale=(100,1,100),
+    scale=(100,10,100),
     texture='grass',
     texture_scale=(10,10),
     collider='box')
 
-# Create player
+from client.data import player
+from client.player import ThirdPersonController
+
 player = ThirdPersonController(
     position=(0,4,0),
     jump_height = 5,
@@ -60,5 +93,15 @@ def update():
             spot.color = color.white
     else:
         spot.color = color.white
+
+    # Check if the camera is clipping anywhere
+    direction = camera.forward * -1
+    offset_clipping = 0.05
+    hit_camera = raycast(player.camera_pivot.world_position,direction,-player.camera_offset+offset_clipping,ignore=[player,player.body,camera,spot])
+    if hit_camera.hit :
+        print(hit_camera.distance,hit_camera.point)
+        camera.z_setter(-hit_camera.distance+offset_clipping)
+    else:
+        camera.z_setter(player.camera_offset)
 
 app.run()
