@@ -40,7 +40,7 @@ class Network:
             raise
     
     def packetListener(self):
-        from packet.packetlib import getClientBoundPacket
+        from client.packet.packetlib import getClientBoundPacket
         while not self.stop_event.is_set():
             try:
                 data = self.conn.recv(2048)

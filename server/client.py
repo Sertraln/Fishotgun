@@ -1,6 +1,6 @@
 import socket
-from packet.packetstruct import ClientBoundPacket,ServerBoundPacket
-from packet.packetlib import getServerBoundPacket
+from server.packet.packetstruct import ClientBoundPacket,ServerBoundPacket
+from server.packet.packetlib import getServerBoundPacket
 import threading as th
 
 from typing import TYPE_CHECKING

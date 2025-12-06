@@ -48,6 +48,7 @@ class Server:
         self.soket.listen(5)
         self.connectionthread = th.Thread(name="connlistener",target=self.connectionListener)
         self.connectionthread.start()
+        data.server = self
 
     def startTread(self,thread:th.Thread):
         self.threadlist.append(thread)
@@ -107,9 +108,9 @@ class Server:
             print("Server : Erreur de fermeture :",e)
 
 if __name__ == "__main__":
-    data.server = Server()
+    server = Server()
     cmd = input("")
     while cmd != "stop" and cmd != "exit":
         cmd = input("")
         pass
-    data.server.stop()
+    server.stop()

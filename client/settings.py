@@ -4,4 +4,5 @@ class Settings:
         self.graphics_quality = "high"
         self.sound_volume = 75
         self.control_scheme = "default"
+        self.max_steps_size = 1
         

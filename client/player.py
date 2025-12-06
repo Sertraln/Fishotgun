@@ -19,21 +19,27 @@ class ThirdPersonController(FirstPersonController):
         camera.z = self.camera_offset
         camera.collider = 'box'
         self._input_queue = Queue()
+        self._wating_response_queue = Queue()
+        self._last_input = KeyStates()
         th.Thread(target=self.constant_update, daemon=True).start()
 
         # Additional third person setup can go here
 
         # Physique
-        self.velocity = Vec3(0, 0, 0)
+        self.vitesse = Vec3(0, 0, 0)
         self.acceleration = Vec3(0, 0, 0)
-        self.gravity = Vec3(0, -9.8, 0)
+        self.gravity = -9.8
 
     def update(self):
+        #super().update()
+        self.update_pos(self._last_input)
         # Additional third person update can go here
+
+        
 
     def input(self, key):
         # make key configurable later
-        key_strokes:KeyStates = KeyStates()
+        key_strokes:KeyStates = KeyStates(time_stamp=time.time())
         if key == 'shift':
             key_strokes.press(KeyStates.SPRINT)
         if key == 'space':
@@ -48,7 +54,33 @@ class ThirdPersonController(FirstPersonController):
             key_strokes.press(KeyStates.RIGHT)
         if key == 'control':
             key_strokes.press(KeyStates.SNEAK)
-        self.key_states = key_strokes
+        self._input_queue.put(key_strokes)
+        self._last_input = key_strokes
+        
+    def _calculate_speed(self,key_strokes:KeyStates):
+        if key_strokes.is_pressed(KeyStates.SPRINT):
+            return 1.3
+        else:
+            return 1
+
+    def update_pos(self, key_strokes:KeyStates):
+        dt = time.dt
+        self.acceleration = Vec3(0, 0, 0)
+        self.acceleration.y += self.gravity
+
+        self.speed = self._calculate_speed(key_strokes)
+        direction = key_strokes.get_direction() * self.speed
+        self.acceleration += direction
+
+        self.vitesse = self.vitesse *0.91 * + 0.1 * self.acceleration
+
+        self.vitesse += self.acceleration * dt
+        self.position += self.vitesse * dt
+
+        if self.y < 0:
+            self.y = 0
+        self.vitesse.y = 0
+
 
 
     def constant_update(self):
@@ -80,41 +112,6 @@ def get_player(id: int):
     return player_map.get(id)
         
 
-        dt = time.dt
-
-        self.acceleration = Vec3(0, 0, 0)
-        self.acceleration += self.gravity
-
-        if held_keys['shift']:
-            self.body.color = color.red
-            speed = 20
-        else:
-            self.body.color = color.blue
-            speed = 10
-
-        direction = Vec3(held_keys['d'] - held_keys['a'], 0, held_keys['w'] - held_keys['s'])
-
-        if held_keys['space'] and self.y <= 4.01:
-            self.velocity.y = 5
-
-        direction = direction * speed
-
-        if not held_keys['d'] or held_keys['a']:
-            direction.x = direction.x / 3
-
-        if not held_keys['w'] or held_keys['s']:
-            direction.z = direction.z / 3
-
-        self.acceleration += direction
-
-        self.velocity.x -= self.velocity.x * dt
-        self.velocity.y -= self.velocity.y * dt
-
-        self.velocity += self.acceleration * dt
-        self.position += self.velocity * dt
-
-        if self.y < 0:
-            self.y = 0
-            self.velocity.y = 0
+    
 
         
