@@ -23,20 +23,26 @@ class KeyStates(Parser):
     def press(self, key:int):
         self.key_states |= key
 
-    def get_direction(self) -> tuple[int, int]:
+    def get_direction(self,forward:Vec3,right:Vec3) -> Vec3:
         x, z = 0, 0
         if self.is_pressed(self.FORWARD):
-            z += 1
-        if self.is_pressed(self.BACKWARD):
-            z -= 1
-        if self.is_pressed(self.LEFT):
-            x -= 1
-        if self.is_pressed(self.RIGHT):
             x += 1
+        if self.is_pressed(self.BACKWARD):
+            x -= 1
+        if self.is_pressed(self.LEFT):
+            z -= 1
+        if self.is_pressed(self.RIGHT):
+            z += 1
         if x != 0 and z != 0:
             x *= 0.7071
             z *= 0.7071
-        return Vec3(x,0, z)
+        return x * forward + z * right
+    
+    def empty(self) -> bool:
+        return self.key_states == 0
+    
+    def __repr__(self):
+        return f"KeyStates(key_states={format(self.key_states, '08b')}, time_stamp={self.time_stamp})"
     
     @staticmethod
     def encode(states: 'KeyStates') -> bytes:

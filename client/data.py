@@ -3,8 +3,10 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from player import ThirdPersonController
     from network import Network
-    from ursina import Ursina
+    from ursina import Ursina,Entity,Text
 
 player : 'ThirdPersonController' = None
 network : 'Network' = None
 app : 'Ursina' = None
+spot : 'Entity' = None
+instructions : 'Text' = None

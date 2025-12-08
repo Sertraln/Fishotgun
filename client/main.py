@@ -41,7 +41,7 @@ def start(ip:str, port:int, name:str):
     
     from client.data import player
     from client.player import ThirdPersonController
-    player = ThirdPersonController(position=(0, 4, 0))
+    player = ThirdPersonController(position=(0, 2, 0))
     # Set cursor white cause pink ugly af
     player.cursor.color = color.white
     
@@ -53,8 +53,8 @@ def start(ip:str, port:int, name:str):
     
     # Stocker les références dans data pour y accéder dans update
     data.player = player
-    spot = spot
-    instructions = instructions
+    data.spot = spot
+    data.instructions = instructions
     
     app.run()
 
@@ -62,8 +62,8 @@ def start(ip:str, port:int, name:str):
 def update():
     # Récupérer les références depuis data
     player = data.player
-    spot = spot
-    instructions = instructions
+    spot = data.spot
+    instructions = data.instructions
     
     # Make player respawn if he falls
     if player.y < -10:
