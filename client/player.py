@@ -116,12 +116,12 @@ class ThirdPersonController(Entity):
         air_reducion = 0.3 if not self.grounded else 1
         direction = key_strokes.get_direction(self.forward,self.right) * self.speed * air_reducion * dt * 1.5
         self.acceleration += direction
-        if direction != Vec3(0,0,0):
-            print("acceleration :",self.acceleration," direction :",
-                  direction, " speed :",self.speed,"vitesse :",self.vitesse,"speed:",self.speed)
+        #if direction != Vec3(0,0,0):
+            #print("acceleration :",self.acceleration," direction :",
+            #      direction, " speed :",self.speed,"vitesse :",self.vitesse,"speed:",self.speed)
         self.vitesse = self.vitesse + self.acceleration  
 
-        friction_factor = pow(0.0002, dt)
+        friction_factor = pow(0.0001, dt)
         air_friction_factor = pow(0.1, dt)
         if not self.grounded:
             friction_factor = air_friction_factor
@@ -130,14 +130,25 @@ class ThirdPersonController(Entity):
         self.vitesse.z *= friction_factor
         if not self.grounded:
             self.air_time += dt
-            print(self.vitesse.y,self.position.y)
-        #self.colision(self.vitesse)
+            #print(self.vitesse.y,self.position.y)
+        self.ground_colision()
         self.position += self.vitesse
-        if self.y < 0:
-            self.y = 0
+        
+
+    def ground_colision(self):
+        if not self.grounded:
+            print("speed:",self.vitesse)
+        ground_ray = raycast(self.position+Vec3(0,self.height-0.2,0), Vec3(0,-1,0), distance=self.height-0.1, traverse_target=self.traverse_target, ignore=self.ignore_list, debug=False)
+        head_ray = raycast(self.position+Vec3(0,0.2,0), Vec3(0,1,0), distance=self.height-0.1, traverse_target=self.traverse_target, ignore=self.ignore_list, debug=False)
+        if ground_ray.hit and self.vitesse.y <= 0:
             self.grounded = True
             self.vitesse.y = 0
-
+            self.position.y = ground_ray.world_point.y
+        elif head_ray.hit and self.vitesse.y > 0:
+            self.vitesse.y = 0
+            self.position.y = head_ray.world_point.y - self.height -0.1
+        else:
+            self.grounded = False
 
     def on_enable(self):
         mouse.locked = True

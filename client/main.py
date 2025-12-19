@@ -31,6 +31,13 @@ def start(ip:str, port:int, name:str):
         texture_scale=(10, 10),
         collider='box')
     
+    wall = Entity(
+        model='cube',
+        scale=(10, 2, 10),
+        position=(5, 9, 15),
+        texture='brick',
+        collider='box')
+    
     instructions = Text(
         text='Contrôles:\nZ/Q/S/D - Déplacement\nEspace - Sauter\nSouris - Regarder\nÉchap - Déverrouiller souris',
         position=(-0.5, 0.4),
@@ -41,7 +48,7 @@ def start(ip:str, port:int, name:str):
     
     from client.data import player
     from client.player import ThirdPersonController
-    player = ThirdPersonController(position=(0, 2, 0))
+    player = ThirdPersonController(position=(0, 5, 0))
     # Set cursor white cause pink ugly af
     player.cursor.color = color.white
     
@@ -67,7 +74,7 @@ def update():
     
     # Make player respawn if he falls
     if player.y < -10:
-        player.position = (0, 4, 0)
+        player.position = (0, 5, 0)
     
     # Kick player if flies example
     if player.air_time > 10:
