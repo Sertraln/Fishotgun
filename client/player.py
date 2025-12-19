@@ -29,6 +29,7 @@ class ThirdPersonController(Entity):
             y=0.75)
         camera.z = self.camera_offset
         self._input_queue = Queue()
+        self._dt_last_input = 0
         self._wating_response_queue = Queue()
         self._last_input = KeyStates()
         th.Thread(target=self.constant_update, daemon=True).start()
@@ -79,8 +80,13 @@ class ThirdPersonController(Entity):
             key_strokes.press(KeyStates.RIGHT)
         if held_keys['control']:
             key_strokes.press(KeyStates.SNEAK)
-        self._input_queue.put(key_strokes)
-        self._last_input = key_strokes
+        if key_strokes != self._last_input:
+            self._input_queue.put(key_strokes)
+            self._last_input = key_strokes
+            self._dt_last_input = 0
+        else:
+            self._dt_last_input += time.dt
+        
         
     def _calculate_speed(self,key_strokes:KeyStates):
         if key_strokes.is_pressed(KeyStates.SPRINT):
@@ -89,18 +95,8 @@ class ThirdPersonController(Entity):
             return 1
         
     def colision(self, move_amount:Vec3):
-        feet_ray = raycast(self.position+Vec3(0,0.5,0), move_amount, traverse_target=self.traverse_target, ignore=self.ignore_list, distance=.5, debug=False)
-        head_ray = raycast(self.position+Vec3(0,self.height-.1,0), move_amount, traverse_target=self.traverse_target, ignore=self.ignore_list, distance=.5, debug=False)
-        if not feet_ray.hit and not head_ray.hit:
-            if raycast(self.position+Vec3(-.0,1,0), Vec3(1,0,0), distance=.5, traverse_target=self.traverse_target, ignore=self.ignore_list).hit:
-                move_amount[0] = min(move_amount[0], 0)
-            if raycast(self.position+Vec3(-.0,1,0), Vec3(-1,0,0), distance=.5, traverse_target=self.traverse_target, ignore=self.ignore_list).hit:
-                move_amount[0] = max(move_amount[0], 0)
-            if raycast(self.position+Vec3(-.0,1,0), Vec3(0,0,1), distance=.5, traverse_target=self.traverse_target, ignore=self.ignore_list).hit:
-                move_amount[2] = min(move_amount[2], 0)
-            if raycast(self.position+Vec3(-.0,1,0), Vec3(0,0,-1), distance=.5, traverse_target=self.traverse_target, ignore=self.ignore_list).hit:
-                move_amount[2] = max(move_amount[2], 0)
-            self.position += move_amount
+        #todo: implement a robust colision system
+        pass
 
     def update_pos(self, key_strokes:KeyStates):
         dt = time.dt
@@ -116,9 +112,6 @@ class ThirdPersonController(Entity):
         air_reducion = 0.3 if not self.grounded else 1
         direction = key_strokes.get_direction(self.forward,self.right) * self.speed * air_reducion * dt * 1.5
         self.acceleration += direction
-        #if direction != Vec3(0,0,0):
-            #print("acceleration :",self.acceleration," direction :",
-            #      direction, " speed :",self.speed,"vitesse :",self.vitesse,"speed:",self.speed)
         self.vitesse = self.vitesse + self.acceleration  
 
         friction_factor = pow(0.0001, dt)
@@ -132,6 +125,7 @@ class ThirdPersonController(Entity):
             self.air_time += dt
             #print(self.vitesse.y,self.position.y)
         self.ground_colision()
+        self.colision(self.vitesse)
         self.position += self.vitesse
         
 
@@ -171,8 +165,8 @@ class ThirdPersonController(Entity):
         
 
     def _send_input(self):
-        #new_packet = ServerBoundMovementPacket(self.key_states, time.time())
-        #self.client.send_packet(new_packet)
+        new_packet = ServerBoundMovementPacket(self._input_queue, time.time())
+        self.client.send_packet(new_packet)
         pass
     
     def set_id(self, id: int):
