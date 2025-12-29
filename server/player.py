@@ -7,7 +7,7 @@ from ursina import Vec3
 if TYPE_CHECKING:
     from server.client import Client
 
-class Player(Entity):
+class Player():
     def __init__(self, player_name:str, client: 'Client'):
         super().__init__(EntityType.PLAYER,client.id)
         self.player_name = player_name

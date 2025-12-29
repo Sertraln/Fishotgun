@@ -29,14 +29,16 @@ def start(ip:str, port:int, name:str):
         scale=(100, 10, 100),
         texture='grass',
         texture_scale=(10, 10),
-        collider='box')
+        collider='box',
+        name='ground')
     
     wall = Entity(
         model='cube',
-        scale=(10, 2, 10),
+        scale=(10, 10, 10),
         position=(5, 9, 15),
         texture='brick',
-        collider='box')
+        collider='box',
+        name='wall')
     
     instructions = Text(
         text='Contrôles:\nZ/Q/S/D - Déplacement\nEspace - Sauter\nSouris - Regarder\nÉchap - Déverrouiller souris',
@@ -48,7 +50,7 @@ def start(ip:str, port:int, name:str):
     
     from client.data import player
     from client.player import ThirdPersonController
-    player = ThirdPersonController(position=(0, 5, 0))
+    player = ThirdPersonController(0,name,position=Vec3(0, 7, 0))
     # Set cursor white cause pink ugly af
     player.cursor.color = color.white
     
@@ -74,7 +76,8 @@ def update():
     
     # Make player respawn if he falls
     if player.y < -10:
-        player.position = (0, 5, 0)
+        player.position = (0, 7, 0)
+        player.vitesse = Vec3(0,0,0)
     
     # Kick player if flies example
     if player.air_time > 10:
@@ -96,10 +99,9 @@ def update():
     # Check if the camera is clipping anywhere
     direction = camera.forward * -1
     offset_clipping = 0.05
-    hit_camera = raycast(player.camera_pivot.world_position, direction, -player.camera_offset+offset_clipping, ignore=[player, player.body, camera, spot])
+    hit_camera = raycast(player.camera_pivot.world_position, direction, -player.camera_offset+offset_clipping, ignore=[player, camera, spot])
     
     if hit_camera.hit:
-        print(hit_camera.distance, hit_camera.point)
         camera.z_setter(-hit_camera.distance+offset_clipping)
     else:
         camera.z_setter(player.camera_offset)
@@ -111,7 +113,8 @@ Espace - Sauter
 Souris - Regarder
 Échap - Déverrouiller souris
 Position: ({player.position.x:.1f}, {player.position.y:.1f}, {player.position.z:.1f})
-Au sol: {'Oui' if player.grounded else 'Non'}'''
+Au sol: {'Oui' if player.grounded else 'Non'}
+Vitesse: {player.vitesse.length():.1f})'''
 
 if __name__ == '__main__':
     ip = input("Enter server IP (default 192.168.64.9): ")
