@@ -1,5 +1,4 @@
 from ursina import Vec3,Entity,boxcast,Vec2,CapsuleCollider,raycast
-from shared.entity import Colider
 from ursina.scene import Scene
 from panda3d.core import NodePath
 
@@ -14,7 +13,7 @@ def det(a : Vec2, b : Vec2):
     
     Retourne: a*d - b*c
     """
-    return a.x * b.x - a.y * b.y
+    return a.x * b.y - a.y * b.x
 
 
 def intersection_droites(P1 : Vec2, v1:Vec2, P2:Vec2, v2:Vec2):
@@ -57,8 +56,10 @@ def calculate_safe_movement(entity : Entity,mov:Vec3, mov_dir: Vec3,mov_len:floa
     Returns:
         Vec3: Le mouvement final à appliquer (peut être différent du mouvement souhaité)
     """
+    height = hitbox._collider.height
+    radius = hitbox._collider.radius
     origin = entity.position + Vec3(0, entity.height / 2 + 0.5, 0)
-    size = (hitbox._collider.radius,hitbox._collider.height)
+    size = (radius,height)
     hitresult = boxcast(origin,Vec3(mov.x,0,mov.z),mov_len,size,colliders_to_test,debug=True)
 
     if not hitresult.hit:
@@ -66,19 +67,27 @@ def calculate_safe_movement(entity : Entity,mov:Vec3, mov_dir: Vec3,mov_len:floa
     
     # Collision detected, calculate sliding movement
     normal :Vec3 = hitresult.world_normal
-    surface_point :Vec3 = hitresult.world_point
-    start = origin - normal*0.01
-
-    result = intersection_droites(start.xz_getter(), mov.xz_getter(), surface_point.xz_getter(), normal.right.xz_getter())
-    if result is None:
+    mov_dir_2d = Vec2(mov_dir.x, mov_dir.z)
+    if mov_dir_2d.length() < 0.01:  # Pas de glissement si pas de mouvement intentionnel
         return mov
     
-    new_pos = Vec3(result.x+normal.x*0.01, entity.position.y, result.y+normal.z*0.01)
-    slide_vector = new_pos - entity.position
-    slide_vector.y = mov.y
-    hitbox.enabled = True
-    hitbox.position = entity.position + slide_vector
-    hitresult = hitbox.intersects(colliders_to_test)
-    if hitresult.hit:
-        return hitresult.world_point - entity.position + hitresult.world_normal
-    return mov + slide_vector
+    # Projeter le mouvement sur le plan tangent (glissement)
+    mov_2d = Vec2(mov.x, mov.z)
+    normal_2d = Vec2(normal.x, normal.z).normalized()
+    dot = mov_2d.dot(normal_2d)
+    slide_2d = mov_2d - normal_2d * dot
+    slide_vector = Vec3(slide_2d.x, mov.y, slide_2d.y)
+    
+    # Vérifier si le mouvement glissé est possible
+    slide_len = slide_2d.length()
+    if slide_len > 0:
+        hitresult_slide = boxcast(origin, Vec3(slide_2d.x, 0, slide_2d.y), slide_len, size, colliders_to_test, debug=True)
+        if hitresult_slide.hit:
+            # Limiter le mouvement glissé à la distance de collision
+            slide_len = hitresult_slide.distance
+            slide_2d = slide_2d.normalized() * slide_len
+    slide_vector = Vec3(slide_2d.x, mov.y, slide_2d.y)
+    return slide_vector
+
+if __name__ == '__main__':
+    print(intersection_droites(Vec2(0,11),Vec2(0,1),Vec2(2,10),Vec2(1,0)))
