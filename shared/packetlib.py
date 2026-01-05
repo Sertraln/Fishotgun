@@ -24,6 +24,10 @@ class ParsingException(Exception):
     def __init__(self, message: str):
         super().__init__("packet : "+message)
 
+class HandlelingExeption(Exception):   
+    def __init__(self, message: str):
+        super().__init__("packet handling : "+message)
+
 #init parser
 def init():
     global _id_type
@@ -36,7 +40,7 @@ def init():
 clientBoundDataPacket : list[bool] = []
 serverBoundDataPacket : list[bool] = []
 
-def unparse(data:bytes,clientbound:bool) -> list[tuple[int,list[str]]]:
+def unparse(data:bytes,clientbound:bool) -> list[tuple[int,list]]:
     """Decode une série de packets encodés"""
     result = []
     try:
@@ -203,7 +207,10 @@ def _unparse_data(data:bytes):
 
 if __name__ == "__main__":
     from ursina import Vec3
+    import time
     sys.modules["shared.packetlib"] = sys.modules[__name__]
+    from shared.parsedata.input import KeyStates
     init()
-    print("parser : out : ",_parse_data("azd"))
-    print(_unparse_data(_parse_data("Hello World!")))
+    print("table :",_id_type)
+    print("parser : out : ",parser(1,KeyStates()))
+    print(_unparse_data(b'\x05\x02\x02\t\x00\x00\x03\x18\x87\xe9\xb9\xdb\xe2\x83D'))

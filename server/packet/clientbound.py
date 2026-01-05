@@ -5,6 +5,7 @@ from typing import Callable
 
 if TYPE_CHECKING:
     from server.player import Player
+    from ursina import Vec3
 
 #ClientBound server -> client
 #ServerBound client -> server
@@ -33,4 +34,8 @@ class ClientBoundPlayerListPacket(ClientBoundDataListPacket):
     def __init__(self, datas:list['Player']):
         func : Callable[['Player'],list] = lambda player: [player.id,player.player_name,player.position]
         super().__init__(datas,func)
+
+class ClientBoundPlayerPositionPacket(ClientBoundDataPacket):
+    def __init__(self, player_id:int, position:'Vec3'):
+        super().__init__(player_id,position)
     

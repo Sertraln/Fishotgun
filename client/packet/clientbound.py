@@ -39,3 +39,14 @@ class ClientBoundSpawnPlayerPacket(ClientBoundDataPacket):
         print(f"Spawn player {self.name} at {self.position}")
         #TODO spawn player entity
         pass
+
+class ClientBoundPlayerPositionPacket(ClientBoundDataPacket):
+    def __init__(self,data:list):
+        super().__init__(data)
+        self.player_id : int = data[0]
+        self.position : Vec3 = data[1]
+
+    def handle(self):
+        print(f"Update player {self.player_id} position to {self.position}")
+        #TODO update player position
+        pass

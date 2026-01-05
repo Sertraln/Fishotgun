@@ -13,11 +13,8 @@ class KeyStates(Parser):
     SNEAK = 0x20
     SPRINT = 0x40
 
-    def __init__(self, key_states:int = 0, time_stamp:float = -1.0, rotation_y:float = 0.0, camera_pitch:float = 0.0):
+    def __init__(self, key_states:int = 0):
         self.key_states = key_states
-        self.time_stamp = time_stamp
-        self.rotation_y = rotation_y      # Rotation horizontale du joueur
-        self.camera_pitch = camera_pitch  # Inclinaison de la caméra (haut/bas)
 
     def is_pressed(self, key:int) -> bool:
         return (self.key_states & key) != 0
@@ -44,24 +41,21 @@ class KeyStates(Parser):
         return self.key_states == 0
     
     def __repr__(self):
-        return f"KeyStates(key_states={format(self.key_states, '08b')}, time_stamp={self.time_stamp}, rot_y={self.rotation_y:.2f}, pitch={self.camera_pitch:.2f})"
+        return f"KeyStates(key_states={format(self.key_states, '08b')})"
     
     def __eq__(self, other):
         if not isinstance(other, KeyStates):
             return False
-        return (self.key_states == other.key_states and 
-                abs(self.rotation_y - other.rotation_y) < 0.1 and
-                abs(self.camera_pitch - other.camera_pitch) < 0.1)
+        return (self.key_states == other.key_states)
     
     @staticmethod
     def encode(states: 'KeyStates') -> bytes:
         import struct
         # 1 byte pour key_states + 4 bytes float pour rotation_y + 4 bytes float pour camera_pitch
-        return states.key_states.to_bytes(1, 'big') + struct.pack('!ff', states.rotation_y, states.camera_pitch)
+        return states.key_states.to_bytes(1, 'big')
     
     @staticmethod
     def decode(data: bytes) -> 'KeyStates':
         import struct
         key_states = int.from_bytes(data[0:1], 'big')
-        rotation_y, camera_pitch = struct.unpack('!ff', data[1:9])
-        return KeyStates(key_states, rotation_y=rotation_y, camera_pitch=camera_pitch)
+        return KeyStates(key_states)

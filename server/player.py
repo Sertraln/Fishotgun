@@ -1,17 +1,24 @@
 from typing import TYPE_CHECKING
 
-from server.entity import Entity
 from shared.entity import EntityType
-from ursina import Vec3
+from shared.movement import Physic
+from shared.world import world_scene
 
 if TYPE_CHECKING:
     from server.client import Client
 
-class Player():
+class Player(Physic):
     def __init__(self, player_name:str, client: 'Client'):
-        super().__init__(EntityType.PLAYER,client.id)
+        super().__init__(world_scene)
+        self.type = EntityType.PLAYER
         self.player_name = player_name
         self.client = client
-        self.position = Vec3()
+        self.keys_states = None
+
+    @property
+    def id(self) -> int:
+        return self.client.id
+    def update_keystates(self, key_states):
+        self.keys_states = key_states
 
 

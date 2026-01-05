@@ -1,49 +1,37 @@
 from ursina import Vec3,Entity,boxcast,Vec2,CapsuleCollider,raycast
 from ursina.scene import Scene
 from panda3d.core import NodePath
+from shared.parsedata.input import KeyStates
+
+from ursina import Vec3,Entity
+from panda3d.core import NodePath
+
+class Physic(Entity):
+    def __init__(self, traverse_target: NodePath):
+        super().__init__()
+        self.height: float = 2
+        self.radius: float = 0.5
+        self.center: Vec3 = Vec3(self.position.x, self.position.y + self.height / 2, self.position.z)
+        self.acceleration: Vec3 = Vec3(0, 0, 0)
+        self.vitesse: Vec3 = Vec3(0, 0, 0)
+        self.jump_height: float = 0.3
+        self.gravity: float = -0.6
+        self.air_time: float = 0
+        self.grounded = False
+        self.ignore_list = [self]
+        self.traverse_target : NodePath = traverse_target
+        self.speed:float = 1
+
+    def _calculate_speed(self,key_strokes:KeyStates):
+        if key_strokes.is_pressed(KeyStates.SPRINT):
+            return 1.6
+        else:
+            return 1.0
 
 hitbox = Entity(parent=None, enabled=False)
 hitbox.collider_setter(CapsuleCollider(hitbox, Vec3(0,0,0),2,0.5))
 
-def det(a : Vec2, b : Vec2):
-    """
-    Calcule le déterminant d'une matrice 2x2:
-    | a  b |
-    | c  d |
-    
-    Retourne: a*d - b*c
-    """
-    return a.x * b.y - a.y * b.x
-
-
-def intersection_droites(P1 : Vec2, v1:Vec2, P2:Vec2, v2:Vec2):
-    """
-    Calcule le point d'intersection de deux droites dans le plan 2D.
-    
-    Paramètres:
-        P1: point de passage de la droite 1 [x, y]
-        v1: vecteur directeur de la droite 1 [vx, vy]
-        P2: point de passage de la droite 2 [x, y]
-        v2: vecteur directeur de la droite 2 [vx, vy]
-    
-    Retourne:
-        Le point d'intersection [x, y] ou None si les droites sont parallèles
-    """
-    d1 = det(v1, -v2)
-    
-    if abs(d1) < 1e-10:
-        return None  # Droites parallèles ou confondues
-    
-    dv = P2-P1
-    
-    t = det(dv, -v2) / d1
-    
-    intersection_x = P1.x + t * v1.x
-    intersection_y = P1.y + t * v1.y
-    
-    return Vec2(intersection_x, intersection_y)
-
-def calculate_safe_movement(entity : Entity,mov:Vec3, mov_dir: Vec3,mov_len:float, colliders_to_test : NodePath) -> Vec3:
+def calculate_safe_movement(entity : Physic ,mov:Vec3, mov_dir: Vec3,mov_len:float, colliders_to_test : NodePath) -> Vec3:
     """
     Calcule le mouvement final en gérant les collisions et le glissement.
     Ne gère que les axes X et Z (mouvement horizontal).
@@ -56,6 +44,8 @@ def calculate_safe_movement(entity : Entity,mov:Vec3, mov_dir: Vec3,mov_len:floa
     Returns:
         Vec3: Le mouvement final à appliquer (peut être différent du mouvement souhaité)
     """
+    if mov_len < 0.001:
+        return Vec3(0, mov.y, 0)
     height = hitbox._collider.height
     radius = hitbox._collider.radius
     origin = entity.position + Vec3(0, entity.height / 2 + 0.5, 0)
@@ -89,5 +79,51 @@ def calculate_safe_movement(entity : Entity,mov:Vec3, mov_dir: Vec3,mov_len:floa
     slide_vector = Vec3(slide_2d.x, mov.y, slide_2d.y)
     return slide_vector
 
-if __name__ == '__main__':
-    print(intersection_droites(Vec2(0,11),Vec2(0,1),Vec2(2,10),Vec2(1,0)))
+
+def update_pos(player:Physic,dt:float, key_strokes:KeyStates,colliders_to_test:NodePath = None):
+    player.acceleration = Vec3(0, 0, 0)
+    player.acceleration.y += player.gravity * dt
+    if player.grounded:
+        player.air_time = 0
+        if key_strokes.is_pressed(KeyStates.JUMP):
+            player.acceleration.y =player.jump_height
+            player.grounded = False
+
+    player.speed = player._calculate_speed(key_strokes)
+    air_reducion = 0.3 if not player.grounded else 1
+    mov_dir = key_strokes.get_direction(player.forward,player.right)
+    direction : Vec3 = mov_dir * player.speed * air_reducion * dt * 1.5
+    player.acceleration += direction
+    player.vitesse = player.vitesse + player.acceleration  
+
+    friction_factor = pow(10000, dt)
+    air_friction_factor = pow(6, dt)
+    if not player.grounded:
+        friction_factor = air_friction_factor
+        player.vitesse.y *= 0.98  # Simulate air resistance on vertical movement
+    player.vitesse.x /= friction_factor
+    player.vitesse.z /= friction_factor
+    if not player.grounded:
+        player.air_time += dt
+    player.vitesse = calculate_safe_movement(player,player.vitesse,mov_dir,player.vitesse.xz_getter().length(),colliders_to_test or player.traverse_target)
+    ground_colision(player)
+    player.position += player.vitesse
+    
+
+def ground_colision(player: Physic):
+    y_speed = player.vitesse.y
+    ground_ray = raycast(player.position+Vec3(0,player.height-0.2,0), Vec3(0,-1,0),
+            distance=player.height-0.2-y_speed, traverse_target=player.traverse_target,
+            ignore=player.ignore_list, debug=False)
+    head_ray = raycast(player.position+Vec3(0,0.2,0), Vec3(0,1,0),
+            distance=player.height-0.2+y_speed, traverse_target=player.traverse_target,
+            ignore=player.ignore_list, debug=False)
+    if ground_ray.hit and player.vitesse.y <= 0:
+        player.grounded = True
+        player.y = ground_ray.world_point.y
+        player.vitesse.y = 0
+    elif head_ray.hit and player.vitesse.y > 0:
+        player.vitesse.y = 0
+        player.position.y = head_ray.world_point.y - player.height -0.1
+    else:
+        player.grounded = False

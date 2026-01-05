@@ -62,6 +62,8 @@ class Network:
             
 
     def send(self, packet:ServerBoundPacket):
+        if self.conn.fileno() == -1:
+            return
         packet.send(self.conn)
 
     def sendRecv(self, data):

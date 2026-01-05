@@ -18,6 +18,6 @@ class ServerBoundMovementPacket(ServerBoundDataPacket):
     def __init__(self, key_states:KeyStates, timestamp:int):
         self.key_states = key_states
         self.timestamp = timestamp
-        super().__init__()
+        super().__init__(key_states, timestamp)
 
 

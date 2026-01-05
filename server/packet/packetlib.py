@@ -1,3 +1,12 @@
+import os
+import sys
+
+if __name__ == "__main__":
+    # Ensure project root is on sys.path so sibling packages like `shared` can be imported
+    _ROOT = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+    if _ROOT not in sys.path:
+        sys.path.insert(0, _ROOT)
+
 from shared import packetlib
 from shared.loadfile import get_defined_classes
 from server.packet.packetstruct import *
@@ -30,3 +39,10 @@ def getServerBoundPacket(data:bytes) -> list[ServerBoundPacket]:
         else :
             result.append(packet())
     return result
+
+if __name__ == "__main__":
+    init_packetlib()
+    print("Client Bound Packets:", pl.clientBoundPacketList)
+    print("Server Bound Packets:", pl.serverBoundPacketList)
+    a = packetlib.unparse(b'\x01\x01\x0f\x05\x02\x02\t\x00\x00\x03\x18\x87\xe9\xb9\xdb\xe2\x83D',False)
+    print(a)

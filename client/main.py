@@ -9,6 +9,7 @@ from client.spot import FishingSpot
 import client.network as network
 import client.data as data
 from ursina import application as appli
+from shared.world import init_world
 
 def start(ip:str, port:int, name:str):
     data.network = network.Network(ip, port, name)
@@ -23,22 +24,7 @@ def start(ip:str, port:int, name:str):
     data.app = app
     appli.quit = custom_quit
     
-    # Create ground
-    ground = Entity(
-        model='cube',
-        scale=(100, 10, 100),
-        texture='grass',
-        texture_scale=(10, 10),
-        collider='box',
-        name='ground')
-    
-    wall = Entity(
-        model='cube',
-        scale=(10, 10, 10),
-        position=(5, 9, 15),
-        texture='brick',
-        collider='box',
-        name='wall')
+    init_world(scene)
     
     instructions = Text(
         text='Contrôles:\nZ/Q/S/D - Déplacement\nEspace - Sauter\nSouris - Regarder\nÉchap - Déverrouiller souris',

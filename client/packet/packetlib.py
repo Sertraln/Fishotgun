@@ -44,3 +44,7 @@ if __name__ == "__main__":
     init_packetlib()
     print("Client Bound Packets:", packetlist.clientBoundPacketList)
     print("Server Bound Packets:", packetlist.serverBoundPacketList)
+    from shared.parsedata.input import KeyStates
+    a = packetlib.parser(1,(KeyStates.FORWARD,123456789))
+    b = packetlib.unparse(b'\x03\x01\x13\x04\x02\x02\r\x03\x00\x01\x00\x00\x00\x00\xc4\x9c\xef\xa0?\xb7\xaaC',True)
+    print(b)
