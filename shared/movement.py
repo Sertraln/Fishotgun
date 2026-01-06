@@ -7,7 +7,7 @@ from ursina import Vec3,Entity
 from panda3d.core import NodePath
 
 class Physic(Entity):
-    def __init__(self, traverse_target: NodePath):
+    def __init__(self):
         super().__init__()
         self.height: float = 2
         self.radius: float = 0.5
@@ -19,7 +19,6 @@ class Physic(Entity):
         self.air_time: float = 0
         self.grounded = False
         self.ignore_list = [self]
-        self.traverse_target : NodePath = traverse_target
         self.speed:float = 1
 
     def _calculate_speed(self,key_strokes:KeyStates):
@@ -79,8 +78,9 @@ def calculate_safe_movement(entity : Physic ,mov:Vec3, mov_dir: Vec3,mov_len:flo
     slide_vector = Vec3(slide_2d.x, mov.y, slide_2d.y)
     return slide_vector
 
+from shared.world import world_scene as colliders_to_test
 
-def update_pos(player:Physic,dt:float, key_strokes:KeyStates,colliders_to_test:NodePath = None):
+def update_pos(player:Physic,dt:float, key_strokes:KeyStates):
     player.acceleration = Vec3(0, 0, 0)
     player.acceleration.y += player.gravity * dt
     if player.grounded:
@@ -105,18 +105,18 @@ def update_pos(player:Physic,dt:float, key_strokes:KeyStates,colliders_to_test:N
     player.vitesse.z /= friction_factor
     if not player.grounded:
         player.air_time += dt
-    player.vitesse = calculate_safe_movement(player,player.vitesse,mov_dir,player.vitesse.xz_getter().length(),colliders_to_test or player.traverse_target)
-    ground_colision(player)
+    player.vitesse = calculate_safe_movement(player,player.vitesse,mov_dir,player.vitesse.xz_getter().length(),colliders_to_test)
+    ground_colision(player,colliders_to_test)
     player.position += player.vitesse
     
 
-def ground_colision(player: Physic):
+def ground_colision(player: Physic,traverse_target:NodePath):
     y_speed = player.vitesse.y
     ground_ray = raycast(player.position+Vec3(0,player.height-0.2,0), Vec3(0,-1,0),
-            distance=player.height-0.2-y_speed, traverse_target=player.traverse_target,
+            distance=player.height-0.2-y_speed, traverse_target=traverse_target,
             ignore=player.ignore_list, debug=False)
     head_ray = raycast(player.position+Vec3(0,0.2,0), Vec3(0,1,0),
-            distance=player.height-0.2+y_speed, traverse_target=player.traverse_target,
+            distance=player.height-0.2+y_speed, traverse_target=traverse_target,
             ignore=player.ignore_list, debug=False)
     if ground_ray.hit and player.vitesse.y <= 0:
         player.grounded = True

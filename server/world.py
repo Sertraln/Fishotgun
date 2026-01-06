@@ -14,9 +14,11 @@ if TYPE_CHECKING:
 class World:
     def __init__(self):
         self.entities : dict[int,'Entity'] = {}
+        self.tickrate = 20  # Ticks per second
+        self.dt_per_tick = 1.0 / self.tickrate
         self.next_entity_id = 0
         self.players : dict[int,'Player'] = {}
-        self.last_update_time = 0
+        self.last_update_time = time.time()
         print("World: initialized")
         th.Thread(target=self._game_loop, daemon=True).start()
 
@@ -55,14 +57,17 @@ class World:
     def _game_loop(self):
         while True:
             dt = self.dt()
+            self.last_update_time = time.time()
             self.game_loop(dt)
             ending_dt = self.dt()
-            sleep_time = max(0, 0.05 - ending_dt)
+            sleep_time = self.dt_per_tick - ending_dt
             if sleep_time > 0:
                 time.sleep(sleep_time)
+            else:
+                print("World: Warning - game loop is taking longer than tick interval")
 
     def game_loop(self,dt:int):
-        self.update_all_players_movement(dt)
+        self.update_all_players_position(dt)
     
     def update_player_movement(self, client:'Client', key_states:'KeyStates', timestamp:int):
         player = self.players.get(client.id)
@@ -74,13 +79,11 @@ class World:
             player.client.send(ClientBoundPlayerPositionPacket(pid,other_player.position))
 
     def dt(self) -> float:
-        import time
         current_time = time.time()
         dt = current_time - self.last_update_time
-        self.last_update_time = current_time
         return dt
 
-    def update_all_players_movement(self,dt:float = 0.05):
+    def update_all_players_position(self,dt:float = 0.05):
         for player in self.players.values():
             if player.keys_states is not None:
                 update_pos(player, dt, player.keys_states)

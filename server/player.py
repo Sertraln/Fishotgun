@@ -2,14 +2,13 @@ from typing import TYPE_CHECKING
 
 from shared.entity import EntityType
 from shared.movement import Physic
-from shared.world import world_scene
 
 if TYPE_CHECKING:
     from server.client import Client
 
 class Player(Physic):
     def __init__(self, player_name:str, client: 'Client'):
-        super().__init__(world_scene)
+        super().__init__()
         self.type = EntityType.PLAYER
         self.player_name = player_name
         self.client = client

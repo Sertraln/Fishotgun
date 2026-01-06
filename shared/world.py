@@ -1,5 +1,5 @@
 from ursina import Entity
-world_scene = Entity(parent=None)
+world_scene = Entity()
 
 # Environnement
 ground = Entity(
@@ -20,7 +20,7 @@ wall = Entity(
     collider='box',
     name='wall')
 
-def init_world(base_scene:'Scene'):
+def init_world(base_scene:'Scene'=None):
     global world_scene
     world_scene.parent = base_scene
     return world_scene
