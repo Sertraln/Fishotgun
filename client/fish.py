@@ -1,31 +1,47 @@
 from ursina import *
-from math import pi,cos,sin,acos,sqrt
-from noise import *
+from math import pi,atan,sqrt
+# from noise import *
+
 
 def rad_to_deg(angle):
-    return angle*180/pi
+    return -angle*180/pi
 
-def arg(z):
+def arg(z)->float:
+    """
+    arg(z)
+    param z: coordonnées (x,y)
+    return : argument du (angle entre l'axe des abcisses et le) point z en degré
+    """
     x,y=z
-    return acos(x/sqrt(x**2+y**2))
+
+    if x==0 : # le point est sur l'axe des ordonnées
+              # à vérifier car après on / par x
+        if y==0 :
+            return 0.0
+        if y>0 :
+            return 270.0
+        return 90.0
+    
+    hyp = sqrt(x**2+y**2)
+    x,y = x/hyp, y/hyp # on ramène les points sur le cercle trigo en gardant le même angle
+
+    if x<0 :
+        return round((rad_to_deg(atan(y/x))+180)%360,1)
+
+    return round(rad_to_deg(atan(y/x))%360,1)
 
 class Fish(Entity):
-    def __init__(self, **kwargs):  # <- c'est quoi "Kwargs" ?
+    def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.model = 'cube'
+        self.model = 'plane'
+        self.texture = 'textures/fish_shadow.png'
         self.position=(0,0,0)
-        self.color = color.peach
+        # self.color = color.peach
         self.speed = 2
         self.angle = 0    
     
     def set_rotation(self,angle):
-        # if angle>=0:
-        #     angle %=360
-        # else:
-        #     angle = (360+angle)%360
-
-        # # angle = (360+angle)%360
-        self.angle = angle
+        self.angle = angle%360
         self.rotation = (0,angle,0)
 
     def look_at(self,p_angle): # point -> (x,y,z)
@@ -40,45 +56,13 @@ class Fish(Entity):
             return False
         else :
             if dif<0:
-                self.set_rotation(self.angle + self.speed)
+                # self.set_rotation(self.angle + self.speed)
+                if dif>-180 : self.set_rotation(self.angle + self.speed)
+                else : self.set_rotation(self.angle - self.speed)
                 return False
             else :
-                self.set_rotation(self.angle - self.speed)
+                if dif<180 : self.set_rotation(self.angle - self.speed)
+                else : self.set_rotation(self.angle + self.speed)
                 return False
 
-
-
-
-# class Fish(Entity):
-#     def __init__(self, **kwargs):  # <- c'est quoi "Kwargs" ?
-#         super().__init__(**kwargs)
-#         self.model = 'cube'
-#         self.color = color.peach
-#         self.speed = 2
-#         self.radius = 1
-#         self.direction = 0
-#         self.variation = PerlinNoise()
-#         self.amplitude = 30
-
-#         # Range to interact for the fishing spot
-#         for key, value in kwargs.items():
-#             setattr(self, key, value)
-
-#     def deg_to_rad(angle):
-#         return angle*pi/180
-    
-
-
-
-#     def update(self):
-        
-#         self.direction += self.speed*time.dt
-#         var = self.variation.interpolated_noise(self.direction)*30
-
-#         self.x = self.radius*cos(Fish.deg_to_rad(var))
-#         self.z = self.radius*sin(Fish.deg_to_rad(var))
-#         self.rotation=(0,-(var%360),0)
-
-#         # self.z = var
-#         # print(var)
 
