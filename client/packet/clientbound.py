@@ -1,5 +1,6 @@
 from client.packet.packetstruct import ClientBoundPacket,ClientBoundDataPacket
 from ursina import Vec3
+import client.data as data
 #client_bound server -> client
 #server_bound client -> server
 
@@ -25,20 +26,21 @@ class ClientBoundPlayerListPacket(ClientBoundDataPacket):
         super().__init__(data)
 
     def handle(self):
-        print("player list :",self.data)
-        pass
+        for player_data in self.data:
+            player_id : int = player_data[0]
+            name : str = player_data[1]
+            position : Vec3 = player_data[2]
+            data.world.spawn_player(player_id,name,position)
 
 class ClientBoundSpawnPlayerPacket(ClientBoundDataPacket):
-    def __init__(self,data:list):
+    def __init__(self,data:list[int | str | Vec3]):
         super().__init__(data)
         self.player_id : int = data[0]
         self.name : str = data[1]
         self.position : Vec3 = data[2]
 
     def handle(self):
-        print(f"Spawn player {self.name} at {self.position}")
-        #TODO spawn player entity
-        pass
+        data.world.spawn_player(self.player_id,self.name,self.position)
 
 class ClientBoundPlayerPositionPacket(ClientBoundDataPacket):
     def __init__(self,data:list):
@@ -47,6 +49,4 @@ class ClientBoundPlayerPositionPacket(ClientBoundDataPacket):
         self.position : Vec3 = data[1]
 
     def handle(self):
-        print(f"Update player {self.player_id} position to {self.position}")
-        #TODO update player position
-        pass
+        data.world.players[self.player_id].position = self.position
