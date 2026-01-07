@@ -40,29 +40,22 @@ class Fish(Entity):
         self.speed = 2
         self.angle = 0    
     
-    def set_rotation(self,angle):
+    def set_rotation(self,angle:int):
         self.angle = angle%360
         self.rotation = (0,angle,0)
 
-    def look_at(self,p_angle): # point -> (x,y,z)
+    def look_at(self,p_angle:int) -> bool: # point -> (x,y,z)
         # p_angle = round(rad_to_deg(arg((point[0],point[2]))),1)
         self.angle = round(self.angle,1)
         dif = self.angle-p_angle
-        print(f"angle:{self.angle}  p_angle:{p_angle}")
+        #print(f"angle:{self.angle}  p_angle:{p_angle}")
         if abs(dif)<self.speed:
             return True
-        elif abs(dif)==180:
+        
+        if dif<0 and dif >=-180 or dif >= 180 : 
             self.set_rotation(self.angle + self.speed)
-            return False
         else :
-            if dif<0:
-                # self.set_rotation(self.angle + self.speed)
-                if dif>-180 : self.set_rotation(self.angle + self.speed)
-                else : self.set_rotation(self.angle - self.speed)
-                return False
-            else :
-                if dif<180 : self.set_rotation(self.angle - self.speed)
-                else : self.set_rotation(self.angle + self.speed)
-                return False
+            self.set_rotation(self.angle - self.speed)
+        return False
 
 
