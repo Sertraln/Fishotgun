@@ -51,9 +51,9 @@ class Fish(Entity):
         dif = self.angle-p_angle
         print(f"angle:{self.angle}  p_angle:{p_angle}")
         self.position = (
-            self.position[0] + ((cos(self.angle) * self.speed) * time.dt),
+            self.position[0] + ((cos(self.angle*pi/180) * self.speed) * time.dt),
             0,
-            self.position[2] + ((sin(self.angle) * self.speed) * time.dt))
+            self.position[2] + ((sin(self.angle*pi/180) * self.speed) * time.dt))
         speed = (self.speedrot + (abs(dif) / 1.5)) *time.dt
         if abs(dif)<speed:
             return True
