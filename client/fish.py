@@ -1,5 +1,5 @@
 from ursina import *
-from math import pi,atan,sqrt
+from math import pi,atan,sqrt,cos,sin
 # from noise import *
 
 
@@ -37,10 +37,11 @@ class Fish(Entity):
         self.texture = 'textures/fish_shadow.png'
         self.position=(0,0,0)
         # self.color = color.peach
+        self.speedrot = 50
         self.speed = 2
         self.angle = 0    
     
-    def set_rotation(self,angle:int):
+    def set_rotation(self,angle:float):
         self.angle = angle%360
         self.rotation = (0,angle,0)
 
@@ -48,14 +49,19 @@ class Fish(Entity):
         # p_angle = round(rad_to_deg(arg((point[0],point[2]))),1)
         self.angle = round(self.angle,1)
         dif = self.angle-p_angle
-        #print(f"angle:{self.angle}  p_angle:{p_angle}")
-        if abs(dif)<self.speed:
+        print(f"angle:{self.angle}  p_angle:{p_angle}")
+        self.position = (
+            self.position[0] + ((cos(self.angle) * self.speed) * time.dt),
+            0,
+            self.position[2] + ((sin(self.angle) * self.speed) * time.dt))
+        speed = (self.speedrot + (abs(dif) / 1.5)) *time.dt
+        if abs(dif)<speed:
             return True
         
         if dif<0 and dif >=-180 or dif >= 180 : 
-            self.set_rotation(self.angle + self.speed)
+            self.set_rotation(self.angle + speed)
         else :
-            self.set_rotation(self.angle - self.speed)
+            self.set_rotation(self.angle - speed)
         return False
 
 
