@@ -37,7 +37,7 @@ class Fish(Entity):
         self.texture = 'textures/fish_shadow.png'
         self.position=(0,0,0)
         # self.color = color.peach
-        self.speedrot = 50
+        self.speedrot = 70
         self.speed = 2
         self.angle = 0    
     
@@ -51,9 +51,9 @@ class Fish(Entity):
         dif = self.angle-p_angle
         print(f"angle:{self.angle}  p_angle:{p_angle}")
         self.position = (
-            self.position[0] + ((cos(self.angle*pi/180) * self.speed) * time.dt),
+            self.position[0] + ((cos(-self.angle*pi/180) * self.speed) * time.dt),
             0,
-            self.position[2] + ((sin(self.angle*pi/180) * self.speed) * time.dt))
+            self.position[2] + ((sin(-self.angle*pi/180) * self.speed) * time.dt))
         speed = (self.speedrot + (abs(dif) / 1.5)) *time.dt
         if abs(dif)<speed:
             return True
