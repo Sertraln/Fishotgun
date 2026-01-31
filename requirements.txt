@@ -1,1 +1,2 @@
 ursina
+types-panda3d
