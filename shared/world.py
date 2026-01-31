@@ -8,7 +8,6 @@ ground = Entity(
     scale=(100, 10, 100),
     texture='grass',
     texture_scale=(10, 10),
-    collider='box',
     name='ground')
 
 wall = Entity(
@@ -17,7 +16,6 @@ wall = Entity(
     scale=(10, 10, 10),
     position=(5, 9, 15),
     texture='brick',
-    collider='box',
     name='wall')
 
 def init_world(base_scene:'Scene'=None):
