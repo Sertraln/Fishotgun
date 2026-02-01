@@ -4,14 +4,14 @@ from client.packet.serverbound import ServerBoundMovementPacket
 import threading as th
 from queue import Queue
 from shared.parsedata.input import KeyStates
-from shared.movement import calculate_safe_movement,Physic,update_pos
+from shared.movement import Physic
 from client import data
 
 player_map = {}
 
 class Player(Physic):
     def __init__(self, id : int, name : str, position :Vec3 = Vec3(0,0,0)):
-        super().__init__()
+        super().__init__(data.world_scene.bullet_world,scene)
         self.position = position
         self.name = name
         self.model = 'cube'
@@ -50,7 +50,7 @@ class ThirdPersonController(Player):
         # Additional third person update can go here
 
     def update_pos(self, key_strokes:KeyStates):
-        update_pos(self, time.dt, key_strokes)
+        self.update_phy( time.dt,key_strokes)
 
     def update_cam(self):
         self.rotation_y += mouse.velocity[0] * self.mouse_sensitivity[1]
