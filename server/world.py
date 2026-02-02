@@ -2,7 +2,6 @@ from typing import TYPE_CHECKING
 from server import data
 from server.packet.clientbound import *
 import threading as th
-from shared.movement import update_pos
 import time
 
 if TYPE_CHECKING:
@@ -86,7 +85,7 @@ class World:
     def update_all_players_position(self,dt:float = 0.05):
         for player in self.players.values():
             if player.keys_states is not None:
-                update_pos(player, dt, player.keys_states)
+                #update_pos(player, dt, player.keys_states)
                 self.send_position_updates(player)
                 
 

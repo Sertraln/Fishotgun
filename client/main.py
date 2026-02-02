@@ -24,7 +24,7 @@ def start(ip:str, port:int, name:str):
     data.app = app
     appli.quit = custom_quit
     
-    init_world(scene)
+    data.world_scene = init_world(scene)
     
     instructions = Text(
         text='Contrôles:\nZ/Q/S/D - Déplacement\nEspace - Sauter\nSouris - Regarder\nÉchap - Déverrouiller souris',
@@ -36,7 +36,7 @@ def start(ip:str, port:int, name:str):
     
     from client.data import player
     from client.player import ThirdPersonController
-    player = ThirdPersonController(0,name,position=Vec3(0, 7, 0))
+    player = ThirdPersonController(0,name,position=Vec3(0, 20, 0))
     # Set cursor white cause pink ugly af
     player.cursor.color = color.white
     
@@ -65,14 +65,6 @@ def update():
         player.position = (0, 7, 0)
         player.vitesse = Vec3(0,0,0)
     
-    # Kick player if flies example
-    if player.air_time > 10:
-        pass
-    
-    # Kick player if too fast
-    if player.speed > 21:
-        pass
-    
     # Gotta check this for all spots in the map constantly (will need a list later)
     if distance(spot.position, player.position) < spot.interaction_range:
         if held_keys['e']:
@@ -100,7 +92,7 @@ Souris - Regarder
 Échap - Déverrouiller souris
 Position: ({player.position.x:.1f}, {player.position.y:.1f}, {player.position.z:.1f})
 Au sol: {'Oui' if player.grounded else 'Non'}
-Vitesse: {player.vitesse.length():.1f})'''
+'''
 
 if __name__ == '__main__':
     ip = input("Enter server IP (default 192.168.64.9): ")
