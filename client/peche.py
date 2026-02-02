@@ -19,8 +19,6 @@ def update():
     z = (p_pos[0]-f_pos[0],p_pos[2]-f_pos[2])
     p_angle = arg(z)
     if fish.look_at(p_angle):
-        print(z)
-        print("------- point found -------")
         point.position=(randrange(-5,5),0,randrange(-5,5))
     
 

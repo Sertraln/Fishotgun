@@ -49,7 +49,6 @@ class Fish(Entity):
         # p_angle = round(rad_to_deg(arg((point[0],point[2]))),1)
         self.angle = round(self.angle,1)
         dif = self.angle-p_angle
-        print(f"angle:{self.angle}  p_angle:{p_angle}")
         self.position = (
             self.position[0] + ((cos(-self.angle*pi/180) * self.speed) * time.dt),
             0,
