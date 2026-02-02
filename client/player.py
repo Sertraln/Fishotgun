@@ -4,7 +4,7 @@ from client.packet.serverbound import ServerBoundMovementPacket
 import threading as th
 from queue import Queue
 from shared.parsedata.input import KeyStates
-from shared.movement import calculate_safe_movement,Physic,update_pos
+from shared.movement import Physic, update_pos
 from client import data
 
 player_map = {}
