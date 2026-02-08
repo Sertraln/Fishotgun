@@ -36,7 +36,7 @@ def start(ip:str, port:int, name:str):
     
     from client.data import player
     from client.player import ThirdPersonController
-    player = ThirdPersonController(0,name,position=Vec3(0, 20, 0))
+    player = ThirdPersonController(0,name,position=Vec3(0, 200, 0))
     # Set cursor white cause pink ugly af
     player.cursor.color = color.white
     

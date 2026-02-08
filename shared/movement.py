@@ -1,12 +1,12 @@
-from ursina import Entity, Vec3,lerp
+from ursina import Entity,Vec3,lerp
 from panda3d.bullet import BulletCapsuleShape, BulletRigidBodyNode, ZUp,BulletWorld
 from panda3d.core import NodePath
 from shared.parsedata.input import KeyStates
 
 class Physic(Entity):
-    def __init__(self, bullet_world: BulletWorld,parent:NodePath, **kwargs):
-        super().__init__()
-
+    def __init__(self, bullet_world: BulletWorld,parent:NodePath,position:Vec3 = Vec3(0,0,0), **kwargs):
+        super().__init__(**kwargs)
+        self.position = position
         self.height = 2.0
         self.radius = 0.5
 
@@ -23,7 +23,7 @@ class Physic(Entity):
 
         body.setAngularFactor(Vec3(0, 0, 0))
         body.setFriction(0.0)
-        body.setLinearDamping(0.2)
+        body.setLinearDamping(0.0)
 
         self.body_np = parent.attachNewNode(body)
         self.body_np.setPos(self.position)
@@ -53,7 +53,7 @@ class Physic(Entity):
             lerp(current.y, desired_vel.y, 0.2),
             current.z
         ))
-
+        #print("grounded : " ,self.grounded)
         if self.grounded and keys.is_pressed(KeyStates.JUMP):
             self.body.applyCentralImpulse(Vec3(0, 0, self.jump_force))
             self.grounded = False

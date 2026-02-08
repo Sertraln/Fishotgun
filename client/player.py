@@ -11,7 +11,7 @@ player_map = {}
 
 class Player(Physic):
     def __init__(self, id : int, name : str, position :Vec3 = Vec3(0,0,0)):
-        super().__init__(data.world_scene.bullet_world,scene)
+        super().__init__(data.world_scene.bullet_world,scene,position)
         self.position = position
         self.name = name
         self.model = 'cube'
