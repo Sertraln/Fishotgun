@@ -68,7 +68,7 @@ class Network:
         self.send(data)
         return self.conn.recv(2048)
 
-    def disconect(self):
+    def disconnect(self):
         self.stop_event.set()
         try:
             self.conn.shutdown(socket.SHUT_RDWR)

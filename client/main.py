@@ -17,7 +17,7 @@ ip = input("Enter server IP (default 192.168.64.9): ")
 port = input("Enter server port (default 5555): ")
 name = input("Enter your player name: ")
 if ip == "":
-    ip = "192.168.1.162"
+    ip = "192.168.64.9"
 if port == "":
     port = "5555"
 if name == "":
@@ -64,7 +64,9 @@ spot = FishingSpot(position=(0,2,0))
 
 menu1 = menu.Menu()
 menu1.add_button(Button(text='Resume', scale=(0.3, 0.1), position=(0,0.1)))
-menu1.add_button(Button(text='Quit', scale=(0.3, 0.1), position=(0,-0.1))) 
+quit =Button(text='Quit', scale=(0.3, 0.1), position=(0,-0.1))
+quit.on_click = custom_quit
+menu1.add_button(quit)
 
 # Set basic sky
 Sky(color=color.violet)
