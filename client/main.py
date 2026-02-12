@@ -10,13 +10,14 @@ from ursina import *
 from spot import FishingSpot
 import network
 import data
+import menu
 from ursina import application as appli
 
 ip = input("Enter server IP (default 192.168.64.9): ")
 port = input("Enter server port (default 5555): ")
 name = input("Enter your player name: ")
 if ip == "":
-    ip = "192.168.64.9"
+    ip = "192.168.1.162"
 if port == "":
     port = "5555"
 if name == "":
@@ -43,6 +44,7 @@ ground = Entity(
     texture_scale=(10,10),
     collider='box')
 
+
 from client.data import player
 from client.player import ThirdPersonController
 
@@ -60,11 +62,16 @@ player.cursor.color = color.white
 # Create a fishing spot
 spot = FishingSpot(position=(0,2,0))
 
+menu1 = menu.Menu()
+menu1.add_button(Button(text='Resume', scale=(0.3, 0.1), position=(0,0.1)))
+menu1.add_button(Button(text='Quit', scale=(0.3, 0.1), position=(0,-0.1))) 
 
 # Set basic sky
 Sky(color=color.violet)
 
 def update():
+    if menu.ispausing(): return
+
     # Make player respawn if he falls
     if player.y < -10:
         player.position = (0,4,0)
@@ -87,12 +94,7 @@ def update():
     
     # Gotta check this for all spots in the map constantly (will need a list later)
     if distance(spot.position, player.position) < spot.interaction_range:
-        if held_keys['e']:
-            spot.interact()
-        else: 
-            spot.color = color.white
-    else:
-        spot.color = color.white
+        pass
 
     # Check if the camera is clipping anywhere
     direction = camera.forward * -1
@@ -103,5 +105,14 @@ def update():
         camera.z_setter(-hit_camera.distance+offset_clipping)
     else:
         camera.z_setter(player.camera_offset)
+
+def input(key):
+    if key == 'escape':
+        if menu.currentMenu is not None and menu.currentMenu.isenabled():
+            mouse.locked = True
+            menu.hide()
+        else:
+            mouse.locked = False
+            menu.show(menu1)
 
 app.run()
