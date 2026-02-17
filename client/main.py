@@ -1,5 +1,6 @@
 import os
 import sys
+import menu
 
 # Ensure project root is on sys.path so sibling packages like `shared` can be imported
 _ROOT = os.path.dirname(os.path.dirname(__file__))
@@ -7,10 +8,7 @@ if _ROOT not in sys.path:
     sys.path.insert(0, _ROOT)
 
 from ursina import *
-from spot import FishingSpot
-import network
 import data
-import menu
 from ursina import application as appli
 
 ip = input("Enter server IP (default 192.168.64.9): ")
@@ -23,56 +21,25 @@ if port == "":
 if name == "":
     name = "default"
 
-data.network = network.Network(ip,int(port),name)
+
 
 original_quit = appli.quit
-
 def custom_quit():
-    print("Disconnecting from server...")
-    data.network.disconnect()
+    if data.network:
+        print("Disconnecting from server...")
+        data.network.disconnect()
     original_quit()
-
 app = Ursina()
-
 appli.quit = custom_quit
 
-# Create ground
-ground = Entity(
-    model='cube',
-    scale=(100,10,100),
-    texture='grass',
-    texture_scale=(10,10),
-    collider='box')
-
-
-from client.data import player
-from client.player import ThirdPersonController
-
-player = ThirdPersonController(
-    position=(0,4,0),
-    jump_height = 5,
-    jump_up_duration = 1,
-    fall_after = .4,
-    gravity = 0.7)
-
-# Set cursor white cause pink ugly af
-player.cursor.color = color.white
-
-
-# Create a fishing spot
-spot = FishingSpot(position=(0,2,0))
-
-menu1 = menu.Menu()
-menu1.add_button(Button(text='Resume', scale=(0.3, 0.1), position=(0,0.1)))
-quit =Button(text='Quit', scale=(0.3, 0.1), position=(0,-0.1))
-quit.on_click = custom_quit
-menu1.add_button(quit)
+menu.init()
 
 # Set basic sky
 Sky(color=color.violet)
 
 def update():
     if menu.ispausing(): return
+    player = data.player
 
     # Make player respawn if he falls
     if player.y < -10:
@@ -95,8 +62,8 @@ def update():
         player.speed = 10
     
     # Gotta check this for all spots in the map constantly (will need a list later)
-    if distance(spot.position, player.position) < spot.interaction_range:
-        pass
+    # if distance(spot.position, player.position) < spot.interaction_range:
+    #     pass
 
     # Check if the camera is clipping anywhere
     direction = camera.forward * -1
@@ -110,7 +77,7 @@ def update():
 
 def input(key):
     if key == 'escape':
-        if menu.currentMenu is not None and menu.currentMenu.isenabled():
+        if menu._currentMenu is not None and menu._currentMenu.isenabled():
             mouse.locked = True
             menu.hide()
         else:

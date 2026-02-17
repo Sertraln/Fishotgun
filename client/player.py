@@ -19,6 +19,7 @@ class ThirdPersonController(FirstPersonController):
             y=0.75)
         
         camera.z = self.camera_offset
+        self.cursor.color = color.white
         camera.collider = 'box'
         self._input_queue = Queue()
         th.Thread(target=self.constant_update, daemon=True).start()
