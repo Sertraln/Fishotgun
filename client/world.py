@@ -7,13 +7,15 @@ class World:
 
 from client import data,menu,network
 from spot import FishingSpot
-from ursina import application,Button,Entity,color
+from ursina import application,Button,Entity,color,Sky
 
 def join_world(ip:str, port:int, name:str):
     data.network = network.Network(ip,port,name)
     load_world()
 
 def load_world():
+
+    Sky(color=color.violet)
     # Create ground
     ground = Entity(
         model='cube',

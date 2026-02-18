@@ -11,17 +11,15 @@ from ursina import *
 import data
 from ursina import application as appli
 
-ip = input("Enter server IP (default 192.168.64.9): ")
-port = input("Enter server port (default 5555): ")
-name = input("Enter your player name: ")
-if ip == "":
-    ip = "192.168.64.9"
-if port == "":
-    port = "5555"
-if name == "":
-    name = "default"
-
-
+# ip = input("Enter server IP (default 192.168.64.9): ")
+# port = input("Enter server port (default 5555): ")
+# name = input("Enter your player name: ")
+# if ip == "":
+#     ip = "192.168.64.9"
+# if port == "":
+#     port = "5555"
+# if name == "":
+#     name = "default"
 
 original_quit = appli.quit
 def custom_quit():
@@ -34,12 +32,13 @@ appli.quit = custom_quit
 
 menu.init()
 
-# Set basic sky
-Sky(color=color.violet)
+
 
 def update():
+    
     if menu.ispausing(): return
     player = data.player
+    if player is None: return
 
     # Make player respawn if he falls
     if player.y < -10:
@@ -82,6 +81,6 @@ def input(key):
             menu.hide()
         else:
             mouse.locked = False
-            menu.show(menu1)
+            #menu.show(menu1)
 
 app.run()
