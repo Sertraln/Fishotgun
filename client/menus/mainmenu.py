@@ -10,6 +10,8 @@ class JoinMenu(menu.Menu):
         te.text = dedent('''Lorem ipsum dolor sit amet...''')
         te.bg.color = color.black
         te.bg.scale = (0.3, 0.1)
+        te.bg.position = (0,0, 0.1)
+        te.position = (-0.2, 0.2, -0.1)
         te.render()
         self.connect_but = Button(text='rejoindre', position=(0,-0.1), scale=(0.4, 0.1), text_size=1,parent=self)
 
