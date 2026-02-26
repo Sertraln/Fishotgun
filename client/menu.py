@@ -1,11 +1,12 @@
 from ursina import Button, mouse, Vec2,Entity,camera
 
 class Menu(Entity):
-    def __init__(self):
+    def __init__(self,id:str):
         super().__init__(parent=camera.ui,position=(0,0,0),scale=(1,1,0))
         self.elements : list[Entity]  = []
         self.enabled = False
         self.pause = True
+        self.id :str = id
 
     def add_element(self, element : Entity):
         self.elements.append(element)
@@ -26,7 +27,18 @@ class LinkingButton(Button):
 
 _currentMenu : Menu = None
 
-def show(menu : Menu):
+_menus : dict[str, Menu] = {}
+
+def register_menu(menu : Menu):
+    global _menus
+    _menus[menu.id] = menu
+    print(f"Registered menus {_menus}")
+
+def show(menu : Menu | str):
+    global _menus
+    if isinstance(menu, str):
+        print(_menus)
+        menu = _menus[menu]
     global _currentMenu
     if _currentMenu is not None:
         _currentMenu.disable()

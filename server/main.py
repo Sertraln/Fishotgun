@@ -13,19 +13,7 @@ from server.packet.serverbound import ServerBoundPseudoPacket
 from server.packet import clientbound as cb
 from server.world import World
 import server.data as data
-
-def get_local_ip():
-    """
-    Retourne l'adresse IP locale de la machine.
-    """
-    try:
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        s.connect(("8.8.8.8", 80))
-        ip = s.getsockname()[0]
-        s.close()
-        return ip
-    except:
-        return "127.0.0.1"
+from shared.utils import get_local_ip
     
 class Server:
     used_ports = []

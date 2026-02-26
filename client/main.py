@@ -1,6 +1,5 @@
 import os
 import sys
-import menu
 
 # Ensure project root is on sys.path so sibling packages like `shared` can be imported
 _ROOT = os.path.dirname(os.path.dirname(__file__))
@@ -10,6 +9,7 @@ if _ROOT not in sys.path:
 from ursina import *
 import data
 from ursina import application as appli
+from client import menu
 
 # ip = input("Enter server IP (default 192.168.64.9): ")
 # port = input("Enter server port (default 5555): ")
@@ -81,6 +81,6 @@ def input(key):
             menu.hide()
         else:
             mouse.locked = False
-            #menu.show(menu1)
+            menu.show("menu1")
 
 app.run()

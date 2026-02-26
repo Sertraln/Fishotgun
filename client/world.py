@@ -1,20 +1,20 @@
-
-class World:
-    pass
-
-    def add_entity(self, entity: Entity):
-        pass
-
 from client import data,menu,network
 from spot import FishingSpot
 from ursina import application,Button,Entity,color,Sky
 
+class World:
+    def add_entity(self, entity: Entity):
+        pass
+
 def join_world(ip:str, port:int, name:str):
-    data.network = network.Network(ip,port,name)
+    try:
+        data.network = network.Network(ip,port,name)
+    except Exception as e:
+        return e
     load_world()
+    return None
 
 def load_world():
-
     Sky(color=color.violet)
     # Create ground
     ground = Entity(
@@ -38,14 +38,14 @@ def load_world():
     
     data.player = player
 
-    # Set cursor white cause pink ugly af
-
-
     # Create a fishing spot
     spot = FishingSpot(position=(0,2,0))
 
-    menu1 = menu.Menu()
-    menu1.add_element(Button(text='Resume', scale=(0.3, 0.1), position=(0,0.1)))
+    menu1 = menu.Menu("menu1")
+    resume = Button(text='Resume', scale=(0.3, 0.1), position=(0,0.1))
+    resume.on_click = menu.hide
+    menu1.add_element(resume)
     quit =Button(text='Quit', scale=(0.3, 0.1), position=(0,-0.1))
     quit.on_click = application.quit
     menu1.add_element(quit)
+    menu.register_menu(menu1)

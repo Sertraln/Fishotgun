@@ -4,7 +4,7 @@ from client.packet.serverbound import ServerBoundMovementPacket
 import threading as th
 from queue import Queue
 from shared.parsedata.input import KeyStates
-import menu
+from client import menu
 
 player_map = {}
 

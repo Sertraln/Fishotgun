@@ -21,7 +21,7 @@ class Network:
         self.thread.start()
         self.send(ServerBoundPseudoPacket(name))
 
-    def connect(self):
+    def connect(self) -> Exception | int:
         print("client : Connexion à "+self.server)
         try:
             self.conn.settimeout(10)  # 10 second timeout
@@ -31,13 +31,13 @@ class Network:
             return self.conn.recv(2048)[0]
         except socket.timeout:
             print("client : Timeout de connexion")
-            raise
+            raise ConnectionRefusedError("Timeout de connexion")
         except ConnectionRefusedError as e:
             print("client : Connexion refusée :",str(e))
-            raise
+            raise ConnectionError("Connexion refusée")
         except Exception as e:
             print("client : Erreur de connexion inconue:", str(e))
-            raise
+            raise ConnectionError("Erreur de connexion inconnue")
     
     def packetListener(self):
         from packet.packetlib import getClientBoundPacket
