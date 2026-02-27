@@ -11,16 +11,6 @@ import data
 from ursina import application as appli
 from client import menu
 
-# ip = input("Enter server IP (default 192.168.64.9): ")
-# port = input("Enter server port (default 5555): ")
-# name = input("Enter your player name: ")
-# if ip == "":
-#     ip = "192.168.64.9"
-# if port == "":
-#     port = "5555"
-# if name == "":
-#     name = "default"
-
 original_quit = appli.quit
 def custom_quit():
     if data.network:
@@ -35,7 +25,6 @@ menu.init()
 
 
 def update():
-    
     if menu.ispausing(): return
     player = data.player
     if player is None: return

@@ -1,8 +1,9 @@
 from client import data,menu,world
-from ursina import Entity,color,Vec3,camera,TextField,Button,dedent,Text
+from ursina import Entity,color,Vec3,camera,TextField,Button,dedent,Text,ButtonList
+from ursina.prefabs.dropdown_menu import DropdownMenu,DropdownMenuButton
 from shared.utils import get_local_ip
 
-class JoinMenu(menu.Menu):
+class AddServerMenu(menu.Menu):
     def __init__(self):
         super().__init__("join_menu")
         self.pause = True
@@ -36,7 +37,29 @@ class JoinMenu(menu.Menu):
         else:
             menu.hide()
 
-join_menu = JoinMenu()
+add_server = AddServerMenu()
+menu.register_menu(add_server)
+
+class ServerListMenu(menu.Menu):
+    def __init__(self):
+        super().__init__("server_list_menu")
+        self.pause = True
+        button_list = []
+        self.offset = 0
+        self.add_server_but = menu.LinkingButton(menu=add_server,text='Ajouter un serveur', position=(0,-0.1), scale=(0.4, 0.1), text_size=1,parent=self)
+
+    def add_server_to_list(self, name, ip, port):
+        def connect():
+            res = world.join_world(ip, port, "default")
+            if res :
+                print("Erreur : "+str(res))
+            else:
+                menu.hide()
+        new_but = Button(text=name, position=(0,0.1-len(self.children)*0.1), scale=(0.4, 0.1), text_size=1,parent=self)
+        new_but.on_click = connect
+        self.offset -= 0.1
+        
+join_menu = ServerListMenu()
 menu.register_menu(join_menu)
 
 class MainMenu(menu.Menu):
