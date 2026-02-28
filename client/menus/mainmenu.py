@@ -1,5 +1,5 @@
 from client import data,menu,world
-from ursina import Entity,color,Vec3,camera,TextField,Button,dedent,Text,ButtonList,Texture
+from ursina import Entity,color,Vec3,camera,TextField,Button,dedent,Text,ButtonList,Texture,Shader
 from ursina.prefabs.dropdown_menu import DropdownMenu,DropdownMenuButton
 from shared.utils import get_local_ip
 
@@ -14,7 +14,7 @@ class ServerButton(Button):
 
     def on_click(self):
         if self.selected:
-            self.selected = False
+            self.selected = False   
             self.connect()
         else:
             self.selected = True
@@ -69,9 +69,26 @@ class AddServerMenu(menu.Menu):
 add_server = AddServerMenu()
 menu.register_menu(add_server)
 
+list_windows_shader = '''
+#version 430
+
+uniform 
+uniform sampler2D tex;
+in vec2 uv;
+out vec4 color;
+
+void main() {
+    vec3 rgb = texture(tex, uv).rgb;
+    f
+    color = vec4(rgb, 1.0*shown);
+}
+
+'''
+
 class ServerListMenu(menu.Menu):
     def __init__(self):
         super().__init__("server_list_menu")
+        self.shader = Shader(fragment=)
         self.pause = True
         self.button_list = []
         add_server.server_list_menu = self
