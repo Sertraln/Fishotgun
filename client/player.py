@@ -27,7 +27,6 @@ class ThirdPersonController(FirstPersonController):
         # Additional third person setup can go here
 
     def update(self):
-        if menu.ispausing(): return
         super().update()
         # Additional third person update can go here
 

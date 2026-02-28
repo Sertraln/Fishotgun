@@ -21,11 +21,10 @@ app = Ursina()
 appli.quit = custom_quit
 
 menu.init()
-
+appli.pause()
 
 
 def update():
-    if menu.ispausing(): return
     player = data.player
     if player is None: return
 
