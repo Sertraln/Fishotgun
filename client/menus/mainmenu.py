@@ -1,13 +1,15 @@
 from client import data,menu,world
-from ursina import Entity,color,Vec3,camera,TextField,Button,dedent,Text,ButtonList,Texture,Shader
+from ursina import Entity,color,Vec3,camera,TextField,Button,dedent,Text,ButtonList,Texture,Shader,window
 from ursina.prefabs.dropdown_menu import DropdownMenu,DropdownMenuButton
 from shared.utils import get_local_ip
 
 name = "player"
 
 class ServerButton(Button):
-    def __init__(self, name, ip, port, parent):
+    def __init__(self, name, ip, port, parent,**kwargs):
         super().__init__(text=name, position=(0,0.5-len(parent.children)*0.1), scale=(0.4, 0.1), text_size=1,parent=parent)
+        for key, value in kwargs.items():
+            setattr(self, key ,value)
         self._selected = False
         self.ip = ip
         self.port = port
@@ -68,39 +70,70 @@ class AddServerMenu(menu.Menu):
 
 add_server = AddServerMenu()
 menu.register_menu(add_server)
+def build_server_list_shader(min_y, max_y):
+    return f'''
+    #version 150
 
-list_windows_shader = '''
-#version 430
 
-uniform 
-uniform sampler2D tex;
-in vec2 uv;
-out vec4 color;
+    uniform sampler2D tex;
+    in vec2 uv;
+    out vec4 color;
 
-void main() {
-    vec3 rgb = texture(tex, uv).rgb;
-    f
-    color = vec4(rgb, 1.0*shown);
-}
+    void main() {{
+        float min_y = {min_y};
+        float max_y = {max_y};
+        vec2 resolution = vec2({window.size.x}, {window.size.y});
+        float y = (gl_FragCoord.y / resolution.y) - 0.5;
+
+        if (y < min_y || y > max_y) {{
+            discard;
+        }}
+        vec3 rgb = texture(tex, uv).rgb;
+        color = Vec4(1.0);
+        color = vec4(rgb, 1.0);
+    }}
 
 '''
+
+test = '''
+#version 120
+
+void main() {
+    gl_FragColor = vec4(1.0);
+}
+'''
+
+server_list_shader = build_server_list_shader(-0.5, 0.5)
 
 class ServerListMenu(menu.Menu):
     def __init__(self):
         super().__init__("server_list_menu")
-        self.shader = Shader(fragment=)
+        # self.shader =
         self.pause = True
-        self.button_list = []
+        self.button_list = Entity(parent=self)
+        self.button_list.position = Vec3(0,-0.1,-0.1)
+        self.button_list.shader =  Shader(fragment=test)
+        self.button_list.shader.compile()
         add_server.server_list_menu = self
         self.back_but = menu.LinkingButton(menu=None,text='back', position=(-0.4,-0.3), scale=(0.4, 0.1), text_size=1,parent=self)
         self.add_server_but = menu.LinkingButton(menu=add_server,text='Ajouter un serveur', position=(0,-0.3), scale=(0.4, 0.1), text_size=1,parent=self)
+        self.scroll_text = Text("0", parent=self, position=(0,0.4), scale=2,color=color.gray)
 
     def add_server_to_list(self, name, ip, port):
-        new_but = ServerButton(name, ip, port, self)
-        self.button_list.append(new_but)
+        ServerButton(name, ip, port, self.button_list,shader=self.button_list.shader)
 
     def show_error(self, error):
         pass
+
+    def update(self):
+        self.scroll_text.text = str(self.button_list.position.y)
+
+
+    def input(self, key):
+        if key == 'scroll up':
+            self.button_list.position += Vec3(0,0.01,0)
+        elif key == 'scroll down':
+            self.button_list.position -= Vec3(0,0.01,0)
         
 join_menu = ServerListMenu()
 menu.register_menu(join_menu)
