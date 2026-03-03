@@ -22,6 +22,7 @@ appli.quit = custom_quit
 
 menu.init()
 appli.pause()
+window.color = color.blue
 
 
 def update():

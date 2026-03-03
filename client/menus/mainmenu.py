@@ -72,38 +72,65 @@ add_server = AddServerMenu()
 menu.register_menu(add_server)
 def build_server_list_shader(min_y, max_y):
     return f'''
-    #version 150
+#version 120
 
+uniform vec4 cur_color;
+uniform sampler2D p3d_Texture0;
 
-    uniform sampler2D tex;
-    in vec2 uv;
-    out vec4 color;
-
-    void main() {{
-        float min_y = {min_y};
-        float max_y = {max_y};
-        vec2 resolution = vec2({window.size.x}, {window.size.y});
-        float y = (gl_FragCoord.y / resolution.y) - 0.5;
-
-        if (y < min_y || y > max_y) {{
-            discard;
-        }}
-        vec3 rgb = texture(tex, uv).rgb;
-        color = Vec4(1.0);
-        color = vec4(rgb, 1.0);
-    }}
+varying vec2 uv;
+    
+void main() {{
+    float y = (gl_FragCoord.y / {window.size.y}) - 0.5;
+    if (y < {min_y} || y > {max_y}) discard;
+    gl_FragColor = cur_color;
+}}
 
 '''
 
-test = '''
+def build_server_list_shader_texture(min_y, max_y):
+    return f'''
 #version 120
 
+uniform sampler2D p3d_Texture0;
+
+varying vec2 uv;
+    
+void main() {{
+    float y = (gl_FragCoord.y / {window.size.y}) - 0.5;
+    if (y < {min_y} || y > {max_y}) discard;
+    gl_FragColor = vec4(1.0)*texture2D(p3d_Texture0, uv)+vec4(1.0,1.0,1.0,0.0);
+}}
+
+'''
+
+test_vertex='''
+#version 120
+
+uniform mat4 p3d_ModelViewProjectionMatrix;
+
+attribute vec4 p3d_Vertex;
+attribute vec2 p3d_MultiTexCoord0;
+
+varying vec2 uv;
+
 void main() {
-    gl_FragColor = vec4(1.0);
+    gl_Position = p3d_ModelViewProjectionMatrix * p3d_Vertex;
+    uv = p3d_MultiTexCoord0;
 }
 '''
 
-server_list_shader = build_server_list_shader(-0.5, 0.5)
+test = build_server_list_shader_texture(-0.2, 0.3)
+
+jsp_vertext = '''
+#version 120
+
+void main() {
+    gl_Position = ftransform();
+    gl_FrontColor = gl_Color;
+}
+'''
+
+server_list_shader = build_server_list_shader(-0.2, 0.3)
 
 class ServerListMenu(menu.Menu):
     def __init__(self):
@@ -112,21 +139,31 @@ class ServerListMenu(menu.Menu):
         self.pause = True
         self.button_list = Entity(parent=self)
         self.button_list.position = Vec3(0,-0.1,-0.1)
-        self.button_list.shader =  Shader(fragment=test)
+        self.button_list.shader =  Shader(name='test',vertex=test_vertex,fragment=server_list_shader)
         self.button_list.shader.compile()
+        self.button_list.show_error = self.show_error
         add_server.server_list_menu = self
         self.back_but = menu.LinkingButton(menu=None,text='back', position=(-0.4,-0.3), scale=(0.4, 0.1), text_size=1,parent=self)
         self.add_server_but = menu.LinkingButton(menu=add_server,text='Ajouter un serveur', position=(0,-0.3), scale=(0.4, 0.1), text_size=1,parent=self)
         self.scroll_text = Text("0", parent=self, position=(0,0.4), scale=2,color=color.gray)
 
     def add_server_to_list(self, name, ip, port):
-        ServerButton(name, ip, port, self.button_list,shader=self.button_list.shader)
-
+        but = ServerButton(name, ip, port, self.button_list)
+        but.shader = self.button_list.shader
+        but.set_shader_input("cur_color",but.color)
+        if but.text_entity:
+            new_shad = Shader(name='test',vertex=test_vertex,fragment=test)
+            new_shad.compile()
+            but.text_entity.shader = new_shad
+            #but.text_entity.set_shader_input("cur_color",but.text_color)
+            
     def show_error(self, error):
         pass
 
     def update(self):
         self.scroll_text.text = str(self.button_list.position.y)
+        for but in self.button_list.children:
+            but.set_shader_input("cur_color",but.color)
 
 
     def input(self, key):
