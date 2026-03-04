@@ -1,5 +1,4 @@
 from ursina import *
-from ursina.prefabs.first_person_controller import FirstPersonController
 from client.packet.serverbound import ServerBoundMovementPacket
 import threading as th
 from queue import Queue
@@ -11,7 +10,7 @@ player_map = {}
 
 class Player(Physic):
     def __init__(self, id : int, name : str, position :Vec3 = Vec3(0,0,0)):
-        super().__init__(data.world_scene.bullet_world,scene,position)
+        super().__init__(scene,position)
         self.position = position
         self.name = name
         self.model = 'cube'

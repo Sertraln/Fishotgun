@@ -30,6 +30,10 @@ class ClientBoundSpawnPlayerPacket(ClientBoundDataPacket):
         ]
         super().__init__(datas=datas)
 
+class ClientBoundPlayerLeavePacket(ClientBoundDataPacket):
+    def __init__(self, player_id:int):
+        super().__init__(player_id)
+
 class ClientBoundPlayerListPacket(ClientBoundDataListPacket):
     def __init__(self, datas:list['Player']):
         func : Callable[['Player'],list] = lambda player: [player.id,player.player_name,player.position]

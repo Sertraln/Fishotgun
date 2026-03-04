@@ -2,9 +2,10 @@ from ursina import Entity,Vec3,lerp
 from panda3d.bullet import BulletCapsuleShape, BulletRigidBodyNode, ZUp,BulletWorld
 from panda3d.core import NodePath
 from shared.parsedata.input import KeyStates
+from shared.world import world_scene
 
 class Physic(Entity):
-    def __init__(self, bullet_world: BulletWorld,parent:NodePath,position:Vec3 = Vec3(0,0,0), **kwargs):
+    def __init__(self,parent:NodePath,position:Vec3 = Vec3(0,0,0), **kwargs):
         super().__init__(**kwargs)
         self.position = position
         self.height = 2.0
@@ -27,7 +28,7 @@ class Physic(Entity):
 
         self.body_np = parent.attachNewNode(body)
         self.body_np.setPos(self.position)
-
+        bullet_world = world_scene.bullet_world
         bullet_world.attachRigidBody(body)
         self.body = body
         self.bullet_world = bullet_world
@@ -91,6 +92,20 @@ class Physic(Entity):
         self.position = self.body_np.getPos()
 
     def update_phy(self, dt: float, key_states:KeyStates):
+        if key_states.is_pressed(KeyStates.FORWARD):
+            self.position += self.camera_pivot.forward * dt * 5
+        if key_states.is_pressed(KeyStates.BACKWARD):
+            self.position -= self.camera_pivot.forward * dt * 5
+        if key_states.is_pressed(KeyStates.LEFT):
+            self.position -= self.camera_pivot.right * dt * 5
+        if key_states.is_pressed(KeyStates.RIGHT):
+            self.position += self.camera_pivot.right * dt * 5
+        if key_states.is_pressed(KeyStates.JUMP):
+            self.position += Vec3(0, 5 * dt, 0)
+        if key_states.is_pressed(KeyStates.SNEAK):
+            self.position -= Vec3(0, 5 * dt, 0)
+        return
+        #todo physics
         self.bullet_world.doPhysics(dt)
         self.ground_colision()
         self._update_pos(key_states)

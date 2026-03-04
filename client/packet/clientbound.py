@@ -42,6 +42,16 @@ class ClientBoundSpawnPlayerPacket(ClientBoundDataPacket):
     def handle(self):
         data.world.spawn_player(self.player_id,self.name,self.position)
 
+class ClientBoundPlayerLeavePacket(ClientBoundDataPacket):
+    def __init__(self,data:list[int]):
+        super().__init__(data)
+        self.player_id : int = data[0]
+
+    def handle(self):
+        print("client : player leave get :",self.player_id, flush=True)
+        if self.player_id in data.world.players:
+            del data.world.players[self.player_id]
+
 class ClientBoundPlayerPositionPacket(ClientBoundDataPacket):
     def __init__(self,data:list):
         super().__init__(data)

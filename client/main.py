@@ -10,6 +10,7 @@ import client.network as network
 import client.data as data
 from ursina import application as appli
 from shared.world import init_world
+from client.world import World
 
 def start(ip:str, port:int, name:str):
     data.network = network.Network(ip, port, name)
@@ -24,7 +25,8 @@ def start(ip:str, port:int, name:str):
     data.app = app
     appli.quit = custom_quit
     
-    data.world_scene = init_world(scene)
+    data.world = World()
+    init_world(scene)
     
     instructions = Text(
         text='Contrôles:\nZ/Q/S/D - Déplacement\nEspace - Sauter\nSouris - Regarder\nÉchap - Déverrouiller souris',
@@ -36,7 +38,7 @@ def start(ip:str, port:int, name:str):
     
     from client.data import player
     from client.player import ThirdPersonController
-    player = ThirdPersonController(0,name,position=Vec3(0, 200, 0))
+    player = ThirdPersonController(0,name,position=Vec3(0, 10, 0))
     # Set cursor white cause pink ugly af
     player.cursor.color = color.white
     

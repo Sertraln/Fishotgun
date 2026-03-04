@@ -3,6 +3,8 @@ from server import data
 from server.packet.clientbound import *
 import threading as th
 import time
+from shared import world
+from ursina import scene
 
 if TYPE_CHECKING:
     from server.player import Player
@@ -18,14 +20,19 @@ class World:
         self.next_entity_id = 0
         self.players : dict[int,'Player'] = {}
         self.last_update_time = time.time()
+        world.init_world(scene)
         print("World: initialized")
         th.Thread(target=self._game_loop, daemon=True).start()
+
+    @property
+    def world_scene(self):
+        return world.world_scene
 
     def join_player(self, player:'Player') -> int:
         pid = player.client.id
         
         self.players[pid] = player
-        player.client.send(ClientBoundPlayerListPacket(self.players.values()))
+        player.client.send(ClientBoundPlayerListPacket(list(self.players.values())))
         print(f"World: player joined {pid}")
         data.server.broadcast(ClientBoundSpawnPlayerPacket(player),[player.client.id]) 
         return pid
@@ -87,7 +94,11 @@ class World:
             if player.keys_states is not None:
                 #update_pos(player, dt, player.keys_states)
                 self.send_position_updates(player)
-                
+
+    def save(self):
+        #totdo : save world state to disk
+        pass    
 
     def save_player_data(self):
+        #todo : save player data to disk
         pass

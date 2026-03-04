@@ -212,5 +212,5 @@ if __name__ == "__main__":
     from shared.parsedata.input import KeyStates
     init()
     print("table :",_id_type)
-    print("parser : out : ",parser(1,KeyStates()))
-    print(_unparse_data(b'\x05\x02\x02\t\x00\x00\x03\x18\x87\xe9\xb9\xdb\xe2\x83D'))
+    print("parser : out : ",parser(3,[2,Vec3(1,2,3)]))
+    print(unparse_blob(b'\x02\x02\r\x03\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'))

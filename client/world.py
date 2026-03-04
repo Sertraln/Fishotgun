@@ -8,5 +8,5 @@ class World:
         pass
 
     def spawn_player(self,player_id:int,name:str,position:Vec3):
-        new_player = Player(name=name,position=position)
+        new_player = Player(player_id,name=name,position=position)
         self.players[player_id] = new_player

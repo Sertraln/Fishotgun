@@ -37,20 +37,38 @@ def create_static_box(
     body.setMass(0.0)
     body.addShape(shape)
 
-    body_np = render.attachNewNode(body)
+    body_np = parent.attachNewNode(body)
     body_np.setPos(position)
 
     bullet_world.attachRigidBody(body)
 
     return visual, body_np
 
+# Environnement
+ground = Entity(
+    model='cube',
+    scale=(100, 10, 100),
+    texture='grass',
+    texture_scale=(10, 10),
+    collider='box',
+    name='ground',
+    parent=world_scene)
+
+wall = Entity(
+    model='cube',
+    scale=(10, 10, 10),
+    position=(5, 9, 15),
+    texture='brick',
+    collider='box',
+    name='wall',
+    parent=world_scene)
 
 def init_world(base_scene:'NodePath'=None):
     global world_scene
     world_scene.parent = base_scene
 
     create_static_box(
-        bullet_world=bullet_world,
+        bullet_world=world_scene.bullet_world,
         parent=world_scene,
         position=(0, -5, 0),
         scale=(100, 10, 100),
@@ -59,7 +77,7 @@ def init_world(base_scene:'NodePath'=None):
     )
 
     create_static_box(
-        bullet_world=bullet_world,
+        bullet_world=world_scene.bullet_world,
         parent=world_scene,
         position=(5, 9, 15),
         scale=(10, 10, 10),
@@ -107,6 +125,7 @@ def attach_world_bodies(bullet_world: BulletWorld, parent_np: NodePath, friction
 
     Returns a dict with keys `'ground'` and `'wall'` mapping to the created NodePaths.
     """
+
     bodies = {}
     _, bodies['ground'] = add_static_box(ground, bullet_world, parent_np, friction=friction, mass=0.0)
     _, bodies['wall'] = add_static_box(wall, bullet_world, parent_np, friction=friction, mass=0.0)
