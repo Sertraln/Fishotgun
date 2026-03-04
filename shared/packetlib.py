@@ -213,4 +213,4 @@ if __name__ == "__main__":
     init()
     print("table :",_id_type)
     print("parser : out : ",parser(3,[2,Vec3(1,2,3)]))
-    print(unparse_blob(b'\x02\x02\r\x03\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'))
+    print(unparse_blob(b'\x03\x02\x02\r\x03\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'))

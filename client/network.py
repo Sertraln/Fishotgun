@@ -47,7 +47,6 @@ class Network:
                 if not data:
                     self.disconect()
                     break
-                
                 packets = getClientBoundPacket(data)
                 for packet in packets:
                     packet.handle()
@@ -57,7 +56,7 @@ class Network:
                 break
             except Exception as e:
                 print("client : Erreur de réception de paquet", e)
-                if not data :
+                if data :
                     print("client : data :",data)
             
 

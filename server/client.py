@@ -65,5 +65,7 @@ class Client:
     
     def kick(self):
         self.stopevent.set()
+        self.conn.shutdown(socket.SHUT_RDWR)
         self.conn.close()
+        
 

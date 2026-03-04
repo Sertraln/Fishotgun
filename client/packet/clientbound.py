@@ -26,6 +26,7 @@ class ClientBoundPlayerListPacket(ClientBoundDataPacket):
         super().__init__(data)
 
     def handle(self):
+        print("client : player list get :",self.data, flush=True)
         for player_data in self.data:
             player_id : int = player_data[0]
             name : str = player_data[1]

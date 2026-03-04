@@ -92,8 +92,10 @@ class World:
     def update_all_players_position(self,dt:float = 0.05):
         for player in self.players.values():
             if player.keys_states is not None:
-                #update_pos(player, dt, player.keys_states)
-                self.send_position_updates(player)
+                old_pos = player.position
+                player.update_phy(player, dt, player.keys_states)
+                if player.position != old_pos:
+                    self.send_position_updates(player)
 
     def save(self):
         #totdo : save world state to disk
