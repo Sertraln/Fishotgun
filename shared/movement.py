@@ -93,13 +93,13 @@ class Physic(Entity):
 
     def update_phy(self, dt: float, key_states:KeyStates):
         if key_states.is_pressed(KeyStates.FORWARD):
-            self.position += self.camera_pivot.forward * dt * 5
+            self.position += self.forward * dt * 5
         if key_states.is_pressed(KeyStates.BACKWARD):
-            self.position -= self.camera_pivot.forward * dt * 5
+            self.position -= self.forward * dt * 5
         if key_states.is_pressed(KeyStates.LEFT):
-            self.position -= self.camera_pivot.right * dt * 5
+            self.position -= self.right * dt * 5
         if key_states.is_pressed(KeyStates.RIGHT):
-            self.position += self.camera_pivot.right * dt * 5
+            self.position += self.right * dt * 5
         if key_states.is_pressed(KeyStates.JUMP):
             self.position += Vec3(0, 5 * dt, 0)
         if key_states.is_pressed(KeyStates.SNEAK):

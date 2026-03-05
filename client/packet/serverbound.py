@@ -20,4 +20,8 @@ class ServerBoundMovementPacket(ServerBoundDataPacket):
         self.timestamp = timestamp
         super().__init__(key_states, timestamp)
 
-
+class ServerBoundRotationPacket(ServerBoundDataPacket):
+    def __init__(self,rotation:float,timestamp:int):
+        self.rotation = rotation
+        self.timestamp = timestamp
+        super().__init__(rotation, timestamp)

@@ -60,4 +60,15 @@ class ClientBoundPlayerPositionPacket(ClientBoundDataPacket):
         self.position : Vec3 = data[1]
 
     def handle(self):
+        print("client : player position get :",self.player_id,self.position, flush=True)
         data.world.players[self.player_id].position = self.position
+
+class ClientBoundRotationPacket(ClientBoundDataPacket):
+    def __init__(self,data:list):
+        super().__init__(data)
+        self.player_id : int = data[0]
+        self.rotation : Vec3 = data[1]
+
+    def handle(self):
+        print("client : player rotation get :",self.player_id,self.rotation, flush=True)
+        data.world.players[self.player_id].rotation = self.rotation

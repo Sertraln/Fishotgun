@@ -5,6 +5,7 @@ import threading as th
 import time
 from shared import world
 from ursina import scene
+import copy
 
 if TYPE_CHECKING:
     from server.player import Player
@@ -92,10 +93,18 @@ class World:
     def update_all_players_position(self,dt:float = 0.05):
         for player in self.players.values():
             if player.keys_states is not None:
-                old_pos = player.position
-                player.update_phy(player, dt, player.keys_states)
+                old_pos = copy.deepcopy(player.position)
+                player.update_phy(dt, player.keys_states)
                 if player.position != old_pos:
                     self.send_position_updates(player)
+
+    def update_player_rotation(self, client:'Client', rotation:float, timestamp:int):
+        player = self.players.get(client.id)
+        if player:
+            player.rotation = rotation
+            for pid, other_player in self.players.items():
+                if pid != client.id:
+                    other_player.client.send(ClientBoundPlayerRotationPacket(client.id, rotation))
 
     def save(self):
         #totdo : save world state to disk
