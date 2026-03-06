@@ -7,8 +7,8 @@ if TYPE_CHECKING:
     from server.client import Client
 
 class Player(Physic):
-    def __init__(self, player_name: str, client: 'Client',parent=None):
-        super().__init__(parent=parent,position=Vec3(0,0,0))
+    def __init__(self, player_name: str, client: 'Client',parent=None,position=Vec3(0,0,0)):
+        super().__init__(parent=parent,position=position)
         self.type = EntityType.PLAYER
         self.player_name = player_name
         self.client = client

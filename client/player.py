@@ -8,9 +8,9 @@ from client import data
 
 player_map = {}
 
-class Player(Physic):
+class Player(Entity):
     def __init__(self, id : int, name : str, position :Vec3 = Vec3(0,0,0)):
-        super().__init__(scene,position)
+        super().__init__()
         self.position = position
         self.name = name
         self.model = 'cube'
@@ -20,9 +20,14 @@ class Player(Physic):
         self.player_id = id
 
 class ThirdPersonController(Player):
-    def __init__(self,id:int , name :str, position:Vec3 = Vec3(0,0,0)):
+    def __init__(self,id:int, name :str, position:Vec3 = Vec3(0,0,0)):
         super().__init__(id,name,position)
         self.name = "ThirdPersonController"
+        self.physic = Physic(scene,position)
+        self.color = color.orange
+        # L'enregistrement dans le world se fait via World.__init__ qui ajoute player_entity
+        self.player_id = id
+        self.username = name
         self.cursor = Entity(parent=camera.ui)
         self.height = 2
         self.camera_pivot = Entity(parent=self,y=self.height)
@@ -49,7 +54,10 @@ class ThirdPersonController(Player):
         # Additional third person update can go here
 
     def update_pos(self, key_strokes:KeyStates):
-        self.update_phy( time.dt,key_strokes)
+        # Synchroniser la rotation avec la physique pour que forward/right soient corrects
+        self.physic.rotation_y = self.rotation_y
+        self.physic.update_phy(time.dt,key_strokes)
+        self.position = self.physic.position
 
     def update_cam(self):
         self.rotation_y += mouse.velocity[0] * self.mouse_sensitivity[1]
@@ -58,7 +66,13 @@ class ThirdPersonController(Player):
         self.camera_pivot.rotation_x= clamp(self.camera_pivot.rotation_x, -90, 90)
         
 
+    def input(self, key):
+        if key == 'escape':
+            mouse.locked = not mouse.locked
+
     def update_mouv_input(self):
+        
+        
         # make key configurable later
         key_strokes:KeyStates = KeyStates()
         if held_keys['shift']:

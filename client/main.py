@@ -13,6 +13,7 @@ from shared.world import init_world
 from client.world import World
 
 def start(ip:str, port:int, name:str):
+    data.world = World()
     data.network = network.Network(ip, port, name)
     original_quit = appli.quit
     
@@ -25,7 +26,6 @@ def start(ip:str, port:int, name:str):
     data.app = app
     appli.quit = custom_quit
     
-    data.world = World()
     init_world(scene)
     
     instructions = Text(
@@ -36,9 +36,9 @@ def start(ip:str, port:int, name:str):
         background=True
     )
     
-    from client.data import player
     from client.player import ThirdPersonController
-    player = ThirdPersonController(0,name,position=Vec3(0, 10, 0))
+    # Créer le player avec id=0, name, et position
+    player = ThirdPersonController(data.network.id, name, Vec3(0, 10, 0))
     # Set cursor white cause pink ugly af
     player.cursor.color = color.white
     
@@ -93,7 +93,7 @@ Espace - Sauter
 Souris - Regarder
 Échap - Déverrouiller souris
 Position: ({player.position.x:.1f}, {player.position.y:.1f}, {player.position.z:.1f})
-Au sol: {'Oui' if player.grounded else 'Non'}
+Au sol: {'Oui' if player.physic.grounded else 'Non'}
 '''
 
 if __name__ == '__main__':

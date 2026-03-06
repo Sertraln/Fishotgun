@@ -1,13 +1,15 @@
 from client.packet.packetstruct import ServerBoundDataPacket,ServerBoundPacket
 from shared.parsedata.input import KeyStates
+from ursina import Vec3
 
 #client_bound server -> client
 #server_bound client -> server
 
 class ServerBoundPseudoPacket(ServerBoundDataPacket):
-    def __init__(self,pseudo:str):
-        super().__init__(pseudo)
+    def __init__(self,pseudo:str,postion:Vec3):
+        super().__init__(pseudo,postion)
         self.name = pseudo
+        self.position = postion
 
 class ServerBoundMessagePacket(ServerBoundDataPacket):
     def __init__(self,data:str):

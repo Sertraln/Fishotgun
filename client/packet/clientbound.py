@@ -61,7 +61,10 @@ class ClientBoundPlayerPositionPacket(ClientBoundDataPacket):
 
     def handle(self):
         print("client : player position get :",self.player_id,self.position, flush=True)
-        data.world.players[self.player_id].position = self.position
+        if self.player_id == data.player.player_id:
+            print("client : player position update ignored for self", flush=True)
+        else:
+            data.world.players[self.player_id].position = self.position
 
 class ClientBoundRotationPacket(ClientBoundDataPacket):
     def __init__(self,data:list):
