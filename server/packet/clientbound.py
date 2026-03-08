@@ -17,6 +17,12 @@ class ClientBoundIdPacket(ClientBoundPacket):
     def send(self,conn:socket.socket):
         conn.send(bytes([self.id]))
 
+class ClientBoundInitPlayerPacket(ClientBoundDataPacket):
+    def __init__(self,player:'Player'):
+        super().__init__(player.position,player.fish_unlocked)
+        self.position = player.position
+        self.fishunlocked = player.fish_unlocked
+
 class ClientBoundMessagePacket(ClientBoundDataPacket):
     def __init__(self, message:str):
         super().__init__(message)

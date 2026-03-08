@@ -45,14 +45,14 @@ class Network:
             try:
                 data = self.conn.recv(2048)
                 if not data:
-                    self.disconect()
+                    self.disconnect()
                     break
                 packets = getClientBoundPacket(data)
                 for packet in packets:
                     packet.handle()
             except socket.timeout as e :
                 print("client : Timeout de réception de paquet", e)
-                self.disconect()
+                self.disconnect()
                 break
             except Exception as e:
                 print("client : Erreur de réception de paquet", e)
@@ -69,14 +69,13 @@ class Network:
         self.send(data)
         return self.conn.recv(2048)
 
-    def disconect(self):
+    def disconnect(self):
         self.stop_event.set()
         try:
             self.conn.shutdown(socket.SHUT_RDWR)
             self.conn.close()
         except:
             pass
-        
         current_thread = th.current_thread()
         if self.thread and self.thread.is_alive() and self.thread != current_thread:
             self.thread.join(timeout=3.0)

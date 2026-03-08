@@ -6,10 +6,9 @@ from ursina import Vec3
 #server_bound client -> server
 
 class ServerBoundPseudoPacket(ServerBoundDataPacket):
-    def __init__(self,pseudo:str,postion:Vec3):
-        super().__init__(pseudo,postion)
+    def __init__(self,pseudo:str):
+        super().__init__(pseudo)
         self.name = pseudo
-        self.position = postion
 
 class ServerBoundMessagePacket(ServerBoundDataPacket):
     def __init__(self,data:str):

@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING
 from shared.entity import EntityType
 from shared.movement import Physic
 from ursina import Vec3
+import array
 if TYPE_CHECKING:
     from server.client import Client
 
@@ -13,6 +14,7 @@ class Player(Physic):
         self.player_name = player_name
         self.client = client
         self.keys_states = None
+        self.fish_unlocked = []
 
     @property
     def id(self) -> int:

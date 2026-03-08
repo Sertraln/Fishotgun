@@ -34,12 +34,14 @@ class World:
         
         self.players[pid] = player
         player.client.send(ClientBoundPlayerListPacket(list(self.players.values())))
+        player.client.send(ClientBoundInitPlayerPacket(player))
         print(f"World: player joined {pid}")
         data.server.broadcast(ClientBoundSpawnPlayerPacket(player),[player.client.id]) 
         return pid
 
     def left_player(self, pid:int):
         if pid in self.players:
+            data.server.broadcast(ClientBoundPlayerLeavePacket(pid),[pid])
             del self.players[pid]
             print(f"World: player left {pid}")
 

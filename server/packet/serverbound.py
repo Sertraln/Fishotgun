@@ -23,7 +23,6 @@ class ServerBoundPseudoPacket(ServerBoundDataPacket):
     def __init__(self,data:list):
         super().__init__(data)
         self.name = data[0]
-        self.position = data[1]
 
 class ServerBoundMessagePacket(ServerBoundDataPacket):
     def __init__(self,data:list[str]):

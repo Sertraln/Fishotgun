@@ -14,6 +14,7 @@ from server.packet import clientbound as cb
 from server.world import World
 import server.data as data
 import signal
+from ursina import Vec3
 
 def get_local_ip():
     """
@@ -76,7 +77,7 @@ class Server:
             client = Client(conn,ip,self.lastpid,self)
             self.lastpid += 1
             packet : ServerBoundPseudoPacket = client.sendRecv(cb.ClientBoundIdPacket(client.id))[0]
-            player = Player(packet.name,client,self.world.world_scene,packet.position)
+            player = Player(packet.name,client,self.world.world_scene,Vec3(0,10,0))
             self.world.join_player(player)
             self.threadlist.append(client.thread)
             client.thread.start()

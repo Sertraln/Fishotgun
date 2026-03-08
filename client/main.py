@@ -35,24 +35,21 @@ def start(ip:str, port:int, name:str):
         origin=(0, 0),
         background=True
     )
-    
-    from client.player import ThirdPersonController
-    # Créer le player avec id=0, name, et position
-    player = ThirdPersonController(data.network.id, name, Vec3(0, 10, 0))
-    # Set cursor white cause pink ugly af
-    player.cursor.color = color.white
+
     
     # Create a fishing spot
     spot = FishingSpot(position=(0, 2, 0))
     
     # Set basic sky
     Sky(color=color.violet)
-    
+    camera.fov = 90
     # Stocker les références dans data pour y accéder dans update
-    data.player = player
     data.spot = spot
     data.instructions = instructions
-    
+    if(not data.world.player_init.wait(5)):  # Wait for player initialization before starting the game loop
+        print("Player initialization timed out. Exiting.")
+        
+        exit(0)
     app.run()
 
 # Fonction update GLOBALE - en dehors de start()
@@ -62,10 +59,10 @@ def update():
     spot = data.spot
     instructions = data.instructions
     
-    # Make player respawn if he falls
-    if player.y < -10:
-        player.position = (0, 7, 0)
-        player.vitesse = Vec3(0,0,0)
+    # # Make player respawn if he falls
+    # if player.y < -10:
+    #     player.position = (0, 7, 0)
+    #     player.vitesse = Vec3(0,0,0)
     
     # Gotta check this for all spots in the map constantly (will need a list later)
     if distance(spot.position, player.position) < spot.interaction_range:

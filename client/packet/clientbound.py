@@ -4,13 +4,25 @@ import client.data as data
 #client_bound server -> client
 #server_bound client -> server
 
-class ClientBoundIdPacket(ClientBoundDataPacket):
-    def __init__(self,data:list[str]):
+#exist only for the parity in numbering packet id, not used in code
+class ClientBoundIdPacket(ClientBoundPacket):
+    pass
+
+class ClientBoundInitPlayerPacket(ClientBoundDataPacket):
+    player = None
+
+    def __init__(self,data:list):
         super().__init__(data)
-        self.id = int(data[0])
+        self.position = self.data[0]
+        self.fishunlocked = self.data[1]
+         # Reset player reference on new init packet
 
     def handle(self):
-        pass
+        if data.player is None:
+            data.world.player_init.set()  # Signal that the player has been initialized
+            ClientBoundInitPlayerPacket.player = self
+        else:
+            print("client : init player packet received but player already exist", flush=True)
 
 class ClientBoundMessagePacket(ClientBoundDataPacket):
     def __init__(self,data:list[str]):
@@ -49,9 +61,7 @@ class ClientBoundPlayerLeavePacket(ClientBoundDataPacket):
         self.player_id : int = data[0]
 
     def handle(self):
-        print("client : player leave get :",self.player_id, flush=True)
-        if self.player_id in data.world.players:
-            del data.world.players[self.player_id]
+        data.world.leave_player(self.player_id)
 
 class ClientBoundPlayerPositionPacket(ClientBoundDataPacket):
     def __init__(self,data:list):

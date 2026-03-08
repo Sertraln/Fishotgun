@@ -32,9 +32,7 @@ class ThirdPersonController(Player):
         self.height = 2
         self.camera_pivot = Entity(parent=self,y=self.height)
         camera.parent = self.camera_pivot
-        camera.fov = 90
         mouse.locked = True
-
         self.mouse_sensitivity = Vec2(40, 40)
         self.camera_offset = -5
         camera.z = self.camera_offset
