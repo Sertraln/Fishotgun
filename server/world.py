@@ -31,9 +31,8 @@ class World:
 
     def join_player(self, player:'Player') -> int:
         pid = player.client.id
-        
-        self.players[pid] = player
         player.client.send(ClientBoundPlayerListPacket(list(self.players.values())))
+        self.players[pid] = player
         player.client.send(ClientBoundInitPlayerPacket(player))
         print(f"World: player joined {pid}")
         data.server.broadcast(ClientBoundSpawnPlayerPacket(player),[player.client.id]) 
@@ -103,7 +102,7 @@ class World:
     def update_player_rotation(self, client:'Client', rotation:float, timestamp:int):
         player = self.players.get(client.id)
         if player:
-            player.rotation = rotation
+            player.rotation_z = rotation
             for pid, other_player in self.players.items():
                 if pid != client.id:
                     other_player.client.send(ClientBoundPlayerRotationPacket(client.id, rotation))

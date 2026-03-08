@@ -32,7 +32,8 @@ class ClientBoundSpawnPlayerPacket(ClientBoundDataPacket):
         datas = [
             player.id,
             player.player_name,
-            player.position
+            player.position,
+            player.rotation_y
         ]
         super().__init__(datas=datas)
 
@@ -42,7 +43,7 @@ class ClientBoundPlayerLeavePacket(ClientBoundDataPacket):
 
 class ClientBoundPlayerListPacket(ClientBoundDataListPacket):
     def __init__(self, datas:list['Player']):
-        func : Callable[['Player'],list] = lambda player: [player.id,player.player_name,player.position]
+        func : Callable[['Player'],list] = lambda player: [player.id,player.player_name,player.position,player.rotation_y]
         super().__init__(datas,func)
 
 class ClientBoundPlayerPositionPacket(ClientBoundDataPacket):

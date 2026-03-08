@@ -1,10 +1,11 @@
 from ursina import *
-from client.packet.serverbound import ServerBoundMovementPacket
+from client.packet.serverbound import ServerBoundMovementPacket,ServerBoundRotationPacket
 import threading as th
 from queue import Queue
 from shared.parsedata.input import KeyStates
 from shared.movement import Physic
 from client import data
+import time
 
 player_map = {}
 
@@ -18,6 +19,33 @@ class Player(Entity):
         self.color = color.violet
         self.scale = Vec3(1,1.5,1)
         self.player_id = id
+        
+        # Interpolation attributes
+        self.target_position = position
+        self.target_rotation = 0
+        self.interpolation_start_time = 0
+        self.interpolation_duration = 0.05  # 50ms to match server tickrate
+    
+    def update(self):
+        # Interpolate position and rotation
+        current_time = time.time()
+        elapsed = current_time - self.interpolation_start_time
+        
+        if elapsed < self.interpolation_duration and self.interpolation_duration > 0:
+            t = elapsed / self.interpolation_duration
+            self.position = lerp(self.position, self.target_position, t)
+            self.rotation_y = lerp(self.rotation_y, self.target_rotation, t)
+    
+    def set_target_position(self, position: Vec3):
+        """Start interpolation to target position"""
+        self.target_position = position
+        self.interpolation_start_time = time.time()
+    
+    def set_target_rotation(self, rotation: float):
+        """Start interpolation to target rotation"""
+        self.target_rotation = rotation
+        self.interpolation_start_time = time.time()
+
 
 class ThirdPersonController(Player):
     def __init__(self,id:int, name :str, position:Vec3 = Vec3(0,0,0)):
@@ -59,7 +87,8 @@ class ThirdPersonController(Player):
 
     def update_cam(self):
         self.rotation_y += mouse.velocity[0] * self.mouse_sensitivity[1]
-
+        if mouse.velocity[0] != 0:
+            data.network.send(ServerBoundRotationPacket(self.rotation_y,time.time_ns()))
         self.camera_pivot.rotation_x -= mouse.velocity[1] * self.mouse_sensitivity[0]
         self.camera_pivot.rotation_x= clamp(self.camera_pivot.rotation_x, -90, 90)
         
@@ -69,8 +98,6 @@ class ThirdPersonController(Player):
             mouse.locked = not mouse.locked
 
     def update_mouv_input(self):
-        
-        
         # make key configurable later
         key_strokes:KeyStates = KeyStates()
         if held_keys['shift']:

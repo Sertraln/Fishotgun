@@ -24,6 +24,13 @@ class ClientBoundInitPlayerPacket(ClientBoundDataPacket):
         else:
             print("client : init player packet received but player already exist", flush=True)
 
+    def init():
+        if ClientBoundInitPlayerPacket.player is None:
+            print("client : waiting for init player packet...", flush=True)
+            return
+        from client.player import ThirdPersonController
+        data.player = ThirdPersonController(data.network.id,data.network.name, position=ClientBoundInitPlayerPacket.player.position)
+
 class ClientBoundMessagePacket(ClientBoundDataPacket):
     def __init__(self,data:list[str]):
         super().__init__(data)
@@ -43,7 +50,8 @@ class ClientBoundPlayerListPacket(ClientBoundDataPacket):
             player_id : int = player_data[0]
             name : str = player_data[1]
             position : Vec3 = player_data[2]
-            data.world.spawn_player(player_id,name,position)
+            rotation : float = player_data[3]
+            data.world.spawn_player(player_id,name,position,rotation)
 
 class ClientBoundSpawnPlayerPacket(ClientBoundDataPacket):
     def __init__(self,data:list[int | str | Vec3]):
@@ -51,9 +59,10 @@ class ClientBoundSpawnPlayerPacket(ClientBoundDataPacket):
         self.player_id : int = data[0]
         self.name : str = data[1]
         self.position : Vec3 = data[2]
+        self.rotation : float = data[3]
 
     def handle(self):
-        data.world.spawn_player(self.player_id,self.name,self.position)
+        data.world.spawn_player(self.player_id,self.name,self.position,self.rotation)
 
 class ClientBoundPlayerLeavePacket(ClientBoundDataPacket):
     def __init__(self,data:list[int]):
@@ -74,14 +83,16 @@ class ClientBoundPlayerPositionPacket(ClientBoundDataPacket):
         if self.player_id == data.player.player_id:
             print("client : player position update ignored for self", flush=True)
         else:
-            data.world.players[self.player_id].position = self.position
+            data.world.players[self.player_id].set_target_position(self.position)
 
 class ClientBoundRotationPacket(ClientBoundDataPacket):
     def __init__(self,data:list):
         super().__init__(data)
         self.player_id : int = data[0]
-        self.rotation : Vec3 = data[1]
+        self.rotation : float = data[1]
 
     def handle(self):
         print("client : player rotation get :",self.player_id,self.rotation, flush=True)
-        data.world.players[self.player_id].rotation = self.rotation
+        if self.player_id == data.player.player_id:
+            print("client : player rotation update ignored for self", flush=True)
+        data.world.players[self.player_id].set_target_rotation(self.rotation)

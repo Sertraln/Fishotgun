@@ -17,12 +17,13 @@ class ServerBoundMessagePacket(ServerBoundDataPacket):
     
 class ServerBoundMovementPacket(ServerBoundDataPacket):
     def __init__(self, key_states:KeyStates, timestamp:int):
+        super().__init__(key_states, timestamp)
         self.key_states = key_states
         self.timestamp = timestamp
-        super().__init__(key_states, timestamp)
 
 class ServerBoundRotationPacket(ServerBoundDataPacket):
     def __init__(self,rotation:float,timestamp:int):
-        self.rotation = rotation
-        self.timestamp = timestamp
         super().__init__(rotation, timestamp)
+        self.rotation : float = rotation
+        self.timestamp : int = timestamp
+        

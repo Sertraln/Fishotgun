@@ -48,8 +48,10 @@ def start(ip:str, port:int, name:str):
     data.instructions = instructions
     if(not data.world.player_init.wait(5)):  # Wait for player initialization before starting the game loop
         print("Player initialization timed out. Exiting.")
-        
+        data.network.disconnect()
         exit(0)
+    from client.packet.clientbound import ClientBoundInitPlayerPacket
+    ClientBoundInitPlayerPacket.init()
     app.run()
 
 # Fonction update GLOBALE - en dehors de start()
