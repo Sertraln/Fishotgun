@@ -6,6 +6,7 @@ from shared.parsedata.input import KeyStates
 from shared.movement import Physic
 from client import data
 import time
+import collections
 
 player_map = {}
 
@@ -27,7 +28,6 @@ class Player(Entity):
         self.interpolation_duration = 0.05  # 50ms to match server tickrate
     
     def update(self):
-        # Interpolate position and rotation
         current_time = time.time()
         elapsed = current_time - self.interpolation_start_time
         
@@ -64,9 +64,9 @@ class ThirdPersonController(Player):
         self.mouse_sensitivity = Vec2(40, 40)
         self.camera_offset = -5
         camera.z = self.camera_offset
-        self._input_queue = Queue()
+        self._queue_pos = collections.deque()
         self._dt_last_input = 0
-        self._wating_response_queue = Queue()
+        self._server_postion = Queue()
         self._last_input = KeyStates()
         th.Thread(target=self.constant_update, daemon=True).start()
         self.on_destroy = self.on_disable
@@ -77,13 +77,32 @@ class ThirdPersonController(Player):
         self.update_cam()
         self.update_mouv_input()
         self.update_pos(self._last_input)
+        self.reconcile_position_with_server()
         # Additional third person update can go here
+
+    def register_server_pos(self,time:int, position: Vec3):
+        self._server_postion.put((time, position))
+
+    def reconcile_position_with_server(self):
+        if self._queue_pos and not self._server_postion.empty():
+            server_time ,server_position = self._server_postion.get()
+            ctime = time.time_ns()
+            while self._queue_pos[0][0] < 2*server_time - ctime-1000:
+                self._queue_pos.popleft()
+            # Simple reconciliation: if we're too far from the server position, snap to it
+            if distance(self.position, server_position) > 1.0:
+                self.position = server_position
+                self._queue_pos.clear()  # Clear the queue after reconciliation
+            else:
+                last_position = self._queue_pos[0][1]
+                self.position += server_position - last_position                
 
     def update_pos(self, key_strokes:KeyStates):
         # Synchroniser la rotation avec la physique pour que forward/right soient corrects
         self.physic.rotation_y = self.rotation_y
         self.physic.update_phy(time.dt,key_strokes)
         self.position = self.physic.position
+        self._queue_pos.append((time.time_ns(), self.position))
 
     def update_cam(self):
         self.rotation_y += mouse.velocity[0] * self.mouse_sensitivity[1]
@@ -115,7 +134,6 @@ class ThirdPersonController(Player):
         if held_keys['control']:
             key_strokes.press(KeyStates.SNEAK)
         if key_strokes != self._last_input:
-            self._input_queue.put(key_strokes)
             self._last_input = key_strokes
             self._last_input_time = time.time_ns()
             self._send_input()

@@ -80,10 +80,17 @@ class ClientBoundPlayerPositionPacket(ClientBoundDataPacket):
 
     def handle(self):
         print("client : player position get :",self.player_id,self.position, flush=True)
-        if self.player_id == data.player.player_id:
-            print("client : player position update ignored for self", flush=True)
-        else:
-            data.world.players[self.player_id].set_target_position(self.position)
+        data.world.players[self.player_id].set_target_position(self.position)
+
+class ClientBoundReconcilePositionPacket(ClientBoundDataPacket):
+    def __init__(self,data:list):
+        super().__init__(data)
+        self.timestamp : int = data[0]
+        self.position : Vec3 = data[1]
+
+    def handle(self):
+        print("client : player reconcile position get :",self.player_id,self.position, flush=True)
+        data.player.register_server_pos(self.timestamp,self.position)
 
 class ClientBoundRotationPacket(ClientBoundDataPacket):
     def __init__(self,data:list):
@@ -94,5 +101,5 @@ class ClientBoundRotationPacket(ClientBoundDataPacket):
     def handle(self):
         print("client : player rotation get :",self.player_id,self.rotation, flush=True)
         if self.player_id == data.player.player_id:
-            print("client : player rotation update ignored for self", flush=True)
+            return  # Ignore rotation updates for the local
         data.world.players[self.player_id].set_target_rotation(self.rotation)

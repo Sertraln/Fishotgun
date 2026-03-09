@@ -84,7 +84,8 @@ class World:
 
     def send_position_updates(self,player:'Player'):
         for pid, other_player in self.players.items():
-            other_player.client.send(ClientBoundPlayerPositionPacket(player.id,player.position))
+            if pid != player.client.id:
+                other_player.client.send(ClientBoundPlayerPositionPacket(player.id,player.position))
 
     def dt(self) -> float:
         current_time = time.time()
