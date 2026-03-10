@@ -25,6 +25,7 @@ def start(ip:str, port:int, name:str):
     app = Ursina()
     data.app = app
     appli.quit = custom_quit
+    window.size = (800, 600)
     
     init_world(scene)
     

@@ -1,7 +1,6 @@
 from ursina import *
 from client.packet.serverbound import ServerBoundMovementPacket,ServerBoundRotationPacket
 import threading as th
-from queue import Queue
 from shared.parsedata.input import KeyStates
 from shared.movement import Physic
 from client import data
@@ -66,8 +65,12 @@ class ThirdPersonController(Player):
         camera.z = self.camera_offset
         self._queue_pos = collections.deque()
         self._dt_last_input = 0
-        self._server_postion = Queue()
+        self._latest_server_state = None
+        self._server_state_lock = th.Lock()
         self._last_input = KeyStates()
+        self._max_prediction_history = 256
+        self._hard_snap_distance = 4.0
+        self._reconcile_speed = 100.0
         th.Thread(target=self.constant_update, daemon=True).start()
         self.on_destroy = self.on_disable
         
@@ -80,29 +83,66 @@ class ThirdPersonController(Player):
         self.reconcile_position_with_server()
         # Additional third person update can go here
 
-    def register_server_pos(self,time:int, position: Vec3):
-        self._server_postion.put((time, position))
+    def register_server_pos(self, timestamp: int, position: Vec3):
+        with self._server_state_lock:
+            self._latest_server_state = (timestamp, Vec3(position))
 
     def reconcile_position_with_server(self):
-        if self._queue_pos and not self._server_postion.empty():
-            server_time ,server_position = self._server_postion.get()
-            ctime = time.time_ns()
-            while self._queue_pos[0][0] < 2*server_time - ctime-1000:
-                self._queue_pos.popleft()
-            # Simple reconciliation: if we're too far from the server position, snap to it
-            if distance(self.position, server_position) > 1.0:
-                self.position = server_position
-                self._queue_pos.clear()  # Clear the queue after reconciliation
-            else:
-                last_position = self._queue_pos[0][1]
-                self.position += server_position - last_position                
+        with self._server_state_lock:
+            server_state = self._latest_server_state
+            self._latest_server_state = None
 
+        if server_state is None:
+            return
+
+        # Use only the latest authoritative state received since last frame.
+        server_time, server_position = server_state
+
+        if self._queue_pos:
+            # Drop very old history entries (older than 500ms) to keep matching stable.
+            history_window_ns = 500_000_000
+            while self._queue_pos and self._queue_pos[0][0] < server_time - history_window_ns:
+                self._queue_pos.popleft()
+
+            predicted_at_server_time = min(
+                self._queue_pos,
+                key=lambda sample: abs(sample[0] - server_time)
+            )[1]
+        else:
+            predicted_at_server_time = Vec3(self.position)
+
+        # Error between what server says and what the client predicted at that same time.
+        correction = server_position - predicted_at_server_time
+        correction_distance = correction.length()
+
+        # Si aucun input en cours, on colle exactement à l'autorité serveur
+        if self._last_input.is_idle():
+            if correction_distance > 0.001:
+                corrected_position = Vec3(server_position)
+                self.position = corrected_position
+                self.physic.position = corrected_position
+            return
+
+        if correction_distance >= self._hard_snap_distance:
+            corrected_position = Vec3(server_position)
+            self._queue_pos.clear()
+        elif correction_distance > 0.01:
+            # Apply smooth correction to avoid visible teleporting on small desync.
+            alpha = clamp(time.dt * self._reconcile_speed, 0.0, 0.5)
+            corrected_position = lerp(self.position, self.position + correction, alpha)
+        else:
+            return  # No significant error, no correction needed.
+        self.position = corrected_position
+        self.physic.position = corrected_position
+        
     def update_pos(self, key_strokes:KeyStates):
         # Synchroniser la rotation avec la physique pour que forward/right soient corrects
         self.physic.rotation_y = self.rotation_y
         self.physic.update_phy(time.dt,key_strokes)
         self.position = self.physic.position
-        self._queue_pos.append((time.time_ns(), self.position))
+        self._queue_pos.append((time.time_ns(), Vec3(self.position)))
+        while len(self._queue_pos) > self._max_prediction_history:
+            self._queue_pos.popleft()
 
     def update_cam(self):
         self.rotation_y += mouse.velocity[0] * self.mouse_sensitivity[1]

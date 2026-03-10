@@ -89,10 +89,10 @@ class ClientBoundReconcilePositionPacket(ClientBoundDataPacket):
         self.position : Vec3 = data[1]
 
     def handle(self):
-        print("client : player reconcile position get :",self.player_id,self.position, flush=True)
+        print("client : player reconcile position get :",self.timestamp,self.position, flush=True)
         data.player.register_server_pos(self.timestamp,self.position)
 
-class ClientBoundRotationPacket(ClientBoundDataPacket):
+class ClientBoundPlayerRotationPacket(ClientBoundDataPacket):
     def __init__(self,data:list):
         super().__init__(data)
         self.player_id : int = data[0]

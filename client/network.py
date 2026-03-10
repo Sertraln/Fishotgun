@@ -1,5 +1,6 @@
 import socket
 import threading as th
+import traceback
 from client.packet.serverbound import ServerBoundPseudoPacket
 from client.packet.packetstruct import ServerBoundPacket 
 
@@ -49,7 +50,13 @@ class Network:
                     break
                 packets = getClientBoundPacket(data)
                 for packet in packets:
-                    packet.handle()
+                    try:
+                        packet.handle()
+                    except Exception as e:
+                        print("client : Erreur de traitement du paquet :", repr(e))
+                        print("client : packet type :", type(packet).__name__)
+                        print("client : packet data :", getattr(packet, "data", None))
+                        print(traceback.format_exc())
             except socket.timeout as e :
                 print("client : Timeout de réception de paquet", e)
                 self.disconnect()

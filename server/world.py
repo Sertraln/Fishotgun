@@ -86,6 +86,7 @@ class World:
         for pid, other_player in self.players.items():
             if pid != player.client.id:
                 other_player.client.send(ClientBoundPlayerPositionPacket(player.id,player.position))
+        player.client.send(ClientBoundReconcilePositionPacket(time.time_ns(),player.position))
 
     def dt(self) -> float:
         current_time = time.time()
@@ -97,6 +98,7 @@ class World:
             if player.keys_states is not None:
                 old_pos = copy.deepcopy(player.position)
                 player.update_phy(dt, player.keys_states)
+                print(f"World: updated player {player.client.id} position to {player.position}")
                 if player.position != old_pos:
                     self.send_position_updates(player)
 
@@ -104,9 +106,7 @@ class World:
         player = self.players.get(client.id)
         if player:
             player.rotation_z = rotation
-            for pid, other_player in self.players.items():
-                if pid != client.id:
-                    other_player.client.send(ClientBoundPlayerRotationPacket(client.id, rotation))
+            data.server.broadcast(ClientBoundPlayerRotationPacket(client.id, rotation),[client.id])
 
     def save(self):
         #totdo : save world state to disk

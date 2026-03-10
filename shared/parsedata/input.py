@@ -59,3 +59,6 @@ class KeyStates(Parser):
         import struct
         key_states = int.from_bytes(data[0:1], 'big')
         return KeyStates(key_states)
+    
+    def is_idle(self) -> bool:
+        return self.key_states == 0
