@@ -57,7 +57,6 @@ def create_static_box(
 ground = Entity(
     model= "assets/terrain",
     scale=(1, 1, 1),
-    texture='grass',
     texture_scale=(10, 10),
     # collider='box',
     name='ground',
