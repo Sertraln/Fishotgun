@@ -42,7 +42,7 @@ def start(ip:str, port:int, name:str):
     spot = FishingSpot(position=(0, 2, 0))
     
     # Set basic sky
-    Sky(color=color.violet)
+    Sky(texture='sky_default')
     camera.fov = 90
     # Stocker les références dans data pour y accéder dans update
     data.spot = spot
