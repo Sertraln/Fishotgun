@@ -1,7 +1,8 @@
 import socket
-from packet.packetstruct import ClientBoundPacket,ServerBoundPacket
-from packet.packetlib import getServerBoundPacket
+from server.packet.packetstruct import ClientBoundPacket,ServerBoundPacket
+from server.packet.packetlib import getServerBoundPacket
 import threading as th
+from shared.packetlib import HandlelingExeption,ParsingException
 
 from typing import TYPE_CHECKING
 
@@ -38,16 +39,23 @@ class Client:
                     if not data:
                         print(f"server packet : connection closed {self.id}")
                         break
-                    
-                    packets = getServerBoundPacket(data)
+                    try:
+                        packets = getServerBoundPacket(data)
+                    except Exception as e:
+                        raise ParsingException(f"error parsing packet from client {self.id} : {e} : data:{data}")
                     for packet in packets:
                         print("packet : handeled", packet.get_id())
-                        packet.handle(self)
+                        try:
+                            packet.handle(self)
+                        except Exception as e:
+                            raise HandlelingExeption(f"error handling packet from client {self.id} : {e} : packet:{packet}")
                 except ConnectionResetError:
                     print(f"server packet : connection reset by client {self.id}")
                     break
-                except Exception as e:
-                    print(f"packet : error handling: {e}")
+                except HandlelingExeption as e:
+                    print(e)
+                except ParsingException as e:
+                    print(e)
         finally:
             try:
                 self.server.world.left_player(self.id)
@@ -57,5 +65,7 @@ class Client:
     
     def kick(self):
         self.stopevent.set()
+        self.conn.shutdown(socket.SHUT_RDWR)
         self.conn.close()
+        
 

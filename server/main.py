@@ -13,6 +13,8 @@ from server.packet.serverbound import ServerBoundPseudoPacket
 from server.packet import clientbound as cb
 from server.world import World
 import server.data as data
+import signal
+from ursina import Vec3
 
 def get_local_ip():
     """
@@ -42,12 +44,17 @@ class Server:
         try:
             self.soket.bind((self.ip, port))
         except socket.error as e:
+            # if e.errno == socket.errno.EADDRINUSE:
+            #     print(f"Port {self.port} is already in use. Trying another port...")
+            #     self.__init__(port=self.port+1, ip=self.ip)
+            #     return
             print("server :error binding :",e)
             raise e
         print(f"Server started on {self.ip}:{self.port}")
         self.soket.listen(5)
         self.connectionthread = th.Thread(name="connlistener",target=self.connectionListener)
         self.connectionthread.start()
+        data.server = self
 
     def startTread(self,thread:th.Thread):
         self.threadlist.append(thread)
@@ -70,7 +77,7 @@ class Server:
             client = Client(conn,ip,self.lastpid,self)
             self.lastpid += 1
             packet : ServerBoundPseudoPacket = client.sendRecv(cb.ClientBoundIdPacket(client.id))[0]
-            player = Player(packet.name,client)
+            player = Player(packet.name,client,self.world.world_scene,Vec3(0,10,0))
             self.world.join_player(player)
             self.threadlist.append(client.thread)
             client.thread.start()
@@ -103,13 +110,14 @@ class Server:
             self.connectionthread.join(10)
             self.threadlist = []
             print("Server stopped")
+            raise SystemExit(0)
         except Exception as e:
             print("Server : Erreur de fermeture :",e)
 
 if __name__ == "__main__":
-    data.server = Server()
+    server = Server()
+    signal.signal(signal.SIGINT, lambda sig, frame: server.stop())
     cmd = input("")
     while cmd != "stop" and cmd != "exit":
         cmd = input("")
-        pass
-    data.server.stop()
+    server.stop()

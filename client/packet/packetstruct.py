@@ -13,6 +13,9 @@ class ClientBoundPacket:
     def handle(self):
         pass
 
+    def __str__(self):
+        return f"{self.__class__.__name__} (id: {self.get_id()})"
+
 class ClientBoundDataPacket(ClientBoundPacket):
     def __init__(self,data:list[str]):
         self.data = data
@@ -34,6 +37,6 @@ class ServerBoundDataPacket(ServerBoundPacket):
         self.data = data
 
     def send(self, conn):
-        print("packetlist:",pl.serverBoundPacketList)
         packet = packetlib.parser(self.get_id(),self.data)
+        #print("client : sending data :",packet)
         conn.send(packet)
