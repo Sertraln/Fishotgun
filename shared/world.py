@@ -59,7 +59,17 @@ ground = Entity(
     scale=(1, 1, 1),
     texture_scale=(10, 10),
     # collider='box',
+    texture='grass',
     name='ground',
+    parent=world_scene)
+
+water = Entity(
+    model= "assets/water",
+    scale=(1, 1, 1),
+    position=(0, -0.5, 0),
+    texture_scale=(10, 10),
+    # collider='box',
+    name='water',
     parent=world_scene)
 
 wall = Entity(
