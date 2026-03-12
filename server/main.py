@@ -42,7 +42,7 @@ class Server:
         self.stopevent = th.Event()
         self.world = World()
         try:
-            self.soket.bind((self.ip, port))
+            self.soket.bind(("0.0.0.0", port))
         except socket.error as e:
             # if e.errno == socket.errno.EADDRINUSE:
             #     print(f"Port {self.port} is already in use. Trying another port...")
@@ -102,7 +102,11 @@ class Server:
             self.stopevent.set()
             self.world.stop()
             if self.soket:
-                self.soket.shutdown(socket.SHUT_RDWR)
+                try:
+                    self.soket.shutdown(socket.SHUT_RDWR)
+                except (OSError, socket.error):
+                    # Socket serveur n'est pas connecté - shutdown non applicable
+                    pass
                 self.soket.close()
             for thread in self.threadlist:
                 if thread.is_alive():
@@ -110,14 +114,19 @@ class Server:
             self.connectionthread.join(10)
             self.threadlist = []
             print("Server stopped")
-            raise SystemExit(0)
         except Exception as e:
             print("Server : Erreur de fermeture :",e)
+        finally:
+            raise SystemExit(0)
 
 if __name__ == "__main__":
     server = Server()
     signal.signal(signal.SIGINT, lambda sig, frame: server.stop())
-    cmd = input("")
-    while cmd != "stop" and cmd != "exit":
+    try:
         cmd = input("")
-    server.stop()
+        while cmd != "stop" and cmd != "exit":
+            cmd = input("")
+    except EOFError:
+        print("No input available - server running in background")
+    finally:
+        server.stop()
