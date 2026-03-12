@@ -97,12 +97,12 @@ Au sol: {'Oui' if player.physic.grounded else 'Non'}
 '''
 
 if __name__ == '__main__':
-    ip = input("Enter server IP (default 192.168.64.9): ")
+    ip = input("Enter server IP (default 127.0.0.1): ")
     port = input("Enter server port (default 5555): ")
     name = input("Enter your player name: ")
     
     if ip == "":
-        ip = "192.168.64.9"
+        ip = "127.0.0.1"
     if port == "":
         port = "5555"
     if name == "":

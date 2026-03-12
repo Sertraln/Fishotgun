@@ -45,7 +45,7 @@ class ClientBoundPlayerListPacket(ClientBoundDataPacket):
         super().__init__(data)
 
     def handle(self):
-        print("client : player list get :",self.data, flush=True)
+        # print("client : player list get :",self.data, flush=True)
         for player_data in self.data:
             player_id : int = player_data[0]
             name : str = player_data[1]
@@ -79,7 +79,7 @@ class ClientBoundPlayerPositionPacket(ClientBoundDataPacket):
         self.position : Vec3 = data[1]
 
     def handle(self):
-        print("client : player position get :",self.player_id,self.position, flush=True)
+        # print("client : player position get :",self.player_id,self.position, flush=True)
         data.world.players[self.player_id].set_target_position(self.position)
 
 class ClientBoundReconcilePositionPacket(ClientBoundDataPacket):
@@ -89,7 +89,7 @@ class ClientBoundReconcilePositionPacket(ClientBoundDataPacket):
         self.position : Vec3 = data[1]
 
     def handle(self):
-        print("client : player reconcile position get :",self.timestamp,self.position, flush=True)
+        # print("client : player reconcile position get :",self.timestamp,self.position, flush=True)
         data.player.register_server_pos(self.timestamp,self.position)
 
 class ClientBoundPlayerRotationPacket(ClientBoundDataPacket):

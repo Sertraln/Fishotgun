@@ -20,7 +20,7 @@ def init_packetlib():
     packetlib.init()
 
 def getClientBoundPacket(data:bytes) -> list[ClientBoundPacket]:
-    print("client : clientboundget :",data)
+    # print("client : clientboundget :",data)
     result = []
     list = packetlib.unparse(data,True)
     for id,decode in list:

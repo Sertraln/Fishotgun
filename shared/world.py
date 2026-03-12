@@ -1,4 +1,4 @@
-from ursina import Entity
+from ursina import Entity, Terrain
 from panda3d.bullet import BulletBoxShape, BulletRigidBodyNode, BulletWorld
 from panda3d.core import Vec3 as PVec3, NodePath
 
@@ -45,12 +45,21 @@ def create_static_box(
     return visual, body_np
 
 # Environnement
+# ground = Entity(
+#     model='cube',
+#     scale=(100, 10, 100),
+#     texture='grass',
+#     texture_scale=(10, 10),
+#     collider='box',
+#     name='ground',
+#     parent=world_scene)
+
 ground = Entity(
-    model='cube',
-    scale=(100, 10, 100),
+    model= "assets/terrain",
+    scale=(1, 1, 1),
     texture='grass',
     texture_scale=(10, 10),
-    collider='box',
+    # collider='box',
     name='ground',
     parent=world_scene)
 
@@ -67,23 +76,23 @@ def init_world(base_scene:'NodePath'=None):
     global world_scene
     world_scene.parent = base_scene
 
-    create_static_box(
-        bullet_world=world_scene.bullet_world,
-        parent=world_scene,
-        position=(0, -5, 0),
-        scale=(100, 10, 100),
-        texture='grass',
-        name='ground'
-    )
+    # create_static_box(
+    #     bullet_world=world_scene.bullet_world,
+    #     parent=world_scene,
+    #     position=(0, -5, 0),
+    #     scale=(100, 10, 100),
+    #     texture='grass',
+    #     name='ground'
+    # )
 
-    create_static_box(
-        bullet_world=world_scene.bullet_world,
-        parent=world_scene,
-        position=(5, 9, 15),
-        scale=(10, 10, 10),
-        texture='brick',
-        name='wall'
-    )
+    # create_static_box(
+    #     bullet_world=world_scene.bullet_world,
+    #     parent=world_scene,
+    #     position=(5, 9, 15),
+    #     scale=(10, 10, 10),
+    #     texture='brick',
+    #     name='wall'
+    # )
 
     attach_world_bodies(world_scene.bullet_world, base_scene)
     return world_scene

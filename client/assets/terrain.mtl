@@ -1,0 +1,62 @@
+# Blender 5.0.1 MTL File: 'terrain.blend'
+# www.blender.org
+
+newmtl Carte
+Ns 0.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+
+newmtl Material.001
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.081856 0.092238 0.800023
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+
+newmtl Material.002
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+
+newmtl Material.003
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+
+newmtl Material.004
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+illum 2
+map_Kd C:/Users/adrie/Documents/le saint tout pour tout/tout pour EPITA/Fishotgun/Assets/Trees/Pine Tree/texture.png
+map_d C:/Users/adrie/Documents/le saint tout pour tout/tout pour EPITA/Fishotgun/Assets/Trees/Pine Tree/texture.png
+
+newmtl Material.005
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+illum 2
+map_Kd C:/Users/adrie/Documents/le saint tout pour tout/tout pour EPITA/Fishotgun/Assets/Trees/Pine Tree/texture.png
+map_d C:/Users/adrie/Documents/le saint tout pour tout/tout pour EPITA/Fishotgun/Assets/Trees/Pine Tree/texture.png
