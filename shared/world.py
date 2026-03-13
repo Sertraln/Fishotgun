@@ -1,4 +1,4 @@
-from ursina import Entity, Terrain,Vec3
+from ursina import Entity, Terrain,Vec3, Plane, color, Texture
 from panda3d.bullet import BulletBoxShape, BulletRigidBodyNode, BulletWorld
 from panda3d.core import Vec3 as PVec3, NodePath
 
@@ -55,19 +55,20 @@ def create_static_box(
 #     parent=world_scene)
 
 ground = Entity(
-    model= "assets/terrain",
+    model= "assets/models/terrain",
     scale=Vec3(3),
     texture_scale=(10, 10),
     # collider='box',
-    texture='grass',
+    # texture=Texture('assets/textures/grass.png'),
     name='ground',
     parent=world_scene)
 
 water = Entity(
-    model= "assets/water",
-    scale=Vec3(3),
-    position=(0, -0.5, 0),
-    texture_scale=(10, 10),
+    model= Plane(),
+    scale=Vec3(10),
+    position=(0, 0, 0),
+    # texture_scale=(10, 10),
+    color=color.azure,
     # collider='box',
     name='water',
     parent=world_scene)

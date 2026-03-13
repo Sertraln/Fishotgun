@@ -1,12 +1,15 @@
 from client.player import Player,ThirdPersonController
 from ursina import Vec3
 import threading
+import shared.world as world
 
 class World:
 
     def __init__(self):
         self.players: dict[int,Player] = {}
         self.player_init = threading.Event()
+        world.ground.texture = 'assets/textures/grass.png'
+        world.ground.texture_scale = (512,512)
 
     def spawn_player(self,player_id:int,name:str,position:Vec3,rotation:float=0):
         print(f"World: spawning player {player_id} at {position}")
