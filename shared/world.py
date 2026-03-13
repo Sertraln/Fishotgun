@@ -66,19 +66,10 @@ ground = Entity(
 water = Entity(
     model= "assets/water",
     scale=Vec3(3),
-    position=(0, -0.5, 0),
+    position=(0, 1, 0),
     texture_scale=(10, 10),
     # collider='box',
     name='water',
-    parent=world_scene)
-
-wall = Entity(
-    model='cube',
-    scale=(10, 10, 10),
-    position=(5, 9, 15),
-    texture='brick',
-    collider='box',
-    name='wall',
     parent=world_scene)
 
 def init_world(base_scene:'NodePath'=None):
@@ -146,5 +137,4 @@ def attach_world_bodies(bullet_world: BulletWorld, parent_np: NodePath, friction
 
     bodies = {}
     _, bodies['ground'] = add_static_box(ground, bullet_world, parent_np, friction=friction, mass=0.0)
-    _, bodies['wall'] = add_static_box(wall, bullet_world, parent_np, friction=friction, mass=0.0)
     return bodies

@@ -43,6 +43,7 @@ def start(ip:str, port:int, name:str):
     
     # Set basic sky
     Sky(texture='sky_default')
+    DirectionalLight().look_at(Vec3(1,-1,.5))
     camera.fov = 90
     # Stocker les références dans data pour y accéder dans update
     data.spot = spot
