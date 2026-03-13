@@ -31,8 +31,8 @@ def register_menu(menu : Menu):
     print(f"Registered menus {_menus}")
 
 def show(menu : Menu | str):
-    global _menus
     if isinstance(menu, str):
+        global _menus
         print(_menus)
         menu = _menus[menu]
     global _currentMenu
@@ -78,6 +78,10 @@ class CustomTextField(InputField):
     @property
     def text(self):
         return self.text_field.text
+
+def getMenu(menu_id:str) -> Menu | None:
+    global _menus
+    return _menus.get(menu_id)
 
 def init():
     from ursina import application

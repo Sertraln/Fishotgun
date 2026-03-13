@@ -143,9 +143,11 @@ class ServerListMenu(menu.Menu):
         self.button_list.shader.compile()
         self.button_list.show_error = self.show_error
         add_server.server_list_menu = self
+        self.button_list.position=Vec3(0.0,-0.25,0.0)
         self.back_but = menu.LinkingButton(menu=None,text='back', position=(-0.4,-0.3), scale=(0.4, 0.1), text_size=1,parent=self)
         self.add_server_but = menu.LinkingButton(menu=add_server,text='Ajouter un serveur', position=(0,-0.3), scale=(0.4, 0.1), text_size=1,parent=self)
         self.scroll_text = Text("0", parent=self, position=(0,0.4), scale=2,color=color.gray)
+        self.add_server_to_list("localserver", "127.0.0.1", 5555)
 
     def add_server_to_list(self, name, ip, port):
         but = ServerButton(name, ip, port, self.button_list)
@@ -167,7 +169,7 @@ class ServerListMenu(menu.Menu):
 
 
     def input(self, key):
-        if key == 'scroll up':
+        if key == 'scroll up' and self.button_list.position.y < -0.25:
             self.button_list.position += Vec3(0,0.01,0)
         elif key == 'scroll down':
             self.button_list.position -= Vec3(0,0.01,0)

@@ -28,7 +28,7 @@ class Server:
         self.stopevent = th.Event()
         self.world = World()
         try:
-            self.soket.bind((self.ip, port))
+            self.soket.bind(("0.0.0.0", port))
         except socket.error as e:
             print("server :error binding :",e)
             raise e

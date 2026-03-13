@@ -1,6 +1,8 @@
 from client import data,menu,network
+from client.menus.chat import Chat
 from spot import FishingSpot
-from ursina import application,Button,Entity,color,Sky
+from ursina import application,Button,Entity,color,Sky,mouse
+
 
 class World:
     def add_entity(self, entity: Entity):
@@ -40,12 +42,16 @@ def load_world():
 
     # Create a fishing spot
     spot = FishingSpot(position=(0,2,0))
-
-    menu1 = menu.Menu("menu1")
+    menu1 = menu.Menu("menu1", False)
     resume = Button(text='Resume', scale=(0.3, 0.1), position=(0,0.1))
-    resume.on_click = menu.hide
+    def resume_game():
+        menu.hide()
+        mouse.locked = True
+    resume.on_click = resume_game
     menu1.add_element(resume)
     quit =Button(text='Quit', scale=(0.3, 0.1), position=(0,-0.1))
     quit.on_click = application.quit
     menu1.add_element(quit)
+    ChatMenu = Chat()
+    menu.register_menu(ChatMenu)
     menu.register_menu(menu1)
