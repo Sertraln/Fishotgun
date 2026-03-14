@@ -1,4 +1,5 @@
 from ursina import *
+from direct.actor.Actor import Actor
 from client.packet.serverbound import ServerBoundMovementPacket,ServerBoundRotationPacket
 import threading as th
 from shared.parsedata.input import KeyStates
@@ -14,9 +15,8 @@ class Player(Entity):
         super().__init__()
         self.position = position
         self.name = name
-        self.model = 'cube'
-        self._model.setPos(Vec3(0,0.5,0))
-        self.color = color.violet
+        actor = Actor("assets/models/player/player.glb")
+        actor.reparent_to(self)
         self.scale = Vec3(1,1.5,1)
         self.player_id = id
         
@@ -51,7 +51,6 @@ class ThirdPersonController(Player):
         super().__init__(id,name,position)
         self.name = "ThirdPersonController"
         self.physic = Physic(scene,position)
-        self.color = color.orange
         # L'enregistrement dans le world se fait via World.__init__ qui ajoute player_entity
         self.player_id = id
         self.username = name
@@ -137,7 +136,7 @@ class ThirdPersonController(Player):
         
     def update_pos(self, key_strokes:KeyStates):
         # Synchroniser la rotation avec la physique pour que forward/right soient corrects
-        self.physic.rotation_y = self.rotation_y
+        self.physic.rotation_y = self.camera_pivot.rotation_y
         self.physic.update_phy(time.dt,key_strokes)
         self.position = self.physic.position
         self._queue_pos.append((time.time_ns(), Vec3(self.position)))
@@ -145,9 +144,9 @@ class ThirdPersonController(Player):
             self._queue_pos.popleft()
 
     def update_cam(self):
-        self.rotation_y += mouse.velocity[0] * self.mouse_sensitivity[1]
+        self.camera_pivot.rotation_y += mouse.velocity[0] * self.mouse_sensitivity[1]
         if mouse.velocity[0] != 0:
-            data.network.send(ServerBoundRotationPacket(self.rotation_y,time.time_ns()))
+            data.network.send(ServerBoundRotationPacket(self.camera_pivot.rotation_y,time.time_ns()))
         self.camera_pivot.rotation_x -= mouse.velocity[1] * self.mouse_sensitivity[0]
         self.camera_pivot.rotation_x= clamp(self.camera_pivot.rotation_x, -90, 90)
         
