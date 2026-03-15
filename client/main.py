@@ -43,7 +43,9 @@ def start(ip:str, port:int, name:str):
     
     # Set basic sky
     Sky(texture='sky_default')
-    DirectionalLight().look_at(Vec3(1,-1,.5))
+    light = DirectionalLight(shadows=False)
+    light.look_at(Vec3(0.1,-1,0))
+    light._light.specular_color = color.gold
     camera.fov = 90
     # Stocker les références dans data pour y accéder dans update
     data.spot = spot
