@@ -5,59 +5,72 @@ from shared.utils import get_local_ip
 
 name = "player"
 
+
 class ServerButton(Button):
     def __init__(self, name, ip, port, parent,**kwargs):
-        super().__init__(text=name, position=(0,0.5-len(parent.children)*0.1), scale=(0.4, 0.1), text_size=1,parent=parent)
+        super().__init__(
+            text=name,
+            position=(0, -len(parent.children) * 0.12),
+            scale=(0.5, 0.09),
+            text_size=0.8,
+            text_color=color.white,
+            highlight_text_color=color.white,
+            parent=parent,
+            color=color.rgba32(50, 50, 60),
+            highlight_color=color.rgba32(70, 70, 90),
+        )
         for key, value in kwargs.items():
-            setattr(self, key ,value)
+            setattr(self, key, value)
         self._selected = False
         self.ip = ip
         self.port = port
 
     def on_click(self):
         if self.selected:
-            self.selected = False   
+            self.selected = False
             self.connect()
         else:
             self.selected = True
 
     def connect(self):
         res = world.join_world(self.ip, self.port, "default")
-        if res :
-            print("Erreur : "+str(res))
+        if res:
+            print("Erreur : " + str(res))
             self.parent.show_error(res)
         else:
             menu.hide()
-    
+
     @property
     def selected(self):
         return self._selected
-    
+
     @selected.setter
     def selected(self, value):
         self._selected = value
         if value:
-            self.color = self.color.tint(-.5)
+            self.color = color.rgba32(80, 120, 180)
         else:
-            self.color = self.color.tint(.5)
+            self.color = color.rgba32(50, 50, 60)
+
 
 class AddServerMenu(menu.Menu):
     def __init__(self):
         super().__init__("join_menu")
-        self.texterr = Text("format : ip:port (ex: localhost:5555)", parent=self, position=(-0.2, 0.1, -0.1), scale=0.5,color=color.red)
-        self.te = menu.CustomTextField(max_lines=30,parent=self,scale=(0.4,0.1), position=(0, 0.15, -0.1), text_size=1, naming_box="Adresse Ip",bg_color=color.black)
-        self.connect_but = Button(text='ajouter le serveur', position=(0,-0.1), scale=(0.4, 0.1), text_size=1,parent=self)
+        Text("Ajouter un serveur", parent=self, position=(0, 0.28, -0.1), origin=(0, 0), scale=1.4, color=color.white)
+        self.texterr = Text("format : ip:port  (ex: localhost:5555)", parent=self, position=(0, 0.18, -0.1), origin=(0,0), scale=0.55, color=color.rgba32(180,180,180))
+        self.te = menu.CustomTextField(max_lines=1, parent=self, scale=(0.45, 0.07), position=(0, 0.07, -0.1), text_size=1, naming_box=None, bg_color=color.black)
+        self.connect_but = Button(text='Confirmer', text_color=color.white, highlight_text_color=color.white, position=(0, -0.07), scale=(0.3, 0.08), text_size=0.9, parent=self, color=color.rgba32(60, 160, 80), highlight_color=color.rgba32(80, 190, 100))
         self.connect_but.on_click = self.rejoindre
-        self.server_list_menu : 'ServerListMenu' = None
+        self.server_list_menu: 'ServerListMenu' = None
 
     def rejoindre(self):
         content = self.te.text
         lst = content.split(":")
         size = len(lst)
         if lst[0] == "":
-            lst = [get_local_ip(),"5555"]
+            lst = [get_local_ip(), "5555"]
         if size == 1:
-             lst.append("5555")
+            lst.append("5555")
         if lst[0] == "localhost":
             lst[0] = get_local_ip()
         if self.server_list_menu is not None:
@@ -66,10 +79,11 @@ class AddServerMenu(menu.Menu):
             print("Erreur : server_list_menu is None")
         menu.show(self.server_list_menu)
 
-        
 
 add_server = AddServerMenu()
 menu.register_menu(add_server)
+
+
 def build_server_list_shader(min_y, max_y):
     return f'''
 #version 120
@@ -103,7 +117,7 @@ void main() {{
 
 '''
 
-test_vertex='''
+test_vertex = '''
 #version 120
 
 uniform mat4 p3d_ModelViewProjectionMatrix;
@@ -121,76 +135,102 @@ void main() {
 
 test = build_server_list_shader_texture(-0.2, 0.3)
 
-jsp_vertext = '''
-#version 120
-
-void main() {
-    gl_Position = ftransform();
-    gl_FrontColor = gl_Color;
-}
-'''
-
 server_list_shader = build_server_list_shader(-0.2, 0.3)
+
+SCROLL_MIN_Y = -0.1
+SCROLL_MAX_Y = 0.0
 
 class ServerListMenu(menu.Menu):
     def __init__(self):
         super().__init__("server_list_menu")
-        # self.shader =
         self.pause = True
+
+        Text("Rejoindre un serveur", parent=self, position=(0, 0.38, -0.1), origin=(0, 0), scale=1.4, color=color.white)
+
         self.button_list = Entity(parent=self)
-        self.button_list.position = Vec3(0,-0.1,-0.1)
-        self.button_list.shader =  Shader(name='test',vertex=test_vertex,fragment=server_list_shader)
+        self.button_list.position = Vec3(0, 0, -0.1)
+        self.button_list.shader = Shader(name='test', vertex=test_vertex, fragment=server_list_shader)
         self.button_list.shader.compile()
         self.button_list.show_error = self.show_error
         add_server.server_list_menu = self
-        self.back_but = menu.LinkingButton(menu=None,text='back', position=(-0.4,-0.3), scale=(0.4, 0.1), text_size=1,parent=self)
-        self.add_server_but = menu.LinkingButton(menu=add_server,text='Ajouter un serveur', position=(0,-0.3), scale=(0.4, 0.1), text_size=1,parent=self)
-        self.scroll_text = Text("0", parent=self, position=(0,0.4), scale=2,color=color.gray)
+
+        self.error_label = Text("", parent=self, position=(0, -0.28, -0.1), origin=(0, 0), scale=0.7, color=color.rgba32(220, 80, 80))
+
+        self.back_but = Button(text='< Retour', text_color=color.white, highlight_text_color=color.white, position=(-0.28, -0.38), scale=(0.22, 0.07), text_size=0.8, parent=self, color=color.rgba32(70, 70, 80), highlight_color=color.rgba32(100, 100, 115))
+        self.back_but.on_click = lambda: menu.show(self.back_but.menu)
+        self.back_but.menu = None
+        self.add_server_but = Button(text='+ Ajouter', text_color=color.white, highlight_text_color=color.white, position=(0.28, -0.38), scale=(0.22, 0.07), text_size=0.8, parent=self, color=color.rgba32(60, 130, 60), highlight_color=color.rgba32(80, 160, 80))
+        self.add_server_but.on_click = lambda: menu.show(add_server)
 
     def add_server_to_list(self, name, ip, port):
         but = ServerButton(name, ip, port, self.button_list)
         but.shader = self.button_list.shader
-        but.set_shader_input("cur_color",but.color)
+        but.set_shader_input("cur_color", but.color)
         if but.text_entity:
-            new_shad = Shader(name='test',vertex=test_vertex,fragment=test)
+            new_shad = Shader(name='test', vertex=test_vertex, fragment=test)
             new_shad.compile()
             but.text_entity.shader = new_shad
-            #but.text_entity.set_shader_input("cur_color",but.text_color)
-            
+
     def show_error(self, error):
-        pass
+        self.error_label.text = f"Erreur : {error}"
 
     def update(self):
-        self.scroll_text.text = str(self.button_list.position.y)
         for but in self.button_list.children:
-            but.set_shader_input("cur_color",but.color)
-
+            but.set_shader_input("cur_color", but.color)
 
     def input(self, key):
+        num_buttons = len(self.button_list.children)
+        max_scroll = max(0, (num_buttons - 3) * 0.12)
         if key == 'scroll up':
-            self.button_list.position += Vec3(0,0.01,0)
+            self.button_list.position -= Vec3(0, 0.03, 0)
+            self.button_list.y = max(SCROLL_MIN_Y - max_scroll, self.button_list.y)
         elif key == 'scroll down':
-            self.button_list.position -= Vec3(0,0.01,0)
-        
+            self.button_list.position += Vec3(0, 0.03, 0)
+            self.button_list.y = min(SCROLL_MAX_Y, self.button_list.y)
+
+
 join_menu = ServerListMenu()
 menu.register_menu(join_menu)
+
 
 class MainMenu(menu.Menu):
     def __init__(self):
         super().__init__("main_menu")
         self.pause = True
-        join_menu.back_but.menu = self
-        self.test = menu.LinkingButton(menu=join_menu,text='Multijoueur',scale=(0.4,0.1), text_size=1, position=(0,0.1),parent=self)
-        te = menu.CustomTextField(max_lines=30,parent=self,scale=(0.4,0.1), position=(0,-0.1, -0.1), text_size=1, naming_box="Nom du joueur :",bg_color=color.black)
-        te.parent = self
-        self.te = te
+        join_menu.back_but.on_click = lambda: menu.show(self)
+
+        Text("FISHOTGUN", parent=self, position=(0, 0.3, -0.1), origin=(0, 0), scale=2.5, color=color.rgba32(80, 200, 220))
+
+        self.te = menu.CustomTextField(
+            max_lines=1, parent=self, scale=(0.38, 0.07),
+            position=(0, 0.1, -0.1), text_size=1,
+            naming_box="Nom du joueur :", bg_color=color.black
+        )
+
+        self.test = Button(
+            text='Multijoueur',
+            text_color=color.white,
+            highlight_text_color=color.white,
+            scale=(0.35, 0.08), text_size=0.9,
+            position=(0, -0.05), parent=self,
+            color=color.rgba32(60, 120, 180),
+            highlight_color=color.rgba32(80, 150, 210),
+        )
+        self.test.on_click = self.switch(lambda: menu.show(join_menu))
+
         from ursina import application
-        quit =Button(parent=self,text='Quitter', scale=(0.4, 0.1), position=(0,-0.3), text_size=1)
-        quit.on_click = application.quit
-        self.test.on_click = self.switch(self.test.on_click)
+        quit_btn = Button(
+            parent=self, text='Quitter',
+            text_color=color.white,
+            highlight_text_color=color.white,
+            scale=(0.35, 0.08), position=(0, -0.18),
+            text_size=0.9, color=color.rgba32(160, 50, 50),
+            highlight_color=color.rgba32(190, 70, 70),
+        )
+        quit_btn.on_click = application.quit
 
     from typing import Callable
-    def switch(self, button:'Callable'):
+    def switch(self, button: 'Callable'):
         def default_switch():
             global name
             name = self.te.text_field.text
@@ -199,9 +239,7 @@ class MainMenu(menu.Menu):
             button()
         return default_switch
 
+
 main_menu = MainMenu()
 menu.show(main_menu)
 menu.register_menu(main_menu)
-
-
-        

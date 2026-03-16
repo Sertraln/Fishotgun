@@ -6,10 +6,16 @@ class Menu(Entity):
         self.elements : list[Entity]  = []
         self.pause = pause
         self.id :str = id
+        self.ignore_paused = True
 
     def add_element(self, element : Entity):
         self.elements.append(element)
         element.parent = self
+
+    def update(self):
+        for child in self.children:
+            if isinstance(child, Button) and hasattr(child, 'text_entity') and child.text_entity:
+                child.text_entity.color = color.white
 
 class LinkingButton(Button):
     def __init__(self, menu : Menu, **kwargs):
@@ -83,4 +89,3 @@ def init():
     from ursina import application
     quit_button.on_click = application.quit
     import client.menus.mainmenu as mainmenu
-

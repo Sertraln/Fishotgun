@@ -15,8 +15,7 @@ def join_world(ip:str, port:int, name:str):
     return None
 
 def load_world():
-    Sky(color=color.violet)
-    # Create ground
+    sky = Sky(color=color.violet)
     ground = Entity(
         model='cube',
         scale=(100,10,100),
@@ -38,14 +37,45 @@ def load_world():
     
     data.player = player
 
-    # Create a fishing spot
     spot = FishingSpot(position=(0,2,0))
+
+    data.world_entities = [sky, ground, spot]
 
     menu1 = menu.Menu("menu1")
     resume = Button(text='Resume', scale=(0.3, 0.1), position=(0,0.1))
     resume.on_click = menu.hide
     menu1.add_element(resume)
-    quit =Button(text='Quit', scale=(0.3, 0.1), position=(0,-0.1))
-    quit.on_click = application.quit
+    quit = Button(text='Quit', scale=(0.3, 0.1), position=(0,-0.1))
+    quit.on_click = quit_to_menu
     menu1.add_element(quit)
     menu.register_menu(menu1)
+
+def quit_to_menu():
+    from ursina import destroy
+    from client.player import player_map
+
+    menu.show("main_menu")
+
+    if data.network:
+        data.network.disconnect()
+        data.network = None
+
+    if data.player:
+        data.player.disable()
+        destroy(data.player)
+        data.player = None
+
+    for p in list(player_map.values()):
+        p.disable()
+        destroy(p)
+    player_map.clear()
+
+    for e in data.world_entities:
+        destroy(e)
+    data.world_entities = []
+
+    if 'menu1' in menu._menus:
+        destroy(menu._menus['menu1'])
+        del menu._menus['menu1']
+
+    data.world = None
