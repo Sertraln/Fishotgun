@@ -31,7 +31,9 @@ class ServerBoundMessagePacket(ServerBoundDataPacket):
 
     def handle(self, client : 'Client'):
         print("server : message get :",self.message, flush=True)
-        client.server.broadcast(cb.ClientBoundMessagePacket(self.message),[client.id])
+        player = client.server.world.players.get(client.id)
+        if player != None:
+            client.server.broadcast(cb.ClientBoundMessagePacket(player.player_name,self.message))
 
 class ServerBoundMovementPacket(ServerBoundDataPacket):
     def __init__(self,data:list['KeyStates',int]):
