@@ -24,8 +24,8 @@ class ClientBoundInitPlayerPacket(ClientBoundDataPacket):
         self.fishunlocked = player.fish_unlocked
 
 class ClientBoundMessagePacket(ClientBoundDataPacket):
-    def __init__(self, message:str):
-        super().__init__(message)
+    def __init__(self,origine:str, message:str):
+        super().__init__(origine,message)
 
 class ClientBoundSpawnPlayerPacket(ClientBoundDataPacket):
     def __init__(self, player: 'Player'):

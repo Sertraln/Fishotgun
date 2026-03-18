@@ -1,5 +1,6 @@
 from client.packet.packetstruct import ClientBoundPacket,ClientBoundDataPacket
 from ursina import Vec3
+import client.menu as menu
 import client.data as data
 #client_bound server -> client
 #server_bound client -> server
@@ -34,11 +35,11 @@ class ClientBoundInitPlayerPacket(ClientBoundDataPacket):
 class ClientBoundMessagePacket(ClientBoundDataPacket):
     def __init__(self,data:list[str]):
         super().__init__(data)
-        self.message = self.data[0]
+        self.origine = data[0]  
+        self.message = self.data[1]
 
     def handle(self):
-        #TODO l.chat.addMessage(self.message)
-        pass
+        menu.getMenu("chat").add_message(self.origine,self.message)
 
 class ClientBoundPlayerListPacket(ClientBoundDataPacket):
     def __init__(self,data:list[list[int | str | Vec3]]):

@@ -1,4 +1,3 @@
-
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from client.player import ThirdPersonController
@@ -8,6 +7,7 @@ if TYPE_CHECKING:
 
 player : 'ThirdPersonController' = None
 network : 'Network' = None
+world_entities : list = []
 app : 'Ursina' = None
 spot : 'Entity' = None
 instructions : 'Text' = None

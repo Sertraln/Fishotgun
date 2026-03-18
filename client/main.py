@@ -11,6 +11,7 @@ import client.data as data
 from ursina import application as appli
 from shared.world import init_world
 from client.world import World
+from client import menu
 
 def start(ip:str, port:int, name:str):
     data.world = World()
@@ -18,8 +19,9 @@ def start(ip:str, port:int, name:str):
     original_quit = appli.quit
     
     def custom_quit():
-        print("Disconnecting from server...")
-        data.network.disconnect()
+        if data.network:
+            print("Disconnecting from server...")
+            data.network.disconnect()
         original_quit()
     
     app = Ursina()
@@ -60,6 +62,28 @@ def start(ip:str, port:int, name:str):
 
 # Fonction update GLOBALE - en dehors de start()
 def update():
+    player = data.player
+    if player is None: return
+
+    # Make player respawn if he falls
+    if player.y < -10:
+        player.position = (0,4,0)
+    
+    # Kick player if flies example
+    if player.air_time > 10:
+        pass
+
+    # Kick player if too fast
+    if player.speed > 21:
+        pass
+    
+    # Sprints if shift is held
+    if held_keys['shift']:
+        player.body.color = color.red
+        player.speed = 20
+    else:
+        player.body.color = color.blue
+        player.speed = 10
     # Récupérer les références depuis data
     player = data.player
     spot = data.spot
@@ -88,27 +112,21 @@ def update():
         camera.z_setter(-hit_camera.distance+offset_clipping)
     else:
         camera.z_setter(player.camera_offset)
-    
-    # Afficher la position du joueur
-    instructions.text = f'''Contrôles:
-Z/Q/S/D - Déplacement
-Espace - Sauter
-Souris - Regarder
-Échap - Déverrouiller souris
-Position: ({player.position.x:.1f}, {player.position.y:.1f}, {player.position.z:.1f})
-Au sol: {'Oui' if player.physic.grounded else 'Non'}
-'''
+class MenuLogic(Entity):
+    def __init__(self):
+        super().__init__(ignore_paused=True)
+    def input(self,key):
+        if key == 'escape':
+            if menu._currentMenu is not None and menu._currentMenu.enabled:
+                mouse.locked = True
+                menu.hide()
+            else:
+                mouse.locked = False
+                menu.show("menu1")
+        chat_menu = menu.getMenu("chat")
+        if key == 't up' and chat_menu and not chat_menu.enabled:
+                menu.show(chat_menu)
 
-if __name__ == '__main__':
-    ip = input("Enter server IP (default 127.0.0.1): ")
-    port = input("Enter server port (default 5555): ")
-    name = input("Enter your player name: ")
-    
-    if ip == "":
-        ip = "127.0.0.1"
-    if port == "":
-        port = "5555"
-    if name == "":
-        name = "default"
-    
-    start(ip, int(port), name)
+MenuLogic()
+
+app.run()

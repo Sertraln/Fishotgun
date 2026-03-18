@@ -3,6 +3,7 @@ from direct.actor.Actor import Actor
 from client.packet.serverbound import ServerBoundMovementPacket,ServerBoundRotationPacket
 import threading as th
 from shared.parsedata.input import KeyStates
+from client import menu
 from shared.movement import Physic
 from client import data
 import time
