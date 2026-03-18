@@ -65,7 +65,7 @@ class FishingScene:
 
         water = Entity(model='plane', color=color.cyan.tint(-0.3), scale=40, position=(0, Y_OFFSET-20, 0), rotation=(0, 0, 0), collider='box')
         fish = Fish(position=(0, Y_OFFSET-19, 0), rotation=(0, 0, 0))
-        fish.on_click = self.stop
+        fish.on_click = self.request_stop
         point = Entity(model='sphere', color=color.salmon, scale=0.5, position=(2, Y_OFFSET-19, 2))
 
         self._fish = fish
@@ -77,6 +77,12 @@ class FishingScene:
             return
         if self._fish.look_at(self._point.position):
             self._point.position = (randrange(-11, 11), Y_OFFSET-19, randrange(-6, 6))
+        
+    def request_stop(self):
+        if not self.enabled:
+            return
+        if self.on_end:
+            self.on_end('caught')
 
     def stop(self):
         if not self.enabled:
@@ -90,5 +96,3 @@ class FishingScene:
         self._entities = []
         self._fish = None
         self._point = None
-        if self.on_end:
-            self.on_end('caught')
