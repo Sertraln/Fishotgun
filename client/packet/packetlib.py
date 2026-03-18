@@ -20,7 +20,6 @@ def init_packetlib():
     packetlib.init()
 
 def getClientBoundPacket(data:bytes) -> list[ClientBoundPacket]:
-    # print("client : clientboundget :",data)
     result = []
     list = packetlib.unparse(data,True)
     for id,decode in list:
@@ -29,12 +28,13 @@ def getClientBoundPacket(data:bytes) -> list[ClientBoundPacket]:
             result.append(packet(decode))
         else :
             result.append(packet())
+    print("client : clientboundget :",str(result))
     return result
 
 def getServerBoundPacket(id:int,data:str = "") -> ServerBoundPacket:
-    print("client : serverboundget :",data)
     id = data[0]
     packet = pl.serverBoundPacketList[id]
+    print("client : serverboundget :",packet,data)
     if issubclass(packet,ServerBoundDataPacket):
        return packet(data)
     else :

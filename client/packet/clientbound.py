@@ -80,7 +80,7 @@ class ClientBoundPlayerPositionPacket(ClientBoundDataPacket):
         self.position : Vec3 = data[1]
 
     def handle(self):
-        # print("client : player position get :",self.player_id,self.position, flush=True)
+        print("client : player position get :",data.world.players, flush=True)
         data.world.players[self.player_id].set_target_position(self.position)
 
 class ClientBoundReconcilePositionPacket(ClientBoundDataPacket):
@@ -90,17 +90,5 @@ class ClientBoundReconcilePositionPacket(ClientBoundDataPacket):
         self.position : Vec3 = data[1]
 
     def handle(self):
-        # print("client : player reconcile position get :",self.timestamp,self.position, flush=True)
+        #print("client : player reconcile position get :",self.timestamp,self.position, flush=True)
         data.player.register_server_pos(self.timestamp,self.position)
-
-class ClientBoundPlayerRotationPacket(ClientBoundDataPacket):
-    def __init__(self,data:list):
-        super().__init__(data)
-        self.player_id : int = data[0]
-        self.rotation : float = data[1]
-
-    def handle(self):
-        print("client : player rotation get :",self.player_id,self.rotation, flush=True)
-        if self.player_id == data.player.player_id:
-            return  # Ignore rotation updates for the local
-        data.world.players[self.player_id].set_target_rotation(self.rotation)

@@ -3,6 +3,8 @@ import threading as th
 import traceback
 from client.packet.serverbound import ServerBoundPseudoPacket
 from client.packet.packetstruct import ServerBoundPacket 
+import client.data as data
+import client.world as world
 
 class Network:
     def __init__(self, ip, port,name):
@@ -87,6 +89,8 @@ class Network:
         if self.thread and self.thread.is_alive() and self.thread != current_thread:
             self.thread.join(timeout=3.0)
         print("client : Déconnexion")
+        data.network = None
+        world.quit_to_menu()
 
 
 

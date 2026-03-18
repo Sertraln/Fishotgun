@@ -30,10 +30,10 @@ class World:
         return world.world_scene
 
     def join_player(self, player:'Player') -> int:
-        pid = player.client.id
-        player.client.send(ClientBoundPlayerListPacket(list(self.players.values())))
-        self.players[pid] = player
         player.client.send(ClientBoundInitPlayerPacket(player))
+        player.client.send(ClientBoundPlayerListPacket(list(self.players.values())))
+        pid = player.client.id
+        self.players[pid] = player
         print(f"World: player joined {pid}")
         data.server.broadcast(ClientBoundSpawnPlayerPacket(player),[player.client.id]) 
         return pid
@@ -98,15 +98,14 @@ class World:
             if player.keys_states is not None:
                 old_pos = copy.deepcopy(player.position)
                 player.update_phy(dt, player.keys_states)
-                print(f"World: updated player {player.client.id} position to {player.position}")
-                if player.position != old_pos:
+                if player.position != old_pos:  # Only send updates if player has moved significantly
+                    print(f"World: updated player {player.client.id} position to {player.position}")
                     self.send_position_updates(player)
 
     def update_player_rotation(self, client:'Client', rotation:float, timestamp:int):
         player = self.players.get(client.id)
         if player:
             player.rotation_z = rotation
-            data.server.broadcast(ClientBoundPlayerRotationPacket(client.id, rotation),[client.id])
 
     def save(self):
         #totdo : save world state to disk

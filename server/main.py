@@ -25,6 +25,7 @@ class Server:
         self.port = port if port not in Server.used_ports else 5555+len(Server.used_ports)
         self.ip = ip if ip else get_local_ip()
         self.soket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.soket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.threadlist : list[th.Thread] = []
         self.lastpid = 0
         self.stopevent = th.Event()
@@ -94,7 +95,7 @@ class Server:
                     self.soket.shutdown(socket.SHUT_RDWR)
                 except (OSError, socket.error):
                     # Socket serveur n'est pas connecté - shutdown non applicable
-                    pass
+                    print("Server : Socket serveur déjà fermé ou non connecté")
                 self.soket.close()
             for thread in self.threadlist:
                 if thread.is_alive():
@@ -105,7 +106,7 @@ class Server:
         except Exception as e:
             print("Server : Erreur de fermeture :",e)
         finally:
-            raise SystemExit(0)
+            sys.exit(0)
 
 if __name__ == "__main__":
     server = Server()

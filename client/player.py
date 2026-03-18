@@ -8,24 +8,35 @@ from shared.movement import Physic
 from client import data
 import time
 import collections
+import math
 
 player_map = {}
 
 class Player(Entity):
     def __init__(self, id : int, name : str, position :Vec3 = Vec3(0,0,0)):
         super().__init__()
+        self._position_tracking_ready = False
         self.position = position
         self.name = name
-        actor = Actor("assets/models/player/player.glb")
-        actor.reparent_to(self)
+        self.actor = Actor("assets/models/player/player.glb")
+        self.actor.reparent_to(self)
         self.scale = Vec3(1,1.5,1)
         self.player_id = id
+
+        self._auto_face_movement = True
+        self._turn_lerp_speed = 8.0
+        self._rotation_y_offset = 180.0
+        self._min_turn_distance = 0.02
+        self._min_angle_delta = 0.5
+        self._snap_angle_delta = 0.2
+        self._movement_target_rotation_y = self._get_model_rotation_y()
         
         # Interpolation attributes
         self.target_position = position
         self.target_rotation = 0
         self.interpolation_start_time = 0
         self.interpolation_duration = 0.05  # 50ms to match server tickrate
+        self._position_tracking_ready = True
     
     def update(self):
         current_time = time.time()
@@ -34,7 +45,53 @@ class Player(Entity):
         if elapsed < self.interpolation_duration and self.interpolation_duration > 0:
             t = elapsed / self.interpolation_duration
             self.position = lerp(self.position, self.target_position, t)
-            self.rotation_y = lerp(self.rotation_y, self.target_rotation, t)
+
+        self._update_smooth_movement_rotation()
+
+    def __setattr__(self, key, value):
+        if key == 'position' and getattr(self, '_position_tracking_ready', False):
+            previous = Vec3(self.position)
+            super().__setattr__(key, value)
+            self._update_rotation_target_from_movement(previous, Vec3(value))
+            return
+        super().__setattr__(key, value)
+
+    def _update_rotation_target_from_movement(self, previous_position: Vec3, new_position: Vec3):
+        if not self._auto_face_movement:
+            return
+
+        move_delta = Vec3(new_position.x - previous_position.x, 0, new_position.z - previous_position.z)
+        if move_delta.length() <= self._min_turn_distance:
+            return
+
+        # Model forward is aligned on Z; X needs opposite sign to match right/left turns.
+        desired_rotation = math.degrees(math.atan2(-move_delta.x, move_delta.z)) + self._rotation_y_offset
+        angle_delta = abs((desired_rotation - self._movement_target_rotation_y + 180.0) % 360.0 - 180.0)
+        if angle_delta < self._min_angle_delta:
+            return
+
+        self._movement_target_rotation_y = desired_rotation
+
+    def _update_smooth_movement_rotation(self):
+        if not self._auto_face_movement:
+            return
+
+        alpha = clamp(time.dt * self._turn_lerp_speed, 0.0, 1.0)
+        current = self._get_model_rotation_y()
+        next_rotation = lerp_angle(current, self._movement_target_rotation_y, alpha) - 180
+        remaining = abs((self._movement_target_rotation_y - next_rotation) % 360.0)
+        if remaining < self._snap_angle_delta:
+            next_rotation = self._movement_target_rotation_y
+        self._set_model_rotation_y(next_rotation)
+
+    def _get_model_rotation_y(self) -> float:
+        if hasattr(self, 'actor') and self.actor:
+            return self.actor.get_h() + 180.0
+        return 0.0
+
+    def _set_model_rotation_y(self, value: float):
+        if hasattr(self, 'actor') and self.actor:
+            self.actor.set_h(value)
     
     def set_target_position(self, position: Vec3):
         """Start interpolation to target position"""
@@ -44,6 +101,7 @@ class Player(Entity):
     def set_target_rotation(self, rotation: float):
         """Start interpolation to target rotation"""
         self.target_rotation = rotation
+        self._movement_target_rotation_y = rotation
         self.interpolation_start_time = time.time()
 
 
@@ -51,6 +109,7 @@ class ThirdPersonController(Player):
     def __init__(self,id:int, name :str, position:Vec3 = Vec3(0,0,0)):
         super().__init__(id,name,position)
         self.name = "ThirdPersonController"
+        self._auto_face_movement = True
         self.physic = Physic(scene,position)
         # L'enregistrement dans le world se fait via World.__init__ qui ajoute player_entity
         self.player_id = id
@@ -81,6 +140,7 @@ class ThirdPersonController(Player):
         self.update_mouv_input()
         self.update_pos(self._last_input)
         self.reconcile_position_with_server()
+        self._update_smooth_movement_rotation()
         # Additional third person update can go here
 
     def register_server_pos(self, timestamp: int, position: Vec3):

@@ -9,7 +9,6 @@ from client.spot import FishingSpot
 import client.network as network
 import client.data as data
 from ursina import application as appli
-from shared.world import init_world
 from client.world import World
 from client import menu
 from client.spot import FishingSpot
@@ -25,8 +24,6 @@ appli.quit = custom_quit
 menu.init()
 appli.pause()
 window.color = color.blue
-data.world = World()
-original_quit = appli.quit
 
 # Fonction update GLOBALE - en dehors de start()
 def update():

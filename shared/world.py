@@ -54,29 +54,32 @@ def create_static_box(
 #     name='ground',
 #     parent=world_scene)
 
-ground = Entity(
-    model= "assets/models/terrain",
-    scale=Vec3(3),
-    texture_scale=(10, 10),
-    # collider='box',
-    # texture=Texture('assets/textures/grass.png'),
-    name='ground',
-    parent=world_scene)
-
-water = Entity(
-    model= 'cube',
-    position=(0, -1, 0),
-    scale=(500, 1, 500),
-    # texture_scale=(10, 10),
-    #color=color.azure,
-    # collider='box',
-    name='water',
-    parent=world_scene)
+ground = None
+water = None
 
 def init_world(base_scene:'NodePath'=None):
     global world_scene
     world_scene.parent = base_scene
 
+    global ground
+    ground = Entity(
+        model= "assets/models/terrain",
+        scale=Vec3(3),
+        texture_scale=(10, 10),
+        # collider='box',
+        # texture=Texture('assets/textures/grass.png'),
+        name='ground',
+        parent=world_scene)
+
+    Entity(
+        model= 'cube',
+        position=(0, -1, 0),
+        scale=(500, 1, 500),
+        # texture_scale=(10, 10),
+        #color=color.azure,
+        # collider='box',
+        name='water',
+        parent=world_scene)
     # create_static_box(
     #     bullet_world=world_scene.bullet_world,
     #     parent=world_scene,

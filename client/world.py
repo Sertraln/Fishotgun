@@ -1,7 +1,7 @@
 from client import data,menu,network
 from client.menus.chat import Chat
 from client.spot import FishingSpot
-from ursina import application,Button,Entity,color,Sky,mouse,Vec3,Text,DirectionalLight,AmbientLight,camera,scene
+from ursina import application,Button,destroy,color,Sky,mouse,Vec3,Text,DirectionalLight,AmbientLight,camera,scene
 from client.player import Player,ThirdPersonController
 import threading
 import shared.world as world
@@ -26,6 +26,8 @@ class World:
     def leave_player(self,player_id:int):
         print("client : player leave get :",player_id, flush=True)
         if player_id in self.players:
+            pl = self.players[player_id]
+            destroy(pl)
             del self.players[player_id]
 
 class PlayerInitializationError(Exception):
@@ -33,6 +35,7 @@ class PlayerInitializationError(Exception):
 
 def join_world(ip:str, port:int, name:str) -> Exception | None:
     try:
+        data.world = World()
         data.network = network.Network(ip,port,name)
         if(not data.world.player_init.wait(5)):  # Wait for player initialization before starting the game loop
             print("Player initialization timed out. Exiting.")
@@ -41,6 +44,8 @@ def join_world(ip:str, port:int, name:str) -> Exception | None:
         from client.packet.clientbound import ClientBoundInitPlayerPacket
         ClientBoundInitPlayerPacket.init()
     except Exception as e:
+        del data.world
+        data.world = None
         return e
     load_world()
     return None
@@ -55,7 +60,6 @@ def load_world():
         origin=(0, 0),
         background=True
     )
-    data.world = World()
     spot = FishingSpot(position=(0,2,0))
     data.world_entities = [sky, spot]
     light = DirectionalLight(shadows=False)
@@ -85,7 +89,7 @@ def quit_to_menu():
 
     menu.show("main_menu")
 
-    if data.network:
+    if data.network is not None:
         data.network.disconnect()
         data.network = None
 

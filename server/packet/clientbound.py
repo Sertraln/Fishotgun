@@ -50,10 +50,6 @@ class ClientBoundPlayerPositionPacket(ClientBoundDataPacket):
     def __init__(self, player_id:int, position:'Vec3'):
         super().__init__(player_id,position)
 
-class ClientBoundPlayerRotationPacket(ClientBoundDataPacket):
-    def __init__(self, player_id:int, rotation:float):
-        super().__init__(player_id,rotation)
-
 class ClientBoundReconcilePositionPacket(ClientBoundDataPacket):
     def __init__(self, timestamp:int, position:'Vec3'):
         super().__init__(timestamp,position)
