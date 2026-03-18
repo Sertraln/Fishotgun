@@ -75,7 +75,7 @@ class MenuLogic(Entity):
                 mouse.locked = False
                 menu.show("menu1")
         chat_menu = menu.getMenu("chat")
-        if key == 't up' and not chat_menu.enabled:
+        if key == 't up' and chat_menu and not chat_menu.enabled:
                 menu.show(chat_menu)
 
 MenuLogic()
