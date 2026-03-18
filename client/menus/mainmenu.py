@@ -1,16 +1,16 @@
 from client import data,menu,world
-from ursina import Entity,color,Vec3,camera,TextField,Button,dedent,Text,ButtonList,Texture,Shader,window
-from ursina.prefabs.dropdown_menu import DropdownMenu,DropdownMenuButton
+from ursina import Entity,color,Vec3,camera,TextField,dedent,Text,Texture,Shader,window
 from shared.utils import get_local_ip
 
-name = "player"
+_name = "player"
+SCROLL_MIN_Y = -0.2
+SCROLL_MAX_Y = 0.3
 
-
-class ServerButton(Button):
+class ServerButton(menu.FixedButton):
     def __init__(self, name, ip, port, parent,**kwargs):
         super().__init__(
             text=name,
-            position=(0, -len(parent.children) * 0.12),
+            position=(0, SCROLL_MAX_Y-0.05-len(parent.children) * 0.12),
             scale=(0.5, 0.09),
             text_size=0.8,
             text_color=color.white,
@@ -30,10 +30,12 @@ class ServerButton(Button):
             self.selected = False
             self.connect()
         else:
+            self.parent.unselected()
             self.selected = True
 
     def connect(self):
-        res = world.join_world(self.ip, self.port, "default")
+        global _name
+        res = world.join_world(self.ip, self.port, _name)
         if res:
             print("Erreur : " + str(res))
             self.parent.show_error(res)
@@ -58,8 +60,9 @@ class AddServerMenu(menu.Menu):
         super().__init__("join_menu")
         Text("Ajouter un serveur", parent=self, position=(0, 0.28, -0.1), origin=(0, 0), scale=1.4, color=color.white)
         self.texterr = Text("format : ip:port  (ex: localhost:5555)", parent=self, position=(0, 0.18, -0.1), origin=(0,0), scale=0.55, color=color.rgba32(180,180,180))
-        self.te = menu.CustomTextField(max_lines=1, parent=self, scale=(0.45, 0.07), position=(0, 0.07, -0.1), text_size=1, naming_box=None, bg_color=color.black)
-        self.connect_but = Button(text='Confirmer', text_color=color.white, highlight_text_color=color.white, position=(0, -0.07), scale=(0.3, 0.08), text_size=0.9, parent=self, color=color.rgba32(60, 160, 80), highlight_color=color.rgba32(80, 190, 100))
+        self.te = menu.CustomTextField(max_lines=1, parent=self, scale=(0.45, 0.07), position=(0, 0.07, -0.1), text_size=1, naming_box="ip", bg_color=color.black,text_color=color.light_gray)
+        self.te_name = menu.CustomTextField(max_lines=1, parent=self, scale=(0.45, 0.07), position=(0, -0.07, -0.1), text_size=1, naming_box="name", bg_color=color.black,text_color=color.light_gray)
+        self.connect_but = menu.FixedButton(text='Confirmer', text_color=color.white, highlight_text_color=color.white, position=(0, -0.2), scale=(0.3, 0.08), text_size=0.9, parent=self, color=color.rgba32(60, 160, 80), highlight_color=color.rgba32(80, 190, 100))
         self.connect_but.on_click = self.rejoindre
         self.server_list_menu: 'ServerListMenu' = None
 
@@ -74,7 +77,7 @@ class AddServerMenu(menu.Menu):
         if lst[0] == "localhost":
             lst[0] = get_local_ip()
         if self.server_list_menu is not None:
-            self.server_list_menu.add_server_to_list(content, lst[0], int(lst[1]))
+            self.server_list_menu.add_server_to_list(self.te_name.text, lst[0], int(lst[1]))
         else:
             print("Erreur : server_list_menu is None")
         menu.show(self.server_list_menu)
@@ -133,12 +136,13 @@ void main() {
 }
 '''
 
-test = build_server_list_shader_texture(-0.2, 0.3)
 
-server_list_shader = build_server_list_shader(-0.2, 0.3)
 
-SCROLL_MIN_Y = -0.1
-SCROLL_MAX_Y = 0.0
+test = build_server_list_shader_texture(SCROLL_MIN_Y, SCROLL_MAX_Y)
+
+server_list_shader = build_server_list_shader(SCROLL_MIN_Y, SCROLL_MAX_Y)
+
+
 
 class ServerListMenu(menu.Menu):
     def __init__(self):
@@ -152,14 +156,18 @@ class ServerListMenu(menu.Menu):
         self.button_list.shader = Shader(name='test', vertex=test_vertex, fragment=server_list_shader)
         self.button_list.shader.compile()
         self.button_list.show_error = self.show_error
+        self.button_list.unselected = self.unselected
         add_server.server_list_menu = self
 
         self.error_label = Text("", parent=self, position=(0, -0.28, -0.1), origin=(0, 0), scale=0.7, color=color.rgba32(220, 80, 80))
 
-        self.back_but = Button(text='< Retour', text_color=color.white, highlight_text_color=color.white, position=(-0.28, -0.38), scale=(0.22, 0.07), text_size=0.8, parent=self, color=color.rgba32(70, 70, 80), highlight_color=color.rgba32(100, 100, 115))
-        self.back_but.on_click = lambda: menu.show(self.back_but.menu)
+        self.back_but = menu.FixedButton(text='< Retour', text_color=color.white, highlight_text_color=color.white, position=(-0.28, -0.38), scale=(0.22, 0.07), text_size=0.8, parent=self, color=color.rgba32(70, 70, 80), highlight_color=color.rgba32(100, 100, 115))
         self.back_but.menu = None
-        self.add_server_but = Button(text='+ Ajouter', text_color=color.white, highlight_text_color=color.white, position=(0.28, -0.38), scale=(0.22, 0.07), text_size=0.8, parent=self, color=color.rgba32(60, 130, 60), highlight_color=color.rgba32(80, 160, 80))
+        def back():
+            self.unselected()
+            menu.show(self.back_but.menu)
+        self.back_but.on_click = back
+        self.add_server_but = menu.FixedButton(text='+ Ajouter', text_color=color.white, highlight_text_color=color.white, position=(0.28, -0.38), scale=(0.22, 0.07), text_size=0.8, parent=self, color=color.rgba32(60, 130, 60), highlight_color=color.rgba32(80, 160, 80))
         self.add_server_but.on_click = lambda: menu.show(add_server)
 
     def add_server_to_list(self, name, ip, port):
@@ -180,13 +188,26 @@ class ServerListMenu(menu.Menu):
 
     def input(self, key):
         num_buttons = len(self.button_list.children)
-        max_scroll = max(0, (num_buttons - 3) * 0.12)
-        if key == 'scroll up':
-            self.button_list.position -= Vec3(0, 0.03, 0)
-            self.button_list.y = max(SCROLL_MIN_Y - max_scroll, self.button_list.y)
-        elif key == 'scroll down':
-            self.button_list.position += Vec3(0, 0.03, 0)
-            self.button_list.y = min(SCROLL_MAX_Y, self.button_list.y)
+        if key not in ('scroll up', 'scroll down'):
+            return
+
+        # No scrolling needed while all entries fit in the visible area.
+        if num_buttons <= 4:
+            self.button_list.y = 0
+            return
+
+        top_button_y = SCROLL_MAX_Y - 0.05
+        last_button_y = top_button_y - (num_buttons - 1) * 0.12
+        max_offset = max(0, SCROLL_MIN_Y - last_button_y + 0.05)
+
+        if key == 'scroll down':
+            self.button_list.y = min(max_offset, self.button_list.y + 0.03)
+        elif key == 'scroll up':
+            self.button_list.y = max(0, self.button_list.y - 0.03)
+
+    def unselected(self):
+        for but in self.button_list.children:
+            but.selected = False
 
 
 join_menu = ServerListMenu()
@@ -207,7 +228,7 @@ class MainMenu(menu.Menu):
             naming_box="Nom du joueur :", bg_color=color.black
         )
 
-        self.test = Button(
+        self.test = menu.FixedButton(
             text='Multijoueur',
             text_color=color.white,
             highlight_text_color=color.white,
@@ -219,7 +240,7 @@ class MainMenu(menu.Menu):
         self.test.on_click = self.switch(lambda: menu.show(join_menu))
 
         from ursina import application
-        quit_btn = Button(
+        quit_btn = menu.FixedButton(
             parent=self, text='Quitter',
             text_color=color.white,
             highlight_text_color=color.white,
@@ -232,10 +253,10 @@ class MainMenu(menu.Menu):
     from typing import Callable
     def switch(self, button: 'Callable'):
         def default_switch():
-            global name
-            name = self.te.text_field.text
-            if name == "":
-                name = "player"
+            global _name
+            _name = self.te.text_field.text
+            if _name == "":
+                _name = "player"
             button()
         return default_switch
 

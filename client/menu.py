@@ -1,4 +1,11 @@
-from ursina import Button, mouse, Vec2,Entity,camera,TextField,Text,color,application,InputField
+from ursina import Button, mouse, Vec2,Vec3,Entity,camera,TextField,Text,color,application,InputField
+
+
+class FixedButton(Button):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        if self.text_entity:
+            self.text_entity.position = Vec3(0,0,-1)
 
 class Menu(Entity):
     def __init__(self,id:str,pause=True):
@@ -14,10 +21,10 @@ class Menu(Entity):
 
     def update(self):
         for child in self.children:
-            if isinstance(child, Button) and hasattr(child, 'text_entity') and child.text_entity:
+            if isinstance(child, FixedButton) and hasattr(child, 'text_entity') and child.text_entity:
                 child.text_entity.color = color.white
 
-class LinkingButton(Button):
+class LinkingButton(FixedButton):
     def __init__(self, menu : Menu, **kwargs):
         super().__init__()
         for key, value in kwargs.items():
@@ -60,7 +67,7 @@ def hide():
     application.resume()
 
 
-quit_button = Button(text='Quitter', scale=(0.2, 0.1), position=(0,-0.1))
+quit_button = FixedButton(text='Quitter', scale=(0.2, 0.1), position=(0,-0.1))
 quit_button.disable()
 
 class CustomTextField(InputField):
@@ -72,7 +79,7 @@ class CustomTextField(InputField):
         # self.bg.color = bg_color
         # self.bg.scale = scale
         self.text_color = text_color
-        self.naming_box = None if naming_box is None else Text(text=naming_box, parent=self, position=(-0.5,0.7, -0.1), scale=text_size, color=text_color)
+        self.naming_box = None if naming_box is None else Text(text=naming_box, parent=self, position=(-0.5,0.9, -0.1), scale=text_size, color=text_color)
         # self.render()
 
     
