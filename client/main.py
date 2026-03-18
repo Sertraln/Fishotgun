@@ -12,15 +12,13 @@ from ursina import application as appli
 from shared.world import init_world
 from client.world import World
 from client import menu
+from client.spot import FishingSpot
 
-
-Plane
-original_quit = appli.quit
 def custom_quit():
     if data.network:
         print("Disconnecting from server...")
         data.network.disconnect()
-    original_quit()
+    sys.exit()
 app = Ursina()
 appli.quit = custom_quit
 
@@ -34,29 +32,9 @@ original_quit = appli.quit
 def update():
     player = data.player
     if player is None: return
-
-    # Make player respawn if he falls
-    if player.y < -10:
-        player.position = (0,4,0)
-    
-    # Kick player if flies example
-    if player.air_time > 10:
-        pass
-
-    # Kick player if too fast
-    if player.speed > 21:
-        pass
-    
-    # Sprints if shift is held
-    if held_keys['shift']:
-        player.body.color = color.red
-        player.speed = 20
-    else:
-        player.body.color = color.blue
-        player.speed = 10
     # Récupérer les références depuis data
     player = data.player
-    spot = data.spot
+    spot : FishingSpot = data.world_entities[1] # Assuming the spot is the second entity in the list
     instructions = data.instructions
     
     # # Make player respawn if he falls

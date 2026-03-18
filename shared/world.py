@@ -64,11 +64,11 @@ ground = Entity(
     parent=world_scene)
 
 water = Entity(
-    model= Plane(),
-    scale=Vec3(10),
-    position=(0, 0, 0),
+    model= 'cube',
+    position=(0, -1, 0),
+    scale=(500, 1, 500),
     # texture_scale=(10, 10),
-    color=color.azure,
+    #color=color.azure,
     # collider='box',
     name='water',
     parent=world_scene)

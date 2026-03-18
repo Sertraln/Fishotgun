@@ -1,7 +1,7 @@
 from client import data,menu,network
 from client.menus.chat import Chat
 from client.spot import FishingSpot
-from ursina import application,Button,Entity,color,Sky,mouse,Vec3,Text,DirectionalLight,camera,scene
+from ursina import application,Button,Entity,color,Sky,mouse,Vec3,Text,DirectionalLight,AmbientLight,camera,scene
 from client.player import Player,ThirdPersonController
 import threading
 import shared.world as world
@@ -12,7 +12,10 @@ class World:
         self.players: dict[int,Player] = {}
         self.player_init = threading.Event()
         world.ground.texture = 'assets/textures/grass.png'
-        world.ground.texture_scale = (512,512)
+        world.ground.texture_scale = (128,128)
+        world.water.texture = 'assets/textures/water.png'
+        world.water.texture_scale = (64,64)
+
 
     def spawn_player(self,player_id:int,name:str,position:Vec3,rotation:float=0):
         print(f"World: spawning player {player_id} at {position}")
@@ -52,32 +55,14 @@ def load_world():
         origin=(0, 0),
         background=True
     )
-    ground = Entity(
-        model='cube',
-        scale=(100,10,100),
-        texture='grass',
-        texture_scale=(10,10),
-        collider='box')
     data.world = World()
-    data.world.add_entity(ground)
-
-    from client.data import player
-    from client.player import ThirdPersonController
-
-    player = ThirdPersonController(
-        position=(0,4,0),
-        jump_height = 5,
-        jump_up_duration = 1,
-        fall_after = .4,
-        gravity = 0.7)
-    
-    data.player = player
-
     spot = FishingSpot(position=(0,2,0))
-    data.world_entities = [sky, ground, spot]
+    data.world_entities = [sky, spot]
     light = DirectionalLight(shadows=False)
     light.look_at(Vec3(0.1,-1,0))
     light._light.specular_color = color.gold
+    ambient = AmbientLight(color=color.rgba(0.2, 0.2, 0.2, 0.5))
+    data.world_entities.extend([light, ambient])
     camera.fov = 90
     #registering menus
     menu1 = menu.Menu("menu1", False)
