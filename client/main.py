@@ -13,52 +13,22 @@ from shared.world import init_world
 from client.world import World
 from client import menu
 
-def start(ip:str, port:int, name:str):
-    data.world = World()
-    data.network = network.Network(ip, port, name)
-    original_quit = appli.quit
-    
-    def custom_quit():
-        if data.network:
-            print("Disconnecting from server...")
-            data.network.disconnect()
-        original_quit()
-    
-    app = Ursina()
-    data.app = app
-    appli.quit = custom_quit
-    window.size = (800, 600)
-    
-    init_world(scene)
-    
-    instructions = Text(
-        text='Contrôles:\nZ/Q/S/D - Déplacement\nEspace - Sauter\nSouris - Regarder\nÉchap - Déverrouiller souris',
-        position=(-0.5, 0.4),
-        scale=1.2,
-        origin=(0, 0),
-        background=True
-    )
 
-    
-    # Create a fishing spot
-    spot = FishingSpot(position=(0, 2, 0))
-    
-    # Set basic sky
-    Sky(texture='sky_default')
-    light = DirectionalLight(shadows=False)
-    light.look_at(Vec3(0.1,-1,0))
-    light._light.specular_color = color.gold
-    camera.fov = 90
-    # Stocker les références dans data pour y accéder dans update
-    data.spot = spot
-    data.instructions = instructions
-    if(not data.world.player_init.wait(5)):  # Wait for player initialization before starting the game loop
-        print("Player initialization timed out. Exiting.")
+Plane
+original_quit = appli.quit
+def custom_quit():
+    if data.network:
+        print("Disconnecting from server...")
         data.network.disconnect()
-        exit(0)
-    from client.packet.clientbound import ClientBoundInitPlayerPacket
-    ClientBoundInitPlayerPacket.init()
-    app.run()
+    original_quit()
+app = Ursina()
+appli.quit = custom_quit
+
+menu.init()
+appli.pause()
+window.color = color.blue
+data.world = World()
+original_quit = appli.quit
 
 # Fonction update GLOBALE - en dehors de start()
 def update():

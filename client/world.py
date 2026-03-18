@@ -1,10 +1,8 @@
 from client import data,menu,network
 from client.menus.chat import Chat
-from spot import FishingSpot
-from ursina import application,Button,Entity,color,Sky,mouse
-
+from client.spot import FishingSpot
+from ursina import application,Button,Entity,color,Sky,mouse,Vec3,Text,DirectionalLight,camera,scene
 from client.player import Player,ThirdPersonController
-from ursina import Vec3
 import threading
 import shared.world as world
 
@@ -27,8 +25,33 @@ class World:
         if player_id in self.players:
             del self.players[player_id]
 
+class PlayerInitializationError(Exception):
+    pass
+
+def join_world(ip:str, port:int, name:str) -> Exception | None:
+    try:
+        data.network = network.Network(ip,port,name)
+        if(not data.world.player_init.wait(5)):  # Wait for player initialization before starting the game loop
+            print("Player initialization timed out. Exiting.")
+            data.network.disconnect()
+            return PlayerInitializationError("Player initialization timed out.")
+        from client.packet.clientbound import ClientBoundInitPlayerPacket
+        ClientBoundInitPlayerPacket.init()
+    except Exception as e:
+        return e
+    load_world()
+    return None
+
 def load_world():
     sky = Sky(color=color.violet)
+    world.init_world(scene)
+    data.instructions = Text(
+        text='Contrôles:\nZ/Q/S/D - Déplacement\nEspace - Sauter\nSouris - Regarder\nÉchap - Déverrouiller souris',
+        position=(-0.5, 0.4),
+        scale=1.2,
+        origin=(0, 0),
+        background=True
+    )
     ground = Entity(
         model='cube',
         scale=(100,10,100),
@@ -51,8 +74,12 @@ def load_world():
     data.player = player
 
     spot = FishingSpot(position=(0,2,0))
-
     data.world_entities = [sky, ground, spot]
+    light = DirectionalLight(shadows=False)
+    light.look_at(Vec3(0.1,-1,0))
+    light._light.specular_color = color.gold
+    camera.fov = 90
+    #registering menus
     menu1 = menu.Menu("menu1", False)
     resume = Button(text='Resume', scale=(0.3, 0.1), position=(0,0.1))
     def resume_game():

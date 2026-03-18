@@ -7,8 +7,7 @@ if TYPE_CHECKING:
 
 player : 'ThirdPersonController' = None
 network : 'Network' = None
-world_entities : list = []
-app : 'Ursina' = None
-spot : 'Entity' = None
+world_entities : list[Entity] = []
 instructions : 'Text' = None
+app : 'Ursina' = None
 world : 'World' = None
