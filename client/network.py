@@ -1,5 +1,6 @@
 import socket
 import threading as th
+import traceback
 from client.packet.serverbound import ServerBoundPseudoPacket
 from client.packet.packetstruct import ServerBoundPacket 
 
@@ -40,28 +41,35 @@ class Network:
             raise ConnectionError("Erreur de connexion inconnue")
     
     def packetListener(self):
-        from packet.packetlib import getClientBoundPacket
+        from client.packet.packetlib import getClientBoundPacket
         while not self.stop_event.is_set():
             try:
                 data = self.conn.recv(2048)
                 if not data:
-                    self.disconect()
+                    self.disconnect()
                     break
-                
                 packets = getClientBoundPacket(data)
                 for packet in packets:
-                    packet.handle()
+                    try:
+                        packet.handle()
+                    except Exception as e:
+                        print("client : Erreur de traitement du paquet :", repr(e))
+                        print("client : packet type :", type(packet).__name__)
+                        print("client : packet data :", getattr(packet, "data", None))
+                        print(traceback.format_exc())
             except socket.timeout as e :
                 print("client : Timeout de réception de paquet", e)
-                self.disconect()
+                self.disconnect()
                 break
             except Exception as e:
                 print("client : Erreur de réception de paquet", e)
-                if not data :
+                if data :
                     print("client : data :",data)
             
 
     def send(self, packet:ServerBoundPacket):
+        if self.conn.fileno() == -1:
+            return
         packet.send(self.conn)
 
     def sendRecv(self, data):
@@ -75,7 +83,6 @@ class Network:
             self.conn.close()
         except:
             pass
-        
         current_thread = th.current_thread()
         if self.thread and self.thread.is_alive() and self.thread != current_thread:
             self.thread.join(timeout=3.0)

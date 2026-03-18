@@ -10,6 +10,7 @@ if __name__ == "__main__":
 import server.packet.clientbound as cb
 from server.packet.packetstruct import ServerBoundDataPacket,ServerBoundPacket
 from typing import TYPE_CHECKING
+from shared.movement import Physic
 
 if TYPE_CHECKING:
     from server.client import Client
@@ -19,9 +20,8 @@ if TYPE_CHECKING:
 #server_bound client -> server
 
 class ServerBoundPseudoPacket(ServerBoundDataPacket):
-    def __init__(self,data:list[str]):
+    def __init__(self,data:list):
         super().__init__(data)
-        print(data)
         self.name = data[0]
 
 class ServerBoundMessagePacket(ServerBoundDataPacket):
@@ -42,8 +42,16 @@ class ServerBoundMovementPacket(ServerBoundDataPacket):
         self.timestamp: int = data[1]
 
     def handle(self, client : 'Client'):
-        #TODO handle movement
-        pass
+        client.server.world.update_player_movement(client, self.key_states, self.timestamp)
+
+class ServerBoundRotationPacket(ServerBoundDataPacket):
+    def __init__(self,data:list[float,int]):
+        super().__init__(data)
+        self.rotation: float = data[0]
+        self.timestamp: int = data[1]
+
+    def handle(self, client : 'Client'):
+        client.server.world.update_player_rotation(client, self.rotation, self.timestamp)
 
 if __name__ == "__main__":
     from shared.loadfile import get_defined_classes

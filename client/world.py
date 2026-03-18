@@ -3,18 +3,29 @@ from client.menus.chat import Chat
 from spot import FishingSpot
 from ursina import application,Button,Entity,color,Sky,mouse
 
+from client.player import Player,ThirdPersonController
+from ursina import Vec3
+import threading
+import shared.world as world
 
 class World:
-    def add_entity(self, entity: Entity):
-        pass
 
-def join_world(ip:str, port:int, name:str):
-    try:
-        data.network = network.Network(ip,port,name)
-    except Exception as e:
-        return e
-    load_world()
-    return None
+    def __init__(self):
+        self.players: dict[int,Player] = {}
+        self.player_init = threading.Event()
+        world.ground.texture = 'assets/textures/grass.png'
+        world.ground.texture_scale = (512,512)
+
+    def spawn_player(self,player_id:int,name:str,position:Vec3,rotation:float=0):
+        print(f"World: spawning player {player_id} at {position}")
+        new_player = Player(player_id,name=name,position=position)
+        new_player.rotation_y = rotation
+        self.players[player_id] = new_player
+
+    def leave_player(self,player_id:int):
+        print("client : player leave get :",player_id, flush=True)
+        if player_id in self.players:
+            del self.players[player_id]
 
 def load_world():
     sky = Sky(color=color.violet)

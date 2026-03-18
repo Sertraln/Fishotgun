@@ -1,7 +1,9 @@
 
-class Settings:
-    def __init__(self):
-        self.graphics_quality = "high"
-        self.sound_volume = 100
-        self.control_scheme = "default"
+from ursina import Vec2
+
+graphics_quality = "high"
+sound_volume = 75
+control_scheme = "default"
+max_steps_size = 1
+mouse_sensitivity = Vec2(0.1, 0.1)
         

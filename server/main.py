@@ -13,6 +13,8 @@ from server.packet.serverbound import ServerBoundPseudoPacket
 from server.packet import clientbound as cb
 from server.world import World
 import server.data as data
+import signal
+from ursina import Vec3
 from shared.utils import get_local_ip
     
 class Server:
@@ -30,12 +32,17 @@ class Server:
         try:
             self.soket.bind(("0.0.0.0", port))
         except socket.error as e:
+            # if e.errno == socket.errno.EADDRINUSE:
+            #     print(f"Port {self.port} is already in use. Trying another port...")
+            #     self.__init__(port=self.port+1, ip=self.ip)
+            #     return
             print("server :error binding :",e)
             raise e
         print(f"Server started on {self.ip}:{self.port}")
         self.soket.listen(5)
         self.connectionthread = th.Thread(name="connlistener",target=self.connectionListener)
         self.connectionthread.start()
+        data.server = self
 
     def startTread(self,thread:th.Thread):
         self.threadlist.append(thread)
@@ -58,7 +65,7 @@ class Server:
             client = Client(conn,ip,self.lastpid,self)
             self.lastpid += 1
             packet : ServerBoundPseudoPacket = client.sendRecv(cb.ClientBoundIdPacket(client.id))[0]
-            player = Player(packet.name,client)
+            player = Player(packet.name,client,self.world.world_scene,Vec3(0,10,0))
             self.world.join_player(player)
             self.threadlist.append(client.thread)
             client.thread.start()
@@ -83,7 +90,11 @@ class Server:
             self.stopevent.set()
             self.world.stop()
             if self.soket:
-                self.soket.shutdown(socket.SHUT_RDWR)
+                try:
+                    self.soket.shutdown(socket.SHUT_RDWR)
+                except (OSError, socket.error):
+                    # Socket serveur n'est pas connecté - shutdown non applicable
+                    pass
                 self.soket.close()
             for thread in self.threadlist:
                 if thread.is_alive():
@@ -93,11 +104,17 @@ class Server:
             print("Server stopped")
         except Exception as e:
             print("Server : Erreur de fermeture :",e)
+        finally:
+            raise SystemExit(0)
 
 if __name__ == "__main__":
-    data.server = Server()
-    cmd = input("")
-    while cmd != "stop" and cmd != "exit":
+    server = Server()
+    signal.signal(signal.SIGINT, lambda sig, frame: server.stop())
+    try:
         cmd = input("")
-        pass
-    data.server.stop()
+        while cmd != "stop" and cmd != "exit":
+            cmd = input("")
+    except EOFError:
+        print("No input available - server running in background")
+    finally:
+        server.stop()
