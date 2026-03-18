@@ -11,6 +11,7 @@ import data
 from ursina import application as appli
 from client import menu
 
+Plane
 original_quit = appli.quit
 def custom_quit():
     if data.network:
@@ -62,14 +63,21 @@ def update():
         camera.z_setter(-hit_camera.distance+offset_clipping)
     else:
         camera.z_setter(player.camera_offset)
+class MenuLogic(Entity):
+    def __init__(self):
+        super().__init__(ignore_paused=True)
+    def input(self,key):
+        if key == 'escape':
+            if menu._currentMenu is not None and menu._currentMenu.enabled:
+                mouse.locked = True
+                menu.hide()
+            else:
+                mouse.locked = False
+                menu.show("menu1")
+        chat_menu = menu.getMenu("chat")
+        if key == 't up' and chat_menu and not chat_menu.enabled:
+                menu.show(chat_menu)
 
-def input(key):
-    if key == 'escape':
-        if menu._currentMenu is not None and menu._currentMenu.isenabled():
-            mouse.locked = True
-            menu.hide()
-        else:
-            mouse.locked = False
-            menu.show("menu1")
+MenuLogic()
 
 app.run()

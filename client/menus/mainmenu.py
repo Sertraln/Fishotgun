@@ -159,6 +159,7 @@ class ServerListMenu(menu.Menu):
         self.button_list.unselected = self.unselected
         add_server.server_list_menu = self
 
+        self.button_list.position=Vec3(0.0,-0.25,0.0)
         self.error_label = Text("", parent=self, position=(0, -0.28, -0.1), origin=(0, 0), scale=0.7, color=color.rgba32(220, 80, 80))
 
         self.back_but = menu.FixedButton(text='< Retour', text_color=color.white, highlight_text_color=color.white, position=(-0.28, -0.38), scale=(0.22, 0.07), text_size=0.8, parent=self, color=color.rgba32(70, 70, 80), highlight_color=color.rgba32(100, 100, 115))
@@ -169,6 +170,7 @@ class ServerListMenu(menu.Menu):
         self.back_but.on_click = back
         self.add_server_but = menu.FixedButton(text='+ Ajouter', text_color=color.white, highlight_text_color=color.white, position=(0.28, -0.38), scale=(0.22, 0.07), text_size=0.8, parent=self, color=color.rgba32(60, 130, 60), highlight_color=color.rgba32(80, 160, 80))
         self.add_server_but.on_click = lambda: menu.show(add_server)
+        self.add_server_to_list("localserver", "127.0.0.1", 5555)
 
     def add_server_to_list(self, name, ip, port):
         but = ServerButton(name, ip, port, self.button_list)
