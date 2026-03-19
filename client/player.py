@@ -10,8 +10,6 @@ import time
 import collections
 import math
 
-player_map = {}
-
 class Player(Entity):
     def __init__(self, id : int, name : str, position :Vec3 = Vec3(0,0,0)):
         super().__init__()
@@ -125,11 +123,10 @@ class ThirdPersonController(Player):
         self.cursor = Entity(parent=camera.ui)
         self.height = 2
         self.camera_pivot = Entity(parent=self,y=self.height)
-        camera.parent = self.camera_pivot
         mouse.locked = True
         self.mouse_sensitivity = Vec2(40, 40)
         self.camera_offset = -5
-        camera.z = self.camera_offset
+        self._attach_camera_to_pivot()
         self._queue_pos = collections.deque()
         self._dt_last_input = 0
         self._latest_server_state = None
@@ -138,12 +135,21 @@ class ThirdPersonController(Player):
         self._max_prediction_history = 256
         self._hard_snap_distance = 4.0
         self._reconcile_speed = 100.0
-        th.Thread(target=self.constant_update, daemon=True).start()
+        #th.Thread(target=self.constant_update, daemon=True).start()
         self.on_destroy = self.on_disable
+
+    def _attach_camera_to_pivot(self):
+        # Reset scale before parenting to avoid cumulative stretch across reconnects.
+        camera.scale = Vec3(1, 1, 1)
+        camera.parent = self.camera_pivot
+        camera.position = Vec3(0, 0, self.camera_offset)
+        camera.rotation = Vec3(0, 0, 0)
         
 
     def update(self):
         #super().update()
+        if menu._currentMenu is not None:
+            return
         self.update_cam()
         self.update_mouv_input()
         self.update_pos(self._last_input)
@@ -218,11 +224,6 @@ class ThirdPersonController(Player):
             data.network.send(ServerBoundRotationPacket(self.camera_pivot.rotation_y,time.time_ns()))
         self.camera_pivot.rotation_x -= mouse.velocity[1] * self.mouse_sensitivity[0]
         self.camera_pivot.rotation_x= clamp(self.camera_pivot.rotation_x, -90, 90)
-        
-
-    def input(self, key):
-        if key == 'escape':
-            mouse.locked = not mouse.locked
 
     def update_mouv_input(self):
         # make key configurable later
@@ -248,17 +249,18 @@ class ThirdPersonController(Player):
 
     def on_enable(self):
         mouse.locked = True
-        self.cursor.enabled = True
-        # restore parent and position/rotation from before disablem in case you moved the camera in the meantime.
-        if hasattr(self, 'camera_pivot') and hasattr(self, '_original_camera_transform'):
-            camera.parent = self.camera_pivot
-            camera.transform = self._original_camera_transform
+        if hasattr(self, 'cursor') and self.cursor:
+            self.cursor.enabled = True
+        if hasattr(self, 'camera_pivot'):
+            self._attach_camera_to_pivot()
     
     def on_disable(self):
         mouse.locked = False
-        self.cursor.enabled = False
+        if hasattr(self, 'cursor') and self.cursor:
+            self.cursor.enabled = False
         self._original_camera_transform = camera.transform  # store original position and rotation
         camera.world_parent = scene
+        camera.scale = Vec3(1, 1, 1)
 
     #probably useless but keep for now
     def constant_update(self):
@@ -270,14 +272,6 @@ class ThirdPersonController(Player):
         new_packet = ServerBoundMovementPacket(self._last_input, self._last_input_time)
         data.network.send(new_packet)
     
-    def set_id(self, id: int):
-        self.player_id = id
-        player_map[id] = self
-
-
-
-def get_player(id: int):
-    return player_map.get(id)
         
 
     

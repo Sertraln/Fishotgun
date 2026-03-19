@@ -78,7 +78,7 @@ class Network:
         self.send(data)
         return self.conn.recv(2048)
 
-    def disconnect(self):
+    def disconnect(self, trigger_quit_to_menu: bool = True):
         self.stop_event.set()
         try:
             self.conn.shutdown(socket.SHUT_RDWR)
@@ -90,7 +90,8 @@ class Network:
             self.thread.join(timeout=3.0)
         print("client : Déconnexion")
         data.network = None
-        world.quit_to_menu()
+        if trigger_quit_to_menu:
+            world.quit_to_menu()
 
 
 

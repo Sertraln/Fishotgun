@@ -7,6 +7,10 @@ import threading
 import shared.world as world
 from client.transitions import IrisTransition,_exit_black
 from client.fish import FishingScene
+
+_sky_entity = None
+
+
 class World:
 
     def __init__(self):
@@ -32,13 +36,14 @@ class PlayerInitializationError(Exception):
 
 def join_world(ip:str, port:int, name:str) -> Exception | None:
     try:
+        from client.packet.clientbound import ClientBoundInitPlayerPacket
+        ClientBoundInitPlayerPacket.player = None
         data.world = World()
         data.network = network.Network(ip,port,name)
         if(not data.world.player_init.wait(5)):  # Wait for player initialization before starting the game loop
             print("Player initialization timed out. Exiting.")
             data.network.disconnect()
             raise PlayerInitializationError("Player initialization timed out.")
-        from client.packet.clientbound import ClientBoundInitPlayerPacket
         ClientBoundInitPlayerPacket.init()
     except Exception as e:
         del data.world
@@ -48,7 +53,8 @@ def join_world(ip:str, port:int, name:str) -> Exception | None:
     return None
 
 def load_world():
-    sky = Sky(color=color.violet)
+    global _sky_entity
+    _sky_entity = Sky(color=color.violet)
     world.init_world(scene)
     data.instructions = Text(
         text='Contrôles:\nZ/Q/S/D - Déplacement\nEspace - Sauter\nSouris - Regarder\nÉchap - Déverrouiller souris',
@@ -58,12 +64,7 @@ def load_world():
         background=True
     )
     spot = FishingSpot(position=(0,2,0))
-    data.world_entities = [sky, spot]
-    light = DirectionalLight(shadows=False)
-    light.look_at(Vec3(0.1,-1,0))
-    light._light.specular_color = color.gold
-    ambient = AmbientLight(color=color.rgba(0.2, 0.2, 0.2, 0.5))
-    data.world_entities.extend([light, ambient])
+    data.world_entities = [spot]
     camera.fov = 90
 
 
@@ -100,23 +101,43 @@ def load_world():
 
 def quit_to_menu():
     from ursina import destroy
-    from client.player import player_map
+    from client.packet.clientbound import ClientBoundInitPlayerPacket
 
     menu.show("main_menu")
 
+    global _sky_entity
+    if _sky_entity:
+        destroy(_sky_entity)
+        _sky_entity = None
+
     if data.network is not None:
-        data.network.disconnect()
-        data.network = None
+        # Avoid recursive quit_to_menu calls from Network.disconnect().
+        data.network.disconnect(trigger_quit_to_menu=False)
 
     if data.player:
-        data.player.disable()
+        try:
+            data.player.disable()
+        except Exception:
+            pass
         destroy(data.player)
         data.player = None
 
-    for p in list(player_map.values()):
-        p.disable()
-        destroy(p)
-    player_map.clear()
+    if data.world is not None:
+        for p in list(data.world.players.values()):
+            p.disable()
+            destroy(p)
+        data.world.players.clear()
+
+    # Prevent stale references across sessions.
+    ClientBoundInitPlayerPacket.player = None
+
+    if world.ground:
+        destroy(world.ground)
+        world.ground = None
+    
+    if world.water:
+        destroy(world.water)
+        world.water = None
 
     for e in data.world_entities:
         destroy(e)
