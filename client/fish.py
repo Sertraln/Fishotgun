@@ -8,9 +8,9 @@ def get_angle(dx, dz):
     return (-degrees(atan2(dz, dx))) % 360
 
 class FishType:
-    WEAK   = {'max_hp': 25,  'speed': 1, 'speedrot': 50}
-    NORMAL = {'max_hp': 50, 'speed': 3,   'speedrot': 70}
-    STRONG = {'max_hp': 100, 'speed': 5, 'speedrot': 90}
+    WEAK   = {'max_hp': 25,  'speed': 1, 'speedrot': 50, 'scale': 1.3}
+    NORMAL = {'max_hp': 50, 'speed': 3,   'speedrot': 70, 'scale': 1.0}
+    STRONG = {'max_hp': 100, 'speed': 5, 'speedrot': 90, 'scale': 0.7}
 
 class Fish(Entity):
     def __init__(self, **kwargs):
@@ -19,6 +19,7 @@ class Fish(Entity):
         self.model = 'plane'
         self.texture = 'textures/fish_shadow.png'
         self.speedrot = fish_type['speedrot']
+        self.scale = fish_type['scale']
         self.speed = fish_type['speed']
         self.max_hp = fish_type['max_hp']
         self.hp = self.max_hp
@@ -53,35 +54,35 @@ class Fish(Entity):
 
 
 class FishingScene:
-    BAR_X      = 0.45
+    BAR_X = 0.45
     BAR_BOTTOM = -0.3
-    BAR_TOP    = 0.3
-    BAR_H      = BAR_TOP - BAR_BOTTOM
-    BAR_W      = 0.03
+    BAR_TOP = 0.3
+    BAR_H = BAR_TOP - BAR_BOTTOM
+    BAR_W = 0.03
 
     def __init__(self, on_end=None):
-        self.on_end         = on_end
-        self.enabled        = False
-        self._stopping      = False
-        self.player_damage  = 1
-        self._entities      = []
-        self._pairs         = []
-        self._fish          = None
-        self._point         = None
+        self.on_end = on_end
+        self.enabled = False
+        self._stopping = False
+        self.player_damage = 1
+        self._entities = []
+        self._pairs = []
+        self._fish = None
+        self._point = None
         self._selected_fish = None
-        self._fleeing       = []
-        self._pressure      = 0.5
-        self._hp_bar_bg     = None
-        self._hp_bar        = None
-        self._hp_text       = None
-        self._press_bar_bg  = None
-        self._press_bar     = None
+        self._fleeing = []
+        self._pressure = 0.5
+        self._hp_bar_bg = None
+        self._hp_bar = None
+        self._hp_text = None
+        self._press_bar_bg = None
+        self._press_bar = None
 
     def start(self):
-        self.enabled   = True
+        self.enabled = True
         self._stopping = False
         self._selected_fish = None
-        self._fleeing  = []
+        self._fleeing = []
         self._pressure = 0.8
         self._saved_cam_pos = camera.position
         self._saved_cam_rot = camera.rotation
@@ -106,8 +107,8 @@ class FishingScene:
 
         # BARRE HP DU POISCAILLE
         self._hp_bar_bg = Entity(parent=camera.ui, model='quad', color=color.dark_gray, scale=(0.4, 0.03), position=(-0.2, 0.42), origin=(-0.5, 0), enabled=False)
-        self._hp_bar    = Entity(parent=camera.ui, model='quad', color=color.lime, scale=(0.4, 0.03), position=(-0.2, 0.42), origin=(-0.5, 0), enabled=False, z=-0.01)
-        self._hp_text   = Text('', parent=camera.ui, position=(0, 0.46), origin=(0, 0), scale=1, enabled=False)
+        self._hp_bar = Entity(parent=camera.ui, model='quad', color=color.lime, scale=(0.4, 0.03), position=(-0.2, 0.42), origin=(-0.5, 0), enabled=False, z=-0.01)
+        self._hp_text = Text('', parent=camera.ui, position=(0, 0.46), origin=(0, 0), scale=1, enabled=False)
 
         # BARRE "PRESSION" DU JOUEUR
         self._press_bar_bg = Entity(
@@ -238,17 +239,17 @@ class FishingScene:
         camera.fov      = self._saved_cam_fov
         for e in self._entities: # On reset tout mdr
             destroy(e)
-        self._entities      = []
-        self._pairs         = []
-        self._fish          = None
-        self._point         = None
+        self._entities = []
+        self._pairs = []
+        self._fish = None
+        self._point = None
         self._selected_fish = None
-        self._fleeing       = []
-        self._pressure      = 0.5
-        self._hp_bar_bg     = None
-        self._hp_bar        = None
-        self._hp_text       = None
-        self._press_bar_bg  = None
-        self._press_bar     = None
-        self._label_top     = None
-        self._label_bot     = None
+        self._fleeing = []
+        self._pressure = 0.5
+        self._hp_bar_bg = None
+        self._hp_bar = None
+        self._hp_text = None
+        self._press_bar_bg = None
+        self._press_bar = None
+        self._label_top = None
+        self._label_bot = None
