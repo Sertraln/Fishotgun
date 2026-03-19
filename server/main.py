@@ -1,24 +1,121 @@
-from ursina.networking import RPCPeer
+import socket
+import os
+import sys
 
-rpc_peer = RPCPeer()
+# Ensure project root is on sys.path so sibling packages like `shared` can be imported
+_ROOT = os.path.dirname(os.path.dirname(__file__))
+if _ROOT not in sys.path:
+    sys.path.insert(0, _ROOT)
+from server.player import Player
+import threading as th
+from server.client import Client
+from server.packet.serverbound import ServerBoundPseudoPacket
+from server.packet import clientbound as cb
+from server.world import World
+import server.data as data
+import signal
+from ursina import Vec3
+from shared.utils import get_local_ip
+    
+class Server:
+    used_ports = []
+    def __init__(self, port:int =5555, ip:str = None):
+        from server.packet.packetlib import init_packetlib
+        init_packetlib()
+        self.port = port if port not in Server.used_ports else 5555+len(Server.used_ports)
+        self.ip = ip if ip else get_local_ip()
+        self.soket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.soket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.threadlist : list[th.Thread] = []
+        self.lastpid = 0
+        self.stopevent = th.Event()
+        self.world = World()
+        try:
+            self.soket.bind(("0.0.0.0", port))
+        except socket.error as e:
+            # if e.errno == socket.errno.EADDRINUSE:
+            #     print(f"Port {self.port} is already in use. Trying another port...")
+            #     self.__init__(port=self.port+1, ip=self.ip)
+            #     return
+            print("server :error binding :",e)
+            raise e
+        print(f"Server started on {self.ip}:{self.port}")
+        self.soket.listen(5)
+        self.connectionthread = th.Thread(name="connlistener",target=self.connectionListener)
+        self.connectionthread.start()
+        data.server = self
 
-@rpc(rpc_peer)
-def on_connect(connection, time_connected):
-	print("This is run when a new connection is established.")
-	if rpc_peer.is_hosting():
-		print("This is only run if we are the host (the server).")
+    def startTread(self,thread:th.Thread):
+        self.threadlist.append(thread)
+        thread.start()
 
-@rpc(rpc_peer)
-def on_disconnect(connection, time_disconnected):
-	print("This is run when a disconnect happens.")
+    def connectionListener(self):
+        while not self.stopevent.is_set():
+            try:
+                print("Server : En attente de nouvelle connexion...")
+                conn, addr = self.soket.accept()
+                print("Server : Connecté à : ", addr)
+                thread = th.Thread(target=self.connection, args=(conn,addr))
+                thread.start()
+            except Exception as e:
+                if not self.stopevent.is_set():
+                    print("Server : Erreur de connexion :",e)
+            
+    def connection(self,conn:socket.socket,ip):
+        try:
+            client = Client(conn,ip,self.lastpid,self)
+            self.lastpid += 1
+            packet : ServerBoundPseudoPacket = client.sendRecv(cb.ClientBoundIdPacket(client.id))[0]
+            player = Player(packet.name,client,self.world.world_scene,Vec3(0,10,0))
+            self.world.join_player(player)
+            self.threadlist.append(client.thread)
+            client.thread.start()
+        except Exception as e:
+            print("Server : Erreur creation", e)
 
-@rpc(rpc_peer)
-def say(connection, time_received, message: str):
-	print(message)
+    def broadcast(self,packet:cb.ClientBoundPacket,ignored:list[int] = []):
+        """
+        Send a packet to all connected players except those in ignored list
+        """
+        for player in self.world.players.values():
+            if player.client.id not in ignored:
+                player.client.send(packet)
+                print("broadcast : sent packet to player :",player.client.id)
+    
+    def stop(self):
+        try:
+            data.server.world.save()
+        except Exception as e:
+            print("Server : Erreur de sauvegarde :",e)
+        try :
+            self.stopevent.set()
+            self.world.stop()
+            if self.soket:
+                try:
+                    self.soket.shutdown(socket.SHUT_RDWR)
+                except (OSError, socket.error):
+                    # Socket serveur n'est pas connecté - shutdown non applicable
+                    print("Server : Socket serveur déjà fermé ou non connecté")
+                self.soket.close()
+            for thread in self.threadlist:
+                if thread.is_alive():
+                    thread.join(10)
+            self.connectionthread.join(10)
+            self.threadlist = []
+            print("Server stopped")
+        except Exception as e:
+            print("Server : Erreur de fermeture :",e)
+        finally:
+            sys.exit(0)
 
-def update():
-	# Handle networking events, run this every update.
-	rpc_peer.update()
-
-rpc_peer.start("localhost", 8080, is_host=True)
-
+if __name__ == "__main__":
+    server = Server()
+    signal.signal(signal.SIGINT, lambda sig, frame: server.stop())
+    try:
+        cmd = input("")
+        while cmd != "stop" and cmd != "exit":
+            cmd = input("")
+    except EOFError:
+        print("No input available - server running in background")
+    finally:
+        server.stop()
