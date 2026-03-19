@@ -1,4 +1,6 @@
 from ursina import *
+from typing import Callable
+import client.data as data
 
 iris_vertex = '''
 #version 120
@@ -49,7 +51,7 @@ class IrisTransition:
         self._t        = 0.0
         self._callback = None
 
-    def play(self, on_black=None):
+    def play(self, on_black=None|Callable):
         self._callback = on_black
         self._state    = self.CLOSING
         self._t        = 0.0
@@ -84,3 +86,8 @@ class IrisTransition:
                 self.overlay.set_shader_input('radius', 1.0)
                 self.overlay.enabled = False
                 self._state = self.IDLE
+
+def _exit_black():
+        data.fishing_scene.stop()
+        data.player.enable()
+        mouse.locked = True

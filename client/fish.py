@@ -17,7 +17,8 @@ class Fish(Entity):
         fish_type = kwargs.pop('fish_type', FishType.NORMAL)
         super().__init__(**kwargs)
         self.model = 'plane'
-        self.texture = 'textures/fish_shadow.png'
+        self.texture = 'assets/textures/fish_shadow.png'
+        self.texture_scale = (1, 1)
         self.speedrot = fish_type['speedrot']
         self.scale = fish_type['scale']
         self.speed = fish_type['speed']
@@ -93,7 +94,7 @@ class FishingScene:
         camera.fov      = 60
 
         y = Y_OFFSET - 19
-        water = Entity(model='plane', texture='textures/water.png', scale=30, position=(0, Y_OFFSET-20, 0), rotation=(0,0,0))
+        water = Entity(model='plane', texture='assets/textures/water.png', scale=30, position=(0, Y_OFFSET-20, 0), rotation=(0,0,0),texture_scale=(5,5))
 
         types = [FishType.WEAK, FishType.NORMAL, FishType.NORMAL, FishType.STRONG]
         shuffle(types)
