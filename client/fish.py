@@ -220,7 +220,7 @@ class FishingScene:
                     on_fish = mouse_dist < 1.5
                 else:
                     on_fish = False
-                self._pressure += (0.5 if on_fish else -0.25) * time.dt
+                self._pressure += (0.4 if on_fish else -0.6) * time.dt
                 self._pressure  = max(0.0, min(1.0, self._pressure))
                 self._update_pressure_bar()
                 if self._pressure <= 0.0:

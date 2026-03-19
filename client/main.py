@@ -25,10 +25,10 @@ appli.quit = custom_quit
 menu.init()
 appli.pause()
 window.color = color.gray
-_sun_light = DirectionalLight(shadows=False)
+_sun_light = DirectionalLight(shadows=True)
 _sun_light.look_at(Vec3(0.1,-1,0))
 _sun_light._light.specular_color = color.gold
-_ambient_light = AmbientLight(color=color.rgba(0.3, 0.28, 0.25, 0.5))
+# _ambient_light = AmbientLight(color=color.rgba(0.3, 0.28, 0.25, 0.5))
 
 def enter_fishing():
     data.iris.play(on_black=_enter_black)
