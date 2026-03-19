@@ -9,7 +9,7 @@ from client.spot import FishingSpot
 import client.network as network
 import client.data as data
 from ursina import application as appli
-from shared.world import init_world
+from shared.world import init_world, world_scene
 from client.world import World
 
 def start(ip:str, port:int, name:str):
@@ -50,21 +50,30 @@ def start(ip:str, port:int, name:str):
     # Stocker les références dans data pour y accéder dans update
     data.spot = spot
     data.instructions = instructions
+    from client.packet.clientbound import ClientBoundInitPlayerPacket
+    ClientBoundInitPlayerPacket.init()
     if(not data.world.player_init.wait(5)):  # Wait for player initialization before starting the game loop
         print("Player initialization timed out. Exiting.")
         data.network.disconnect()
         exit(0)
-    from client.packet.clientbound import ClientBoundInitPlayerPacket
-    ClientBoundInitPlayerPacket.init()
+    
     app.run()
 
 # Fonction update GLOBALE - en dehors de start()
 def update():
+    world_scene.bullet_world.doPhysics(time.dt)
+
+
     # Récupérer les références depuis data
     player = data.player
     spot = data.spot
     instructions = data.instructions
-    
+            # L'enregistrement dans le world se fait via World.__init__ qui ajoute player_entity
+
+
+    if not player:
+        return
+
     # # Make player respawn if he falls
     # if player.y < -10:
     #     player.position = (0, 7, 0)
@@ -96,7 +105,7 @@ Espace - Sauter
 Souris - Regarder
 Échap - Déverrouiller souris
 Position: ({player.position.x:.1f}, {player.position.y:.1f}, {player.position.z:.1f})
-Au sol: {'Oui' if player.physic.grounded else 'Non'}
+Au sol: {'Oui' if data.player.grounded else 'Non'}
 '''
 
 if __name__ == '__main__':

@@ -10,9 +10,9 @@ import collections
 
 player_map = {}
 
-class Player(Entity):
+class Player(Physic):
     def __init__(self, id : int, name : str, position :Vec3 = Vec3(0,0,0)):
-        super().__init__()
+        super().__init__(parent=scene, position=position)
         self.position = position
         self.name = name
         actor = Actor("assets/models/player/player.glb")
@@ -50,7 +50,6 @@ class ThirdPersonController(Player):
     def __init__(self,id:int, name :str, position:Vec3 = Vec3(0,0,0)):
         super().__init__(id,name,position)
         self.name = "ThirdPersonController"
-        self.physic = Physic(scene,position)
         # L'enregistrement dans le world se fait via World.__init__ qui ajoute player_entity
         self.player_id = id
         self.username = name
@@ -78,7 +77,8 @@ class ThirdPersonController(Player):
         #super().update()
         self.update_cam()
         self.update_mouv_input()
-        self.update_pos(self._last_input)
+        self.update_phy(time.dt, self._last_input)
+        self._queue_pos.append((time.time_ns(), Vec3(self.position)))
         self.reconcile_position_with_server()
         # Additional third person update can go here
 
@@ -118,30 +118,25 @@ class ThirdPersonController(Player):
         if self._last_input.is_idle():
             if correction_distance > 0.001:
                 corrected_position = Vec3(server_position)
+
                 self.position = corrected_position
-                self.physic.position = corrected_position
+                self.body_np.setPos(corrected_position)
+                self.body.setLinearVelocity(Vec3(0, 0, 0))
             return
 
         if correction_distance >= self._hard_snap_distance:
             corrected_position = Vec3(server_position)
             self._queue_pos.clear()
+            self.position = corrected_position
+            self.body_np.setPos(corrected_position)
+            self.body.setLinearVelocity(Vec3(0, 0, 0))
+            return
         elif correction_distance > 0.01:
             # Apply smooth correction to avoid visible teleporting on small desync.
             alpha = clamp(time.dt * self._reconcile_speed, 0.0, 0.5)
             corrected_position = lerp(self.position, self.position + correction, alpha)
-        else:
-            return  # No significant error, no correction needed.
-        self.position = corrected_position
-        self.physic.position = corrected_position
-        
-    def update_pos(self, key_strokes:KeyStates):
-        # Synchroniser la rotation avec la physique pour que forward/right soient corrects
-        self.physic.rotation_y = self.camera_pivot.rotation_y
-        self.physic.update_phy(time.dt,key_strokes)
-        self.position = self.physic.position
-        self._queue_pos.append((time.time_ns(), Vec3(self.position)))
-        while len(self._queue_pos) > self._max_prediction_history:
-            self._queue_pos.popleft()
+            self.position = corrected_position
+            self.body_np.setPos(corrected_position)
 
     def update_cam(self):
         self.camera_pivot.rotation_y += mouse.velocity[0] * self.mouse_sensitivity[1]

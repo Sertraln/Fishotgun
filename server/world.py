@@ -4,7 +4,7 @@ from server.packet.clientbound import *
 import threading as th
 import time
 from shared import world
-from ursina import scene
+from ursina import scene, Vec3
 import copy
 
 if TYPE_CHECKING:
@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 class World:
     def __init__(self):
         self.entities : dict[int,'Entity'] = {}
-        self.tickrate = 20  # Ticks per second
+        self.tickrate = 60  # Ticks per second
         self.dt_per_tick = 1.0 / self.tickrate
         self.next_entity_id = 0
         self.players : dict[int,'Player'] = {}
@@ -74,7 +74,9 @@ class World:
             else:
                 print("World: Warning - game loop is taking longer than tick interval")
 
-    def game_loop(self,dt:int):
+    def game_loop(self,dt:float):
+        self.world_scene.bullet_world.doPhysics(dt)
+
         self.update_all_players_position(dt)
     
     def update_player_movement(self, client:'Client', key_states:'KeyStates', timestamp:int):
@@ -95,12 +97,15 @@ class World:
 
     def update_all_players_position(self,dt:float = 0.05):
         for player in self.players.values():
-            if player.keys_states is not None:
-                old_pos = copy.deepcopy(player.position)
-                player.update_phy(dt, player.keys_states)
-                print(f"World: updated player {player.client.id} position to {player.position}")
-                if player.position != old_pos:
-                    self.send_position_updates(player)
+            if player.keys_states is None:
+                from shared.parsedata.input import KeyStates
+                player.keys_states = KeyStates()
+            old_pos = Vec3(player.position)
+            # ici voir pour les lignes qui corrigent la position ca peut entrainer du lag
+            player.update_phy(dt, player.keys_states)
+            print(f"World: updated player {player.client.id} position to {player.position}")
+            if (player.position - old_pos).length() > 0.001:
+                self.send_position_updates(player)
 
     def update_player_rotation(self, client:'Client', rotation:float, timestamp:int):
         player = self.players.get(client.id)

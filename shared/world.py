@@ -7,6 +7,7 @@ class WorldScene(Entity):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.bullet_world = BulletWorld()
+        self.bullet_world.setGravity(Vec3(0, -9.81, 0))
 
 from panda3d.bullet import BulletRigidBodyNode, BulletBoxShape
 from panda3d.core import Vec3
@@ -54,6 +55,10 @@ def create_static_box(
 #     name='ground',
 #     parent=world_scene)
 
+
+
+#je modifi pour tester les reufs c est chill
+"""
 ground = Entity(
     model= "assets/models/terrain",
     scale=Vec3(3),
@@ -72,6 +77,38 @@ water = Entity(
     # collider='box',
     name='water',
     parent=world_scene)
+"""
+#je test avec ca :::::::::::::::::
+ground = Entity(
+    model='cube',
+    scale=Vec3(100, 1, 100), 
+    position=Vec3(0, -0.5, 0), 
+    texture='grass',
+    texture_scale=(20, 20),
+    name='ground',
+    parent=world_scene
+)
+
+water = Entity(
+    model=Plane(),
+    scale=Vec3(100),
+    position=(0, -1, 0),
+    color=color.azure,
+    name='water',
+    parent=world_scene
+)
+
+
+
+
+
+
+
+
+
+
+
+
 
 def init_world(base_scene:'NodePath'=None):
     global world_scene
