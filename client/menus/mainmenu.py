@@ -226,7 +226,7 @@ class MainMenu(menu.Menu):
         self.pause = True
         join_menu.back_but.on_click = lambda: menu.show(self)
 
-        Text("FISHOTGUN", parent=self, position=(0, 0.3, -0.1), origin=(0, 0), scale=2.5, color=color.rgba32(80, 200, 220))
+        Entity(model='quad', parent=self,texture='assets/textures/logo_color.png',scale=(0.6,0.3),position=(0,0.3,-0.1))
 
         self.te = menu.CustomTextField(
             max_lines=1, parent=self, scale=(0.38, 0.07),
