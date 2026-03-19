@@ -16,6 +16,7 @@ class Player(Entity):
     def __init__(self, id : int, name : str, position :Vec3 = Vec3(0,0,0)):
         super().__init__()
         self._position_tracking_ready = False
+        self._suppress_position_rotation = False
         self.position = position
         self.name = name
         self.actor = Actor("assets/models/player/player.glb")
@@ -49,12 +50,19 @@ class Player(Entity):
         self._update_smooth_movement_rotation()
 
     def __setattr__(self, key, value):
-        if key == 'position' and getattr(self, '_position_tracking_ready', False):
+        if key == 'position' and getattr(self, '_position_tracking_ready', False) and not getattr(self, '_suppress_position_rotation', False):
             previous = Vec3(self.position)
             super().__setattr__(key, value)
             self._update_rotation_target_from_movement(previous, Vec3(value))
             return
         super().__setattr__(key, value)
+
+    def _set_position_without_rotation_update(self, position: Vec3):
+        self._suppress_position_rotation = True
+        try:
+            self.position = position
+        finally:
+            self._suppress_position_rotation = False
 
     def _update_rotation_target_from_movement(self, previous_position: Vec3, new_position: Vec3):
         if not self._auto_face_movement:
@@ -179,7 +187,7 @@ class ThirdPersonController(Player):
         if self._last_input.is_idle():
             if correction_distance > 0.001:
                 corrected_position = Vec3(server_position)
-                self.position = corrected_position
+                self._set_position_without_rotation_update(corrected_position)
                 self.physic.position = corrected_position
             return
 
@@ -192,7 +200,7 @@ class ThirdPersonController(Player):
             corrected_position = lerp(self.position, self.position + correction, alpha)
         else:
             return  # No significant error, no correction needed.
-        self.position = corrected_position
+        self._set_position_without_rotation_update(corrected_position)
         self.physic.position = corrected_position
         
     def update_pos(self, key_strokes:KeyStates):
