@@ -104,8 +104,8 @@ class World:
             # ici voir pour les lignes qui corrigent la position ca peut entrainer du lag
             player.update_phy(dt, player.keys_states)
             print(f"World: updated player {player.client.id} position to {player.position}")
-            if (player.position - old_pos).length() > 0.001:
-                self.send_position_updates(player)
+            #if (player.position - old_pos).length() > 0.001:
+            #    self.send_position_updates(player)
 
     def update_player_rotation(self, client:'Client', rotation:float, timestamp:int):
         player = self.players.get(client.id)
