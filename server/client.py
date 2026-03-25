@@ -2,7 +2,7 @@ import socket
 from server.packet.packetstruct import ClientBoundPacket,ServerBoundPacket
 from server.packet.packetlib import getServerBoundPacket
 import threading as th
-from shared.packetlib import HandlelingExeption,ParsingException
+from shared.packetlib import HandlelingExeption,ParsingException,UncompletePacketException
 
 from typing import TYPE_CHECKING
 
@@ -17,6 +17,7 @@ class Client:
         self.thread = th.Thread(name="client"+str(self.id),target=self.paketListener)
         self.server = server
         self.stopevent = self.server.stopevent
+        self.buffer = b""
         
 
     def send(self,packet:ClientBoundPacket):
@@ -28,7 +29,11 @@ class Client:
     def sendRecv(self,packet:ClientBoundPacket) -> ServerBoundPacket:
         print("packet : sending",flush=True)
         packet.send(self.conn)
-        return getServerBoundPacket(self.conn.recv(2048))
+        (result,self.buffer) = getServerBoundPacket(self.buffer+self.conn.recv(2048))
+        while self.buffer:
+            more_result,self.buffer = getServerBoundPacket(self.buffer)
+            result.extend(more_result)
+        return result
     
     def paketListener(self):
         try:
@@ -39,8 +44,10 @@ class Client:
                     if not data:
                         print(f"server packet : connection closed {self.id}")
                         break
+                    data = self.buffer + data
+                    self.buffer = b""
                     try:
-                        packets = getServerBoundPacket(data)
+                        packets,self.buffer = getServerBoundPacket(data)
                     except Exception as e:
                         raise ParsingException(f"error parsing packet from client {self.id} : {e} : data:{data}")
                     for packet in packets:
@@ -59,6 +66,7 @@ class Client:
         finally:
             try:
                 self.server.world.left_player(self.id)
+                self.conn.shutdown(socket.SHUT_RDWR)
                 self.conn.close()
             except:
                 pass

@@ -40,6 +40,11 @@ def init():
 clientBoundDataPacket : list[bool] = []
 serverBoundDataPacket : list[bool] = []
 
+class UncompletePacketException(Exception):
+    def __init__(self, incomplete_data:bytes):
+        super().__init__()
+        self.incomplete_data = incomplete_data
+
 def unparse(data:bytes,clientbound:bool) -> list[tuple[int,list]]:
     """Decode une série de packets encodés"""
     result = []
@@ -60,9 +65,12 @@ def unparse(data:bytes,clientbound:bool) -> list[tuple[int,list]]:
             elif not clientbound and not serverBoundDataPacket[packet_id]:
                 result.append(one_unparse(data[:1]))
                 data = data[1:]
-    except IndexError:
-        raise ParsingException("Error while unparse packet data, probably packet list different from the client and server")
-    return result
+
+    except IndexError as e:
+        return result,data
+    except KeyError as e:
+        raise ParsingException("Error while unparse packet data, probably packet list different from the client and server") from e
+    return result,b""
 
 def one_unparse(data:bytes) -> tuple[int,list]:
     """Decode a encoded packet"""

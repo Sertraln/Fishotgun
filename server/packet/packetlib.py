@@ -28,9 +28,9 @@ def getClientBoundPacket(id:int,data:str = "") -> ClientBoundPacket:
     else :
         return packet()
 
-def getServerBoundPacket(data:bytes) -> list[ServerBoundPacket]:
+def getServerBoundPacket(data:bytes) ->tuple[list[ServerBoundPacket],bytes]:
     result = []
-    list = packetlib.unparse(data,False)
+    list,trailing_data = packetlib.unparse(data,False)
     for id,decode in list:
         packet = pl.serverBoundPacketList[id]
         if issubclass(packet,ServerBoundDataPacket):
@@ -38,7 +38,7 @@ def getServerBoundPacket(data:bytes) -> list[ServerBoundPacket]:
         else :
             result.append(packet())
     print("server : serverboundget :",result)
-    return result
+    return result,trailing_data
 
 if __name__ == "__main__":
     init_packetlib()

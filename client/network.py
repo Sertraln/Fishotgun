@@ -5,6 +5,7 @@ from client.packet.serverbound import ServerBoundPseudoPacket
 from client.packet.packetstruct import ServerBoundPacket 
 import client.data as data
 import client.world as world
+from shared.packetlib import UncompletePacketException
 
 class Network:
     def __init__(self, ip, port,name):
@@ -23,6 +24,7 @@ class Network:
         self.thread.daemon = True
         self.thread.start()
         self.send(ServerBoundPseudoPacket(name))
+        self.buffer = b""
 
     def connect(self) -> Exception | int:
         print("client : Connexion à "+self.server)
@@ -50,7 +52,8 @@ class Network:
                 if not data:
                     self.disconnect()
                     break
-                packets = getClientBoundPacket(data)
+                data = self.buffer + data
+                packets, self.buffer = getClientBoundPacket(data)
                 for packet in packets:
                     try:
                         packet.handle()
