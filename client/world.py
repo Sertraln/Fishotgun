@@ -1,7 +1,7 @@
 from client import data,menu,network
 from client.menus.chat import Chat
 from client.spot import FishingSpot
-from ursina import application,Button,destroy,color,Sky,mouse,Vec3,Text,DirectionalLight,AmbientLight,camera,scene
+from ursina import Shader,Button,destroy,color,Sky,mouse,Vec3,Text,DirectionalLight,AmbientLight,camera,scene,application
 from client.player import Player,ThirdPersonController
 import threading
 import shared.world as world
@@ -52,8 +52,15 @@ def join_world(ip:str, port:int, name:str) -> Exception | None:
     load_world()
     return None
 
+def init_assets():
+    #TODO: only load at the start of the game, not every time we join a world
+    pass
+
 def load_world():
     global _sky_entity
+    water_shader_path = application.asset_folder / 'assets' / 'shader' / 'water.fsh'
+    water_shader_fragment = water_shader_path.read_text(encoding='utf-8')
+
     _sky_entity = Sky(color=color.violet)
     world.init_world(scene)
     data.instructions = Text(
@@ -84,6 +91,8 @@ def load_world():
     world.ground.texture_scale = (128,128)
     world.water.texture = 'assets/textures/water.png'
     world.water.texture_scale = (64,64)
+    world.water.shader = Shader(fragment=water_shader_fragment)
+    world.water.shader.compile()
     #registering menus
     menu1 = menu.Menu("menu1", False)
     resume = Button(text='Resume', scale=(0.3, 0.1), position=(0,0.1))

@@ -144,7 +144,7 @@ void main() {
 
 test = build_server_list_shader_texture(SCROLL_MIN_Y, SCROLL_MAX_Y)
 
-server_list_shader = build_server_list_shader(SCROLL_MIN_Y, SCROLL_MAX_Y)
+server_list_shader = build_server_list_shader_texture(SCROLL_MIN_Y, SCROLL_MAX_Y)
 
 
 
@@ -178,17 +178,17 @@ class ServerListMenu(menu.Menu):
 
     def add_server_to_list(self, name, ip, port):
         but = ServerButton(name, ip, port, self.button_list)
-        but.shader = self.button_list.shader
-        but.set_shader_input("cur_color", but.color)
+        new_shad = Shader(name='test', vertex=test_vertex, fragment=test)
+        new_shad.compile()
+        but.shader = new_shad
         if but.text_entity:
-            new_shad = Shader(name='test', vertex=test_vertex, fragment=test)
-            new_shad.compile()
             but.text_entity.shader = new_shad
 
     def show_error(self, error):
         self.error_label.text = f"Erreur : {error}"
 
     def update(self):
+        return
         for but in self.button_list.children:
             but.set_shader_input("cur_color", but.color)
 

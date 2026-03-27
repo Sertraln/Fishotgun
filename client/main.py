@@ -4,6 +4,25 @@ import sys
 _ROOT = os.path.dirname(os.path.dirname(__file__))
 if _ROOT not in sys.path:
     sys.path.insert(0, _ROOT)
+
+import ursina.shader as shader
+
+test_vertex = '''
+#version 120
+
+uniform mat4 p3d_ModelViewProjectionMatrix;
+
+attribute vec4 p3d_Vertex;
+attribute vec2 p3d_MultiTexCoord0;
+
+varying vec2 uv;
+
+void main() {
+    gl_Position = p3d_ModelViewProjectionMatrix * p3d_Vertex;
+    uv = p3d_MultiTexCoord0;
+}'''
+
+shader.default_vertex_shader = test_vertex
 from ursina import *
 import client.network as network
 import client.data as data
@@ -13,6 +32,10 @@ from client import menu
 from client.spot import FishingSpot
 from fish import FishingScene
 from transitions import IrisTransition,_exit_black
+
+
+
+
 
 def custom_quit():
     if data.network:
