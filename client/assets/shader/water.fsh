@@ -4,6 +4,10 @@
 #define WATER2_COL vec3(0.0, 0.4180, 0.6758)
 #define FOAM_COL vec3(0.8125, 0.9609, 0.9648)
 
+// #define WATER_COL vec3(0.0, 0.4471, 0.7294)
+// #define WATER2_COL vec3(0.0, 0.4000, 0.6745)
+// #define FOAM_COL vec3(0.4314, 0.6627, 0.8863)
+
 #define M_2PI 6.283185307
 #define M_6PI 18.84955592
 #define WATER_UV_SCALE 128.0
