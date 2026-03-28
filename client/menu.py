@@ -76,6 +76,7 @@ class CustomTextField(InputField):
         super().__init__(scale=scale,position=position,**kwargs)
         text_size = (1/scale[0],1/scale[1])
         self.text_field.text_entity.scale = 1/1.25
+        self.text_field.text_entity.font = "assets/font/FishoFont.ttf"
         # self.bg.color = bg_color
         # self.bg.scale = scale
         self.text_color = text_color

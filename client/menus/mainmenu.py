@@ -156,14 +156,13 @@ class ServerListMenu(menu.Menu):
         Text("Rejoindre un serveur", parent=self, position=(0, 0.38, -0.1), origin=(0, 0), scale=1.4, color=color.white)
 
         self.button_list = Entity(parent=self)
-        self.button_list.position = Vec3(0, 0, -0.1)
         self.button_list.shader = Shader(name='test', vertex=test_vertex, fragment=server_list_shader)
         self.button_list.shader.compile()
         self.button_list.show_error = self.show_error
         self.button_list.unselected = self.unselected
         add_server.server_list_menu = self
 
-        self.button_list.position=Vec3(0.0,-0.25,0.0)
+        self.button_list.position=Vec3(0.0,0,0.0)
         self.error_label = Text("", parent=self, position=(0, -0.28, -0.1), origin=(0, 0), scale=0.7, color=color.rgba32(220, 80, 80))
 
         self.back_but = menu.FixedButton(text='< Retour', text_color=color.white, highlight_text_color=color.white, position=(-0.28, -0.38), scale=(0.22, 0.07), text_size=0.8, parent=self, color=color.rgba32(70, 70, 80), highlight_color=color.rgba32(100, 100, 115))
@@ -177,12 +176,17 @@ class ServerListMenu(menu.Menu):
         self.add_server_to_list("localserver", "127.0.0.1", 5555)
 
     def add_server_to_list(self, name, ip, port):
+        shader = Shader(name='model', vertex=test_vertex, fragment=server_list_shader)
+        shader.compile()
         but = ServerButton(name, ip, port, self.button_list)
-        new_shad = Shader(name='test', vertex=test_vertex, fragment=test)
-        new_shad.compile()
-        but.shader = new_shad
+        if but.model:
+            but.model.setShader(shader._shader)
+            but.model.set_shader_input("cur_color", but.color)
         if but.text_entity:
+            new_shad = Shader(name='text', vertex=test_vertex, fragment=test)
+            new_shad.compile()
             but.text_entity.shader = new_shad
+            pass
 
     def show_error(self, error):
         self.error_label.text = f"Erreur : {error}"
@@ -191,6 +195,8 @@ class ServerListMenu(menu.Menu):
         return
         for but in self.button_list.children:
             but.set_shader_input("cur_color", but.color)
+            if but.model:
+                but.model.set_shader_input("cur_color", but.color)
 
     def input(self, key):
         num_buttons = len(self.button_list.children)
@@ -207,9 +213,9 @@ class ServerListMenu(menu.Menu):
         max_offset = max(0, SCROLL_MIN_Y - last_button_y + 0.05)
 
         if key == 'scroll down':
-            self.button_list.y = min(max_offset, self.button_list.y + 0.03)
+            self.button_list.y = min(max_offset, self.button_list.y + 0.015)
         elif key == 'scroll up':
-            self.button_list.y = max(0, self.button_list.y - 0.03)
+            self.button_list.y = max(0, self.button_list.y - 0.015)
 
     def unselected(self):
         for but in self.button_list.children:
