@@ -27,7 +27,7 @@ from ursina import *
 import client.network as network
 import client.data as data
 from ursina import application as appli
-from client.world import World
+import client.world as world
 from client import menu
 from client.spot import FishingSpot
 from fish import FishingScene
@@ -71,6 +71,7 @@ def update():
     player = data.player
     if player is None: return
     # Récupérer les références depuis data
+    world.update()
     player = data.player
     spot = next((e for e in data.world_entities if isinstance(e, FishingSpot)), None)
     if spot is None:
