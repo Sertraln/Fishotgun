@@ -124,22 +124,6 @@ void main() {{
 
 '''
 
-test_vertex = '''
-#version 120
-
-uniform mat4 p3d_ModelViewProjectionMatrix;
-
-attribute vec4 p3d_Vertex;
-attribute vec2 p3d_MultiTexCoord0;
-
-varying vec2 uv;
-
-void main() {
-    gl_Position = p3d_ModelViewProjectionMatrix * p3d_Vertex;
-    uv = p3d_MultiTexCoord0;
-}
-'''
-
 
 
 test = build_server_list_shader_texture(SCROLL_MIN_Y, SCROLL_MAX_Y)
@@ -176,14 +160,15 @@ class ServerListMenu(menu.Menu):
         self.add_server_to_list("localserver", "127.0.0.1", 5555)
 
     def add_server_to_list(self, name, ip, port):
-        shader = Shader(name='model', vertex=test_vertex, fragment=server_list_shader)
-        shader.compile()
         but = ServerButton(name, ip, port, self.button_list)
+        new_shad = Shader(name='model', vertex=data.default_vertex, fragment=test)
+        new_shad.compile()
+        but.shader = new_shad
         if but.model:
-            but.model.setShader(shader._shader)
+            but.model.setShader(new_shad._shader)
             but.model.set_shader_input("cur_color", but.color)
         if but.text_entity:
-            new_shad = Shader(name='text', vertex=test_vertex, fragment=test)
+            new_shad = Shader(name='text', vertex=data.default_vertex, fragment=test)
             new_shad.compile()
             but.text_entity.shader = new_shad
             pass

@@ -91,8 +91,9 @@ def load_world():
     world.ground.texture_scale = (128,128)
     world.water.texture = 'assets/textures/water.png'
     world.water.texture_scale = (64,64)
-    world.water.shader = Shader(fragment=water_shader_fragment)
-    world.water.shader.compile()
+    water_shader = Shader(name="water", vertex=data.default_vertex, fragment=water_shader_fragment)
+    water_shader.compile()
+    world.water.model.setShader(water_shader)
     #registering menus
     menu1 = menu.Menu("menu1", False)
     resume = Button(text='Resume', scale=(0.3, 0.1), position=(0,0.1))
