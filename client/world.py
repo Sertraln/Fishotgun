@@ -1,14 +1,16 @@
 from client import data,menu,network
 from client.menus.chat import Chat
 from client.spot import FishingSpot
-from ursina import application,Button,destroy,color,Sky,mouse,Vec3,Text,DirectionalLight,AmbientLight,camera,scene
+from ursina import Shader,Button,destroy,color,Sky,mouse,Vec3,Text,DirectionalLight,AmbientLight,camera,scene,application
 from client.player import Player,ThirdPersonController
 import threading
 import shared.world as world
 from client.transitions import IrisTransition,_exit_black
 from client.fish import FishingScene
+import time
 
 _sky_entity = None
+_water_time_start = None
 
 
 class World:
@@ -52,8 +54,15 @@ def join_world(ip:str, port:int, name:str) -> Exception | None:
     load_world()
     return None
 
+def init_assets():
+    #TODO: only load at the start of the game, not every time we join a world
+    pass
+
 def load_world():
-    global _sky_entity
+    global _sky_entity, _water_time_start
+    water_shader_path = application.asset_folder / 'assets' / 'shader' / 'water.fsh'
+    water_shader_fragment = water_shader_path.read_text(encoding='utf-8')
+
     _sky_entity = Sky(color=color.violet)
     world.init_world(scene)
     data.instructions = Text(
@@ -81,9 +90,14 @@ def load_world():
 
     #loding textures
     world.ground.texture = 'assets/textures/grass.png'
-    world.ground.texture_scale = (128,128)
+    world.ground.texture_scale = (64,64)
     world.water.texture = 'assets/textures/water.png'
     world.water.texture_scale = (64,64)
+    water_shader = Shader(name="water", vertex=data.default_vertex, fragment=water_shader_fragment)
+    water_shader.compile()
+    world.water.model.setShader(water_shader._shader)
+    _water_time_start = time.perf_counter()
+    world.water.model.set_shader_input("iTime", 0.0)
     #registering menus
     menu1 = menu.Menu("menu1", False)
     resume = Button(text='Resume', scale=(0.3, 0.1), position=(0,0.1))
@@ -105,10 +119,11 @@ def quit_to_menu():
 
     menu.show("main_menu")
 
-    global _sky_entity
+    global _sky_entity, _water_time_start
     if _sky_entity:
         destroy(_sky_entity)
         _sky_entity = None
+    _water_time_start = None
 
     if data.network is not None:
         # Avoid recursive quit_to_menu calls from Network.disconnect().
@@ -148,3 +163,15 @@ def quit_to_menu():
         del menu._menus['menu1']
 
     data.world = None
+
+def update():
+    if not world.water or not world.water.model:
+        return
+
+    # Relative monotonic time keeps animation smooth on GLSL 120 by avoiding huge epoch values.
+    if _water_time_start is None:
+        t = 0.0
+    else:
+        t = time.perf_counter() - _water_time_start
+
+    world.water.model.set_shader_input("iTime", t % 4096.0)
