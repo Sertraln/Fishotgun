@@ -36,8 +36,7 @@ class ServerButton(menu.FixedButton):
 
     def connect(self):
         global _name
-        try:
-            world.join_world(self.ip, self.port, _name)
+        try:            world.join_world(self.ip, self.port, _name)
         except Exception as exc:
             print("Erreur : " + str(exc))
             traceback.print_exc()

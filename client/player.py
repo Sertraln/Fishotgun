@@ -148,7 +148,7 @@ class ThirdPersonController(Player):
 
     def update(self):
         #super().update()
-        if menu._currentMenu is not None:
+        if menu._currentMenu is not None and data.network != None:
             return
         self.update_cam()
         self.update_mouv_input()

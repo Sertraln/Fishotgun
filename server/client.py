@@ -65,15 +65,12 @@ class Client:
                     print(e)
         finally:
             try:
-                self.server.world.left_player(self.id)
-                self.conn.shutdown(socket.SHUT_RDWR)
-                self.conn.close()
+                self.kick()
             except:
                 pass
     
     def kick(self):
-        self.stopevent.set()
-        self.conn.shutdown(socket.SHUT_RDWR)
+        self.server.world.left_player(self.id)
         self.conn.close()
         
 

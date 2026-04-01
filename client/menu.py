@@ -41,7 +41,6 @@ _menus : dict[str, Menu] = {}
 def register_menu(menu : Menu):
     global _menus
     _menus[menu.id] = menu
-    print(f"Registered menus {_menus}")
 
 def show(menu : Menu | str):
     if isinstance(menu, str):

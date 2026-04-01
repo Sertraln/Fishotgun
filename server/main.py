@@ -22,6 +22,7 @@ class Server:
     def __init__(self, port:int =5555, ip:str = None):
         from server.packet.packetlib import init_packetlib
         init_packetlib()
+        data.init_data()
         self.port = port if port not in Server.used_ports else 5555+len(Server.used_ports)
         self.ip = ip if ip else get_local_ip()
         self.soket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -66,7 +67,7 @@ class Server:
             client = Client(conn,ip,self.lastpid,self)
             self.lastpid += 1
             packet : ServerBoundPseudoPacket = client.sendRecv(cb.ClientBoundIdPacket(client.id))[0]
-            player = Player(packet.name,client,self.world.world_scene,Vec3(0,10,0))
+            player = Player(packet.name,client,self.world.world_scene)
             self.world.join_player(player)
             self.threadlist.append(client.thread)
             client.thread.start()
