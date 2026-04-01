@@ -90,7 +90,7 @@ def load_world():
 
     #loding textures
     world.ground.texture = 'assets/textures/grass.png'
-    world.ground.texture_scale = (128,128)
+    world.ground.texture_scale = (64,64)
     world.water.texture = 'assets/textures/water.png'
     world.water.texture_scale = (64,64)
     water_shader = Shader(name="water", vertex=data.default_vertex, fragment=water_shader_fragment)
