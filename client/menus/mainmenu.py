@@ -36,7 +36,8 @@ class ServerButton(menu.FixedButton):
 
     def connect(self):
         global _name
-        try:            world.join_world(self.ip, self.port, _name)
+        try:     
+            world.join_world(self.ip, self.port, _name)
         except Exception as exc:
             print("Erreur : " + str(exc))
             traceback.print_exc()
@@ -274,3 +275,10 @@ class MainMenu(menu.Menu):
 main_menu = MainMenu()
 menu.show(main_menu)
 menu.register_menu(main_menu)
+
+def get_name():
+    return _name
+
+def set_name(name):
+    global _name
+    _name = name
