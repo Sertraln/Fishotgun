@@ -1,11 +1,14 @@
 from client import data,menu,world
-from ursina import Entity,color,Vec3,camera,TextField,dedent,Text,Texture,Shader,window
+from ursina import Entity,color,Vec3,Text,Shader,window
 from shared.utils import get_local_ip
 import traceback
 
 _name = "player"
+SCROLL_MIN_Y_SHADER = -0.2
+SCROLL_MAX_Y_SHADER = 1.4
 SCROLL_MIN_Y = -0.2
 SCROLL_MAX_Y = 0.3
+
 
 class ServerButton(menu.FixedButton):
     def __init__(self, name, ip, port, parent,**kwargs):
@@ -25,6 +28,8 @@ class ServerButton(menu.FixedButton):
         self._selected = False
         self.ip = ip
         self.port = port
+        self.text_name = name
+        self.enable()
 
     def on_click(self):
         if self.selected:
@@ -96,12 +101,13 @@ def build_server_list_shader(min_y, max_y):
 #version 120
 
 uniform vec4 cur_color;
+uniform float window_height;
 uniform sampler2D p3d_Texture0;
 
 varying vec2 uv;
     
 void main() {{
-    float y = (gl_FragCoord.y / {window.size.y}) - 0.5;
+    float y = (gl_FragCoord.y / window_height) - 0.5;
     if (y < {min_y} || y > {max_y}) discard;
     gl_FragColor = cur_color;
 }}
@@ -112,12 +118,13 @@ def build_server_list_shader_texture(min_y, max_y):
     return f'''
 #version 120
 
+uniform float window_height;
 uniform sampler2D p3d_Texture0;
 
 varying vec2 uv;
     
 void main() {{
-    float y = (gl_FragCoord.y / {window.size.y}) - 0.5;
+    float y = (gl_FragCoord.y / window_height) - 0.5;
     if (y < {min_y} || y > {max_y}) discard;
     gl_FragColor = vec4(1.0)*texture2D(p3d_Texture0, uv)+vec4(1.0,1.0,1.0,0.0);
 }}
@@ -155,7 +162,7 @@ class ServerListMenu(menu.Menu):
 
         Text("Rejoindre un serveur", parent=self, position=(0, 0.38, -0.1), origin=(0, 0), scale=1.4, color=color.white)
 
-        self.button_list = Entity(parent=self)
+        self.button_list = Entity(parent=self,name="button_list")
         self.button_list.shader = Shader(name='test', vertex=test_vertex, fragment=server_list_shader)
         self.button_list.shader.compile()
         self.button_list.show_error = self.show_error
@@ -173,7 +180,8 @@ class ServerListMenu(menu.Menu):
         self.back_but.on_click = back
         self.add_server_but = menu.FixedButton(text='+ Ajouter', text_color=color.white, highlight_text_color=color.white, position=(0.28, -0.38), scale=(0.22, 0.07), text_size=0.8, parent=self, color=color.rgba32(60, 130, 60), highlight_color=color.rgba32(80, 160, 80))
         self.add_server_but.on_click = lambda: menu.show(add_server)
-        self.add_server_to_list("localserver", "127.0.0.1", 5555)
+        if not data.total_path.exists():
+            self.add_server_to_list("localserver", "127.0.0.1", 5555)
 
     def add_server_to_list(self, name, ip, port):
         shader = Shader(name='model', vertex=test_vertex, fragment=server_list_shader)
@@ -186,7 +194,6 @@ class ServerListMenu(menu.Menu):
             new_shad = Shader(name='text', vertex=test_vertex, fragment=test)
             new_shad.compile()
             but.text_entity.shader = new_shad
-            pass
 
     def show_error(self, error):
         self.error_label.text = f"Erreur : {error}"
@@ -194,8 +201,12 @@ class ServerListMenu(menu.Menu):
     def update(self):
         for but in self.button_list.children:
             but.set_shader_input("cur_color", but.color)
+            but.set_shader_input("window_height", window.size[1])
             if but.model:
                 but.model.set_shader_input("cur_color", but.color)
+                but.model.set_shader_input("window_height", window.size[1])
+            if but.text_entity:
+                but.text_entity.set_shader_input("window_height", window.size[1])
 
     def input(self, key):
         num_buttons = len(self.button_list.children)
@@ -219,6 +230,35 @@ class ServerListMenu(menu.Menu):
     def unselected(self):
         for but in self.button_list.children:
             but.selected = False
+
+    def save(self) -> bytes:
+        res = b''
+        res += len(self.button_list.children).to_bytes(2, 'big')
+        for but in self.button_list.children:
+            name_bytes = but.text_name.encode('utf-8')
+            ip_bytes = but.ip.encode('utf-8')
+            port_bytes = but.port.to_bytes(2, 'big')
+            res += len(name_bytes).to_bytes(2, 'big') + name_bytes
+            res += len(ip_bytes).to_bytes(2, 'big') + ip_bytes
+            res += port_bytes
+        return res
+
+    def load(self,bytes_data: bytes) -> None:
+        nb_buttons = int.from_bytes(bytes_data[0:2], 'big')
+        offset = 2
+        for _ in range(nb_buttons):
+            name_len = int.from_bytes(bytes_data[offset:offset+2], 'big')
+            offset += 2
+            name = bytes_data[offset:offset+name_len].decode('utf-8')
+            offset += name_len
+            ip_len = int.from_bytes(bytes_data[offset:offset+2], 'big')
+            offset += 2
+            ip = bytes_data[offset:offset+ip_len].decode('utf-8')
+            offset += ip_len
+            port = int.from_bytes(bytes_data[offset:offset+2], 'big')
+            offset += 2
+            add_server.server_list_menu.add_server_to_list(name, ip, port)
+        return offset
 
 
 join_menu = ServerListMenu()
@@ -277,8 +317,12 @@ menu.show(main_menu)
 menu.register_menu(main_menu)
 
 def get_name():
+    if _name == "player" and main_menu.te.text_field.text != "":
+        return main_menu.te.text_field.text
     return _name
 
 def set_name(name):
     global _name
     _name = name
+    main_menu.te.text_field.text = name
+    main_menu.te.text_field.render()

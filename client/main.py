@@ -32,20 +32,21 @@ from client import menu
 from client.spot import FishingSpot
 from fish import FishingScene
 from transitions import IrisTransition,_exit_black
-
-
-
+import client.save as save
 
 
 def custom_quit():
+    print("quit")
     if data.network:
         print("Disconnecting from server...")
         data.network.disconnect()
-    sys.exit()
+    save.save_global_data()
+
 app = Ursina()
 appli.quit = custom_quit
-
+data.init()
 menu.init()
+save.load_global_data()
 appli.pause()
 window.color = color.gray
 _sun_light = DirectionalLight(shadows=True)
@@ -121,4 +122,5 @@ class MenuLogic(Entity):
 
 MenuLogic()
 
-app.run()
+try: app.run()
+except SystemExit: custom_quit()

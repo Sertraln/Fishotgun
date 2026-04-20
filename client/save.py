@@ -1,8 +1,6 @@
 import client.data as data
 from client.menus.mainmenu import join_menu,get_name,set_name
 
-dataName = "main.dat"
-
 def _encode_string(s: str) -> bytes:
     encoded = s.encode("utf-8")
     length = len(encoded)
@@ -21,21 +19,21 @@ def _decode_string(data: bytes, offset: int) -> tuple[str, int]:
     return s, offset + length
 
 def save_global_data():
-    with open(f"{data.dataPath}{dataName}","wb") as f:
+    print("saving")
+    with open(data.total_path,"wb") as f:
         f.write(_encode_string(get_name()))
-        f.write(join_menu.encode())
+        f.write(join_menu.save())
 
 def load_global_data():
     try:
-        with open(f"{data.dataPath}{dataName}","rb") as f:
+        with open(data.total_path,"rb") as f:
             raw = f.read()
         if len(raw) < 2:
             raise ValueError("Invalid data file")
-        name, username_end = _decode_string(raw, 0)
+        name, offset = _decode_string(raw, 0)
         set_name(name)
-        join_menu.decode(raw[username_end:])
-        return
-    except FileNotFoundError:
+        offset = join_menu.load(raw[offset:])
+    except FileNotFoundError as e:
         pass
     except Exception as e:
         print(f"Global data load error : {e}")

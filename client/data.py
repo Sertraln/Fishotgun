@@ -34,7 +34,9 @@ void main() {
 }
 '''
 
-dataPath = application.asset_folder + "/data/"
+dataPath = application.asset_folder / "data/"
+dataName = "main.dat"
+total_path = dataPath / dataName
 
-def init_data():
+def init():
     Path(dataPath).mkdir(parents=True, exist_ok=True)
