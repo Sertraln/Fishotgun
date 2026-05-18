@@ -138,6 +138,7 @@ class ThirdPersonController(Player):
         #th.Thread(target=self.constant_update, daemon=True).start()
         self.on_destroy = self.on_disable
         self.actor.loop('reste')
+        self.actor.setPlayRate(1.5,'walk')
 
     def _attach_camera_to_pivot(self):
         # Reset scale before parenting to avoid cumulative stretch across reconnects.
