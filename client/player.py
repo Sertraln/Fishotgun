@@ -137,6 +137,7 @@ class ThirdPersonController(Player):
         self._reconcile_speed = 100.0
         #th.Thread(target=self.constant_update, daemon=True).start()
         self.on_destroy = self.on_disable
+        self.actor.loop('reste')
 
     def _attach_camera_to_pivot(self):
         # Reset scale before parenting to avoid cumulative stretch across reconnects.
@@ -243,6 +244,10 @@ class ThirdPersonController(Player):
         if held_keys['control']:
             key_strokes.press(KeyStates.SNEAK)
         if key_strokes != self._last_input:
+            if key_strokes.is_idle():
+                self.play_idle_animation()
+            elif self._last_input.is_idle():
+                self.play_walk_animation()
             self._last_input = key_strokes
             self._last_input_time = time.time_ns()
             self._send_input()
@@ -261,6 +266,22 @@ class ThirdPersonController(Player):
         self._original_camera_transform = camera.transform  # store original position and rotation
         camera.world_parent = scene
         camera.scale = Vec3(1, 1, 1)
+
+    def play_walk_animation(self):
+        if hasattr(self.actor, 'loop'):
+            self.actor.play('rest_to_walk')
+            invoke(self.play_conditional,'walk',delay=0.2)
+    
+    def play_idle_animation(self):
+        if hasattr(self.actor, 'loop'):
+            self.actor.play('walk_to_rest')
+            invoke(self.play_conditional,'reste',delay=0.2)
+    
+    def play_conditional(self,animation:str):
+        if not self._last_input.is_idle() and animation == 'walk':
+            self.actor.loop('walk')
+        elif self._last_input.is_idle() and animation == 'reste':
+            self.actor.loop('reste')
 
     #probably useless but keep for now
     def constant_update(self):
