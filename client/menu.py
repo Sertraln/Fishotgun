@@ -6,6 +6,7 @@ class FixedButton(Button):
         super().__init__(**kwargs)
         if self.text_entity:
             self.text_entity.position = Vec3(0,0,-1)
+        self.text_entity.font = "assets/font/FishoFont.ttf"
 
 class Menu(Entity):
     def __init__(self,id:str,pause=True):
@@ -79,7 +80,7 @@ class CustomTextField(InputField):
         # self.bg.color = bg_color
         # self.bg.scale = scale
         self.text_color = text_color
-        self.naming_box = None if naming_box is None else Text(text=naming_box, parent=self, position=(-0.5,0.9, -0.1), scale=text_size, color=text_color)
+        self.naming_box = None if naming_box is None else Text(text=naming_box, parent=self, position=(-0.5,0.9, -0.1), scale=text_size, color=text_color,font="assets/font/FishoFont.ttf")
         # self.render()
 
     
