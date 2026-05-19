@@ -1,24 +1,19 @@
 from client import data,menu,world
-from ursina import Entity,color,Vec3,camera,TextField,dedent,Text,Texture,Shader,window
+from ursina import Entity,color,Vec3,camera,TextField,dedent,Text,Texture,Shader,window,invoke
 from shared.utils import get_local_ip
 import traceback
 
 _name = "player"
 SCROLL_MIN_Y = -0.2
-SCROLL_MAX_Y = 0.3
+SCROLL_MAX_Y = 0.25
 
 class ServerButton(menu.FixedButton):
     def __init__(self, name, ip, port, parent,**kwargs):
         super().__init__(
             text=name,
-            position=(0, SCROLL_MAX_Y-0.05-len(parent.children) * 0.12),
+            position=(0, SCROLL_MAX_Y-0.05-len(parent.children) * 0.6),
             scale=(0.5, 0.09),
-            text_size=0.8,
-            text_color=color.white,
-            highlight_text_color=color.white,
             parent=parent,
-            color=color.rgba32(50, 50, 60),
-            highlight_color=color.rgba32(70, 70, 90),
         )
         for key, value in kwargs.items():
             setattr(self, key, value)
@@ -113,13 +108,14 @@ def build_server_list_shader_texture(min_y, max_y):
 #version 120
 
 uniform sampler2D p3d_Texture0;
+uniform vec3 color;
 
 varying vec2 uv;
     
 void main() {{
     float y = (gl_FragCoord.y / {window.size.y}) - 0.5;
     if (y < {min_y} || y > {max_y}) discard;
-    gl_FragColor = vec4(1.0)*texture2D(p3d_Texture0, uv)+vec4(1.0,1.0,1.0,0.0);
+    gl_FragColor = vec4(1.0)*texture2D(p3d_Texture0, uv)+vec4(color,0.0);
 }}
 
 '''
@@ -153,7 +149,8 @@ class ServerListMenu(menu.Menu):
         super().__init__("server_list_menu")
         self.pause = True
 
-        Text("Rejoindre un serveur", parent=self, position=(0, 0.38, -0.1), origin=(0, 0), scale=1.4, color=color.white)
+        Text("Rejoindre un serveur", parent=self, position=(0, 0.3, -0.1), origin=(0, 0),
+              scale=1.4, color=color.black,font=data.fisho_font)
 
         self.button_list = Entity(parent=self)
         self.button_list.shader = Shader(name='test', vertex=test_vertex, fragment=server_list_shader)
@@ -165,27 +162,30 @@ class ServerListMenu(menu.Menu):
         self.button_list.position=Vec3(0.0,0,0.0)
         self.error_label = Text("", parent=self, position=(0, -0.28, -0.1), origin=(0, 0), scale=0.7, color=color.rgba32(220, 80, 80))
 
-        self.back_but = menu.FixedButton(text='< Retour', text_color=color.white, highlight_text_color=color.white, position=(-0.28, -0.38), scale=(0.22, 0.07), text_size=0.8, parent=self, color=color.rgba32(70, 70, 80), highlight_color=color.rgba32(100, 100, 115))
+        self.back_but = menu.FixedButton(text="< Retour",
+                        position=(-0.17, -0.3),scale=(0.22, 0.07),
+                        text_size=1.2, parent=self, color=color.rgba32(70, 70, 80),
+                        highlight_color=color.rgba32(100, 100, 115))
         self.back_but.menu = None
         def back():
             self.unselected()
-            menu.show(self.back_but.menu)
+            self.hide()
+            menu.rotate_page_and_run([ lambda: menu.show(self.back_but.menu), lambda: self.show()],-200)
         self.back_but.on_click = back
-        self.add_server_but = menu.FixedButton(text='+ Ajouter', text_color=color.white, highlight_text_color=color.white, position=(0.28, -0.38), scale=(0.22, 0.07), text_size=0.8, parent=self, color=color.rgba32(60, 130, 60), highlight_color=color.rgba32(80, 160, 80))
+
+        self.add_server_but = menu.FixedButton(text='+ Ajouter',
+                        position=(0.2, -0.3), scale=(0.22, 0.07), text_size=1.2, parent=self,
+                        color=color.rgba32(60, 130, 60), highlight_color=color.rgba32(80, 160, 80))
         self.add_server_but.on_click = lambda: menu.show(add_server)
         self.add_server_to_list("localserver", "127.0.0.1", 5555)
 
     def add_server_to_list(self, name, ip, port):
-        shader = Shader(name='model', vertex=test_vertex, fragment=server_list_shader)
-        shader.compile()
-        but = ServerButton(name, ip, port, self.button_list)
-        if but.model:
-            but.model.setShader(shader._shader)
-            but.model.set_shader_input("cur_color", but.color)
+        but = ServerButton(name, ip, port, self.button_list, color=color.black, text_size=1.2)
         if but.text_entity:
             new_shad = Shader(name='text', vertex=test_vertex, fragment=test)
             new_shad.compile()
             but.text_entity.shader = new_shad
+            but.text_entity.set_shader_input("cur_color", but.color)
             pass
 
     def show_error(self, error):
@@ -229,37 +229,33 @@ class MainMenu(menu.Menu):
     def __init__(self):
         super().__init__("main_menu")
         self.pause = True
-        join_menu.back_but.on_click = lambda: menu.show(self)
-
-        Entity(model='quad', parent=self,texture='assets/textures/logo_color.png',scale=(0.6,0.3),position=(0,0.3,-0.1))
-
+        join_menu.back_but.menu = self
+        Entity(model='quad', parent=self,texture='assets/textures/logo_color.png',scale=(0.5,0.25),position=(0,0.25,-0.1))
         self.te = menu.CustomTextField(
             max_lines=1, parent=self, scale=(0.38, 0.07),
-            position=(0, 0.1, -0.1), text_size=1,
-            naming_box="Nom du joueur :", bg_color=color.black
+            position=(0, 0.0, -0.1), text_size=1.5,
+            naming_box="Nom du joueur :", bg_color=color.black,
+            character_limit=16
         )
-
-        self.test = menu.FixedButton(
+        self.multijoueur = menu.FixedButton(
             text='Multijoueur',
-            text_color=color.white,
-            highlight_text_color=color.white,
-            scale=(0.35, 0.08), text_size=0.9,
-            position=(0, -0.05), parent=self,
-            color=color.rgba32(60, 120, 180),
-            highlight_color=color.rgba32(80, 150, 210),
+            scale=(0.35, 0.08),
+            position=(0, -0.15), parent=self,
+            text_size=2
         )
-        self.test.on_click = self.switch(lambda: menu.show(join_menu))
+        self.multijoueur.on_click = self.switch(lambda: menu.show(join_menu))
 
         from ursina import application
         quit_btn = menu.FixedButton(
             parent=self, text='Quitter',
-            text_color=color.white,
-            highlight_text_color=color.white,
-            scale=(0.35, 0.08), position=(0, -0.18),
-            text_size=0.9, color=color.rgba32(160, 50, 50),
-            highlight_color=color.rgba32(190, 70, 70),
+            text_color=color.dark_gray,
+            highlight_text_color=color.dark_gray,
+            scale=(0.35, 0.08), position=(0, -0.3),
+            text_size=2,
         )
         quit_btn.on_click = application.quit
+        self.color = color.white
+        
 
     from typing import Callable
     def switch(self, button: 'Callable'):
@@ -268,7 +264,8 @@ class MainMenu(menu.Menu):
             _name = self.te.text_field.text
             if _name == "":
                 _name = "player"
-            button()
+            self.hide()
+            menu.rotate_page_and_run([button, lambda: self.show()])
         return default_switch
 
 

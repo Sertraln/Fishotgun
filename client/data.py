@@ -17,6 +17,8 @@ iris: 'IrisTransition' = None
 fishing_scene: 'FishingScene' = None
 
 
+#const
+fisho_font = "assets/font/FishoFont.ttf"
 default_vertex = '''
 #version 120
 
