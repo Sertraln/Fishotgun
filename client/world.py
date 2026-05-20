@@ -17,6 +17,7 @@ class World:
     def __init__(self):
         self.players: dict[int,Player] = {}
         self.player_init = threading.Event()
+        self.enabled = False
 
     def spawn_player(self,player_id:int,name:str,position:Vec3,rotation:float=0):
         print(f"World: spawning player {player_id} at {position}")
@@ -30,6 +31,12 @@ class World:
             pl = self.players[player_id]
             pl.detach_node()
             del self.players[player_id]
+    
+    def clear_world(self):
+        for pl in self.players.values():
+            destroy(pl)
+        self.players.clear()
+        self.enabled = False
 
 class PlayerInitializationError(Exception):
     pass
@@ -38,7 +45,7 @@ def join_world(ip:str, port:int, name:str) -> Exception | None:
     try:
         from client.packet.clientbound import ClientBoundInitPlayerPacket
         ClientBoundInitPlayerPacket.player = None
-        data.world = World()
+        data.world.player_init.clear()
         data.network = network.Network(ip,port,name)
         if(not data.world.player_init.wait(5)):  # Wait for player initialization before starting the game loop
             print("Player initialization timed out. Exiting.")
@@ -46,8 +53,8 @@ def join_world(ip:str, port:int, name:str) -> Exception | None:
             raise PlayerInitializationError("Player initialization timed out.")
         ClientBoundInitPlayerPacket.init()
     except Exception as e:
-        del data.world
-        data.world = None
+        data.network = None
+        data.world.clear_world()
         raise e
     load_world()
     return None
@@ -63,6 +70,9 @@ def load_world():
 
     _sky_entity = Sky(color=color.violet)
     world.init_world(scene)
+
+    if world.ground is None or world.water is None:
+        raise RuntimeError("world.init_world() n'a pas initialisé ground/water")
     data.instructions = Text(
         text='Contrôles:\nZ/Q/S/D - Déplacement\nEspace - Sauter\nSouris - Regarder\nÉchap - Déverrouiller souris',
         position=(-0.5, 0.4),
@@ -85,7 +95,7 @@ def load_world():
     
     spot.set_scene(data.fishing_scene)
 
-    #loding textures
+    #loading textures
     world.ground.texture = 'assets/textures/grass.png'
     world.ground.texture_scale = (64,64)
     world.water.texture = 'assets/textures/water.png'
@@ -159,8 +169,6 @@ def quit_to_menu():
         destroy(menu._menus['menu1'])
         del menu._menus['menu1']
 
-    data.world = None
-
 def update():
     if not world.water or not world.water.model:
         return
@@ -172,3 +180,6 @@ def update():
         t = time.perf_counter() - _water_time_start
 
     world.water.model.set_shader_input("iTime", t % 4096.0)
+
+# Initialize the world instance after defining the World class
+data.world = World()

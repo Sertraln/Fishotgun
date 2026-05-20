@@ -41,7 +41,8 @@ class World:
     def left_player(self, pid:int):
         if pid in self.players:
             data.server.broadcast(ClientBoundPlayerLeavePacket(pid),[pid])
-            del self.players[pid]
+            player = self.players.pop(pid)
+            player.save()
             print(f"World: player left {pid}")
 
     def stop(self):

@@ -1,4 +1,5 @@
 from typing import TYPE_CHECKING
+from ursina import application,Path
 if TYPE_CHECKING:
     from client.player import ThirdPersonController
     from client.network import Network
@@ -34,3 +35,10 @@ void main() {
     uv = p3d_MultiTexCoord0;
 }
 '''
+
+dataPath = application.asset_folder / "data/"
+dataName = "main.dat"
+total_path = dataPath / dataName
+
+def init():
+    Path(dataPath).mkdir(parents=True, exist_ok=True)
