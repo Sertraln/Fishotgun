@@ -8,6 +8,9 @@ SCROLL_MIN_Y = -0.2
 SCROLL_MAX_Y = 0.25
 
 class ServerButton(menu.FixedButton):
+
+    lock_click = False
+
     def __init__(self, name, ip, port, parent,**kwargs):
         super().__init__(
             text=name,
@@ -22,6 +25,8 @@ class ServerButton(menu.FixedButton):
         self.port = port
 
     def on_click(self):
+        if ServerButton.lock_click:
+            return
         if self.selected:
             self.selected = False
             self.connect()
@@ -33,6 +38,7 @@ class ServerButton(menu.FixedButton):
 
     def connect(self):
         global _name
+        ServerButton.lock_click = True
         try:
             world.join_world(self.ip, self.port, _name)
         except Exception as exc:
@@ -42,6 +48,7 @@ class ServerButton(menu.FixedButton):
             return
         else:
             menu.hide()
+        ServerButton.lock_click = False
 
     @property
     def selected(self):
