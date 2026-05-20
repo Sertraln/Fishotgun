@@ -70,6 +70,7 @@ class BackGround(Entity):
         self.to_run = []
         self.rotation_direction = 1
         self.rotation_speed = 400
+        self.hide()
         
     def update(self):
         if self.rotate_page:
@@ -141,14 +142,14 @@ def ispausing():
     return _currentMenu is not None and _currentMenu.pause
 
 def show_background():
-    _background_menu.enable()
+    _background_menu.show()
 
 def hide():
     mouse.position = Vec2(0,0)
     global _currentMenu
     if _currentMenu is not None:
         _currentMenu.disable()
-        _background_menu.disable()
+        _background_menu.hide()
     _currentMenu = None
     application.resume()
 

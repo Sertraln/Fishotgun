@@ -19,12 +19,16 @@ class WorldScene(Entity):
         self.disable()
 
     def disable(self):
+        print("Disabling world scene")
         super().disable()
         self.ui.disable()
+        menu.show_background()
 
     def enable(self):
+        print("Enabling world scene")
         super().enable()
         self.ui.enable()
+        menu._background_menu.hide()
 
 _world = WorldScene()
     
@@ -52,7 +56,6 @@ class World:
         for pl in self.players.values():
             destroy(pl)
         self.players.clear()
-        self.enabled = False
 
 class PlayerInitializationError(Exception):
     pass
@@ -92,7 +95,7 @@ def init_assets():
         background=True,
         parent=_world.ui
     )
-    spot = FishingSpot(position=(0,2,0))
+    spot = FishingSpot(position=(0,2,0),parent=_world)
     data.world_entities = [spot]
     camera.fov = 90
 
@@ -130,15 +133,7 @@ def init_assets():
     menu.register_menu(menu1)
 
 def load_world():
-    
-
-    
-   
-
-    
-    #registering menus
-   
-    menu._background_menu.hide()
+    _world.enable()
 
 def quit_to_menu():
     from ursina import destroy
@@ -146,12 +141,7 @@ def quit_to_menu():
 
     menu.show("main_menu")
     menu.show_background()
-
-    global _sky_entity, _water_time_start
-    if _sky_entity:
-        destroy(_sky_entity)
-        _sky_entity = None
-    _water_time_start = None
+    _world.disable()
 
     if data.network is not None:
         # Avoid recursive quit_to_menu calls from Network.disconnect().
@@ -166,25 +156,10 @@ def quit_to_menu():
         data.player = None
 
     if data.world is not None:
-        for p in list(data.world.players.values()):
-            p.disable()
-            destroy(p)
         data.world.players.clear()
 
     # Prevent stale references across sessions.
     ClientBoundInitPlayerPacket.player = None
-
-    if world.ground:
-        destroy(world.ground)
-        world.ground = None
-    
-    if world.water:
-        destroy(world.water)
-        world.water = None
-
-    for e in data.world_entities:
-        destroy(e)
-    data.world_entities = []
 
 def update():
     if not world.water or not world.water.model:
