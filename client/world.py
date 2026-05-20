@@ -14,7 +14,6 @@ _water_time_start = None
 
 
 class World:
-
     def __init__(self):
         self.players: dict[int,Player] = {}
         self.player_init = threading.Event()
@@ -75,7 +74,6 @@ def load_world():
     spot = FishingSpot(position=(0,2,0))
     data.world_entities = [spot]
     camera.fov = 90
-
 
     data.iris = IrisTransition(close_duration=0.8, black_duration=0.5, open_duration=0.8)
 
