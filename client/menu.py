@@ -169,11 +169,6 @@ class CustomTextField(InputField):
         self.text_field.cursor.color = text_color
         self.text_field.color = text_color
         self.highlight_text_color = text_color
-    
-    def update(self):
-        # N'exécute le code du parent que si certaines conditions sont vraies
-        if self.parent and isinstance(self.parent, Menu):
-            self.active = self.parent.enabled
 
     @property
     def text(self):
