@@ -16,13 +16,14 @@ class Player(Entity):
         self._position_tracking_ready = False
         self._suppress_position_rotation = False
         self.position = position
+        self.last_position = Vec3(position)
+        self.last_position_update = time.time()
         self.name = name
         self.actor = Actor("assets/models/player/player.glb")
         self.actor.reparent_to(self)
         self.scale = Vec3(1,1.5,1)
         self.player_id = id
 
-        self._auto_face_movement = True
         self._turn_lerp_speed = 8.0
         self._rotation_y_offset = 180.0
         self._min_turn_distance = 0.02
@@ -36,10 +37,42 @@ class Player(Entity):
         self.interpolation_start_time = 0
         self.interpolation_duration = 0.05  # 50ms to match server tickrate
         self._position_tracking_ready = True
+
+        #aniamtions
+        self.actor.loop('reste')
+        self.actor.setPlayRate(1.5,'walk')
+        self.animation = 'reste'
+
+    def play_walk_animation(self):
+        if hasattr(self.actor, 'loop'):
+            self.actor.play('rest_to_walk')
+            self.animation = 'walk'
+            invoke(self.play_conditional,'walk',delay=0.2)
+    
+    def play_idle_animation(self):
+        if hasattr(self.actor, 'loop'):
+            self.actor.play('walk_to_rest')
+            self.animation = 'reste'
+            invoke(self.play_conditional,'reste',delay=0.2)
+
+    def play_conditional(self,animation:str):
+        if not self.is_idle() and animation == 'walk':
+            self.actor.loop('walk')
+        elif self.is_idle() and animation == 'reste':
+            self.actor.loop('reste')
+
+    def is_idle(self):
+        print("time since last input :",time.time() - self.last_position_update)
+        return time.time() -self.last_position_update  > 0.1
     
     def update(self):
         current_time = time.time()
         elapsed = current_time - self.interpolation_start_time
+
+        if self.animation == 'walk' and self.is_idle():
+            self.play_idle_animation()
+        elif self.animation == 'reste' and not self.is_idle():
+            self.play_walk_animation()
         
         if elapsed < self.interpolation_duration and self.interpolation_duration > 0:
             t = elapsed / self.interpolation_duration
@@ -49,11 +82,16 @@ class Player(Entity):
 
     def __setattr__(self, key, value):
         if key == 'position' and getattr(self, '_position_tracking_ready', False) and not getattr(self, '_suppress_position_rotation', False):
-            previous = Vec3(self.position)
+            self.last_position = Vec3(self.position)
+            self.last_position_update = time.time()
             super().__setattr__(key, value)
-            self._update_rotation_target_from_movement(previous, Vec3(value))
+            self._update_rotation_target_from_movement(self.last_position, Vec3(value))
             return
-        super().__setattr__(key, value)
+        elif key == 'position':
+            self.last_position = Vec3(self.position)
+            self.last_position_update = time.time()
+        else:
+            super().__setattr__(key, value)
 
     def _set_position_without_rotation_update(self, position: Vec3):
         self._suppress_position_rotation = True
@@ -63,14 +101,10 @@ class Player(Entity):
             self._suppress_position_rotation = False
 
     def _update_rotation_target_from_movement(self, previous_position: Vec3, new_position: Vec3):
-        if not self._auto_face_movement:
-            return
-
         move_delta = Vec3(new_position.x - previous_position.x, 0, new_position.z - previous_position.z)
         if move_delta.length() <= self._min_turn_distance:
             return
 
-        # Model forward is aligned on Z; X needs opposite sign to match right/left turns.
         desired_rotation = math.degrees(math.atan2(-move_delta.x, move_delta.z)) + self._rotation_y_offset
         angle_delta = abs((desired_rotation - self._movement_target_rotation_y + 180.0) % 360.0 - 180.0)
         if angle_delta < self._min_angle_delta:
@@ -79,9 +113,6 @@ class Player(Entity):
         self._movement_target_rotation_y = desired_rotation
 
     def _update_smooth_movement_rotation(self):
-        if not self._auto_face_movement:
-            return
-
         alpha = clamp(time.dt * self._turn_lerp_speed, 0.0, 1.0)
         current = self._get_model_rotation_y()
         next_rotation = lerp_angle(current, self._movement_target_rotation_y, alpha) - 180
@@ -137,8 +168,6 @@ class ThirdPersonController(Player):
         self._reconcile_speed = 100.0
         #th.Thread(target=self.constant_update, daemon=True).start()
         self.on_destroy = self.on_disable
-        self.actor.loop('reste')
-        self.actor.setPlayRate(1.5,'walk')
 
     def _attach_camera_to_pivot(self):
         # Reset scale before parenting to avoid cumulative stretch across reconnects.
@@ -267,22 +296,6 @@ class ThirdPersonController(Player):
         self._original_camera_transform = camera.transform  # store original position and rotation
         camera.world_parent = scene
         camera.scale = Vec3(1, 1, 1)
-
-    def play_walk_animation(self):
-        if hasattr(self.actor, 'loop'):
-            self.actor.play('rest_to_walk')
-            invoke(self.play_conditional,'walk',delay=0.2)
-    
-    def play_idle_animation(self):
-        if hasattr(self.actor, 'loop'):
-            self.actor.play('walk_to_rest')
-            invoke(self.play_conditional,'reste',delay=0.2)
-    
-    def play_conditional(self,animation:str):
-        if not self._last_input.is_idle() and animation == 'walk':
-            self.actor.loop('walk')
-        elif self._last_input.is_idle() and animation == 'reste':
-            self.actor.loop('reste')
 
     #probably useless but keep for now
     def constant_update(self):

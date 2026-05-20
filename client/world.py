@@ -30,7 +30,7 @@ class World:
         print("client : player leave get :",player_id, flush=True)
         if player_id in self.players:
             pl = self.players[player_id]
-            destroy(pl)
+            pl.detach_node()
             del self.players[player_id]
 
 class PlayerInitializationError(Exception):
