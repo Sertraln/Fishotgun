@@ -7,7 +7,7 @@ class WorldScene(Entity):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.bullet_world = BulletWorld()
-        self.bullet_world.setGravity(Vec3(0, -9.81, 0))
+        self.bullet_world.setGravity(Vec3(0, -50.0, 0))
 
 from panda3d.bullet import BulletRigidBodyNode, BulletBoxShape
 from panda3d.core import Vec3

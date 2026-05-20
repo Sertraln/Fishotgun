@@ -14,7 +14,7 @@ class Physic(Entity):
         self.radius = 0.5
         self.walk_speed = 6.0
         self.sprint_multiplier = 1.6
-        self.jump_force = 6.5
+        self.jump_force = 10.0
         self.rotation_y = 0
         self.grounded = False
 
