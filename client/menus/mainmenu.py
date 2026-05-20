@@ -11,7 +11,7 @@ class ServerButton(menu.FixedButton):
     def __init__(self, name, ip, port, parent,**kwargs):
         super().__init__(
             text=name,
-            position=(0, SCROLL_MAX_Y-0.05-len(parent.children) * 0.6),
+            position=(0, SCROLL_MAX_Y-0.05-len(parent.children) * 0.06),
             scale=(0.5, 0.09),
             parent=parent,
         )
@@ -28,6 +28,8 @@ class ServerButton(menu.FixedButton):
         else:
             self.parent.unselected()
             self.selected = True
+            self.parent.parent.delete_button.show()
+            self.parent.selected_button = self
 
     def connect(self):
         global _name
@@ -57,15 +59,30 @@ class ServerButton(menu.FixedButton):
 class AddServerMenu(menu.Menu):
     def __init__(self):
         super().__init__("join_menu")
-        Text("Ajouter un serveur", parent=self, position=(0, 0.28, -0.1), origin=(0, 0), scale=1.4, color=color.white)
-        self.texterr = Text("format : ip:port  (ex: localhost:5555)", parent=self, position=(0, 0.18, -0.1), origin=(0,0), scale=0.55, color=color.rgba32(180,180,180))
-        self.te = menu.CustomTextField(max_lines=1, parent=self, scale=(0.45, 0.07), position=(0, 0.07, -0.1), text_size=1, naming_box="ip", bg_color=color.black,text_color=color.light_gray)
-        self.te_name = menu.CustomTextField(max_lines=1, parent=self, scale=(0.45, 0.07), position=(0, -0.07, -0.1), text_size=1, naming_box="name", bg_color=color.black,text_color=color.light_gray)
-        self.connect_but = menu.FixedButton(text='Confirmer', text_color=color.white, highlight_text_color=color.white, position=(0, -0.2), scale=(0.3, 0.08), text_size=0.9, parent=self, color=color.rgba32(60, 160, 80), highlight_color=color.rgba32(80, 190, 100))
-        self.connect_but.on_click = self.rejoindre
+        # shader = Shader(name='text', vertex=data.default_vertex, fragment=menu.set_static_color(color.black))
+        # shader.compile()
+        self.text = Text("Ajouter un serveur", parent=self, position=(0, 0.28, -0.1), origin=(0, 0), scale=1.4, color=color.black,font=data.fisho_font)
+        # self.text.shader = shader
+        self.texterr = Text("format : ip:port  (ex: localhost:5555)", parent=self, position=(0, 0.18, -0.1), origin=(0,0), scale=0.55, color=color.black,font=data.fisho_font,text_size=0.9)
+        self.te = menu.CustomTextField(max_lines=1, parent=self, scale=(0.45, 0.07), position=(0, 0.07, -0.1), text_size=1, naming_box="ip", bg_color=color.black,text_color=color.black)
+        self.te_name = menu.CustomTextField(max_lines=1, parent=self, scale=(0.45, 0.07), position=(0, -0.07, -0.1), text_size=1, naming_box="name", bg_color=color.black,text_color=color.black)
+        self.connect_but = menu.FixedButton(text='Confirmer', text_color=color.white, highlight_text_color=color.white, position=(0.1, -0.2), scale=(0.3, 0.08), text_size=0.9, parent=self, color=color.rgba32(60, 160, 80), highlight_color=color.rgba32(80, 190, 100))
+        self.connect_but.on_click = self.add_server
         self.server_list_menu: 'ServerListMenu' = None
+        self.back_button = menu.FixedButton(text="< Retour", position=(-0.1, -0.2), scale=(0.3, 0.08), text_size=0.9, parent=self, color=color.rgba32(70, 70, 80), highlight_color=color.rgba32(100, 100, 115))
+        def back():
+            self.hide()
+            self.clear()
+            menu.rotate_page_and_run([ lambda: menu.show(self.server_list_menu), lambda: self.show()],-1)
+        self.back_button.on_click = back
 
-    def rejoindre(self):
+    def clear(self):
+        self.te.text_field.text = ""
+        self.te.text_field.render()
+        self.te_name.text_field.text = ""
+        self.te_name.text_field.render()
+
+    def add_server(self):
         content = self.te.text
         lst = content.split(":")
         size = len(lst)
@@ -79,7 +96,9 @@ class AddServerMenu(menu.Menu):
             self.server_list_menu.add_server_to_list(self.te_name.text, lst[0], int(lst[1]))
         else:
             print("Erreur : server_list_menu is None")
-        menu.show(self.server_list_menu)
+        self.clear()
+        menu.hide()
+        menu.rotate_page_and_run([lambda: menu.show(self.server_list_menu),lambda: self.show()],-1)
 
 
 add_server = AddServerMenu()
@@ -163,21 +182,30 @@ class ServerListMenu(menu.Menu):
         self.error_label = Text("", parent=self, position=(0, -0.28, -0.1), origin=(0, 0), scale=0.7, color=color.rgba32(220, 80, 80))
 
         self.back_but = menu.FixedButton(text="< Retour",
-                        position=(-0.17, -0.3),scale=(0.22, 0.07),
+                        position=(-0.19, -0.3),scale=(0.22, 0.07),
                         text_size=1.2, parent=self, color=color.rgba32(70, 70, 80),
                         highlight_color=color.rgba32(100, 100, 115))
         self.back_but.menu = None
         def back():
             self.unselected()
             self.hide()
-            menu.rotate_page_and_run([ lambda: menu.show(self.back_but.menu), lambda: self.show()],-200)
+            menu.rotate_page_and_run([ lambda: menu.show(self.back_but.menu), lambda: self.show()],-1)
         self.back_but.on_click = back
 
         self.add_server_but = menu.FixedButton(text='+ Ajouter',
                         position=(0.2, -0.3), scale=(0.22, 0.07), text_size=1.2, parent=self,
                         color=color.rgba32(60, 130, 60), highlight_color=color.rgba32(80, 160, 80))
-        self.add_server_but.on_click = lambda: menu.show(add_server)
+        def add_server_func():
+             self.hide()
+             menu.rotate_page_and_run([ lambda: menu.show(add_server), lambda: self.show()],1)
+        self.add_server_but.on_click = add_server_func
         self.add_server_to_list("localserver", "127.0.0.1", 5555)
+        self.delete_button = menu.FixedButton(text='Supprimer',
+                        position=(0, -0.3), scale=(0.22, 0.07), text_size=1.2, parent=self,
+                        color=color.rgba32(130, 60, 60), highlight_color=color.rgba32(160, 80, 80))
+        self.delete_button.hide()
+        self.button_list.selected_button = None
+        self.delete_button.on_click = lambda: self.remove_serveur_button(self.button_list.selected_button)
 
     def add_server_to_list(self, name, ip, port):
         but = ServerButton(name, ip, port, self.button_list, color=color.black, text_size=1.2)
@@ -186,7 +214,7 @@ class ServerListMenu(menu.Menu):
             new_shad.compile()
             but.text_entity.shader = new_shad
             but.text_entity.set_shader_input("cur_color", but.color)
-            pass
+
 
     def show_error(self, error):
         self.error_label.text = f"Erreur : {error}"
@@ -203,7 +231,7 @@ class ServerListMenu(menu.Menu):
             return
 
         # No scrolling needed while all entries fit in the visible area.
-        if num_buttons <= 4:
+        if num_buttons <= 7:
             self.button_list.y = 0
             return
 
@@ -219,6 +247,14 @@ class ServerListMenu(menu.Menu):
     def unselected(self):
         for but in self.button_list.children:
             but.selected = False
+        self.delete_button.hide()
+        self.button_list.selected_button = None
+
+    def remove_serveur_button(self, button:Entity):
+        button.parent = None
+        button.disable()
+        button.remove_node()
+        self.unselected()
 
 
 join_menu = ServerListMenu()

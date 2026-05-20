@@ -17,6 +17,20 @@ void main() {{
 
 '''
 
+def set_static_color(color:color):
+    return f'''
+#version 120
+
+uniform sampler2D p3d_Texture0;
+
+varying vec2 uv;
+    
+void main() {{
+     gl_FragColor = vec4(1.0)*texture2D(p3d_Texture0, uv) + vec4({color[0]},{color[1]},{color[2]},0.0);
+}}
+
+'''
+
 
 class FixedButton(Button):
     def __init__(self, **kwargs):
@@ -54,11 +68,12 @@ class BackGround(Entity):
         self.paper._texture._texture.setMagfilter(SamplerState.FT_nearest)
         self.rotate_page = False
         self.to_run = []
-        self.rotation_speed = 200
+        self.rotation_direction = 1
+        self.rotation_speed = 400
         
     def update(self):
         if self.rotate_page:
-            self.paper_pivot.rotation_y += self.rotation_speed * time.dt
+            self.paper_pivot.rotation_y += self.rotation_speed * self.rotation_direction * time.dt
             if self.paper_pivot.rotation_y >= 350 or self.paper_pivot.rotation_y <= -350:
                 self.paper_pivot.rotation_y = 0
                 self.rotate_page = False
@@ -66,10 +81,10 @@ class BackGround(Entity):
                     func()
                 self.to_run = []
 
-    def rotate_and_run(self,func,rotation_speed=200):
+    def rotate_and_run(self,func,rotation_direction=1):
         self.rotate_page = True
         self.to_run = func
-        self.rotation_speed = rotation_speed
+        self.rotation_direction = rotation_direction
 
 class Menu(Entity):
     def __init__(self,id:str,pause=True):
@@ -145,6 +160,7 @@ class CustomTextField(InputField):
         text_size = (1/scale[0],1/scale[1])
         self.text_field.text_entity.scale = 1/1.25
         self.text_field.text_entity.font = data.fisho_font
+        self.ignore_paused = True
         self.text_color = text_color
         self.naming_box = None if naming_box is None else Text(text=naming_box, parent=self, position=(-0.5,0.9, -0.1),
                                                                 scale=text_size, color=text_color, font = data.fisho_font)
@@ -152,10 +168,12 @@ class CustomTextField(InputField):
         self.model.set_pos(0,-0.2,0.2)
         self.text_field.cursor.model.set_y(0.2)
         self.text_field.cursor.color = text_color
+        self.text_field.color = text_color
+        self.highlight_text_color = text_color
     
     def update(self):
         # N'exécute le code du parent que si certaines conditions sont vraies
-
+        print(self.text_color,self.text_field.text_entity.color)
         if self.parent and isinstance(self.parent, Menu):
             self.active = self.parent.enabled
 
@@ -172,6 +190,6 @@ def init():
     quit_button.on_click = application.quit
     import client.menus.mainmenu as mainmenu
 
-def rotate_page_and_run(func : list[callable],rotation_speed=200):
+def rotate_page_and_run(func : list[callable],rotation_speed=1):
     if _background_menu.enabled:
         _background_menu.rotate_and_run(func,rotation_speed)
