@@ -173,7 +173,6 @@ class CustomTextField(InputField):
     
     def update(self):
         # N'exécute le code du parent que si certaines conditions sont vraies
-        print(self.text_color,self.text_field.text_entity.color)
         if self.parent and isinstance(self.parent, Menu):
             self.active = self.parent.enabled
 
