@@ -140,11 +140,15 @@ def show(menu : Menu | str):
 def ispausing():
     return _currentMenu is not None and _currentMenu.pause
 
+def show_background():
+    _background_menu.enable()
+
 def hide():
     mouse.position = Vec2(0,0)
     global _currentMenu
     if _currentMenu is not None:
         _currentMenu.disable()
+        _background_menu.disable()
     _currentMenu = None
     application.resume()
 

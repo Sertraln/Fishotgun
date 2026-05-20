@@ -19,7 +19,6 @@ def _decode_string(data: bytes, offset: int) -> tuple[str, int]:
     return s, offset + length
 
 def save_global_data():
-    print("saving")
     with open(data.total_path,"wb") as f:
         f.write(_encode_string(get_name()))
         f.write(join_menu.save())

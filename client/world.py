@@ -1,8 +1,8 @@
 from client import data,menu,network
 from client.menus.chat import Chat
 from client.spot import FishingSpot
-from ursina import Shader,Button,destroy,color,Sky,mouse,Vec3,Text,DirectionalLight,AmbientLight,camera,scene,application
-from client.player import Player,ThirdPersonController
+from ursina import Shader,Button,destroy,color,Sky,mouse,Vec3,Text,camera,scene,application,Entity
+from client.player import Player
 import threading
 import shared.world as world
 from client.transitions import IrisTransition,_exit_black
@@ -11,7 +11,23 @@ import time
 
 _sky_entity = None
 _water_time_start = None
+class WorldScene(Entity):
+    def __init__(self):
+        super().__init__()
+        self.name="world_base"
+        self.ui = Entity(parent=camera.ui)
+        self.disable()
 
+    def disable(self):
+        super().disable()
+        self.ui.disable()
+
+    def enable(self):
+        super().enable()
+        self.ui.enable()
+
+_world = WorldScene()
+    
 
 class World:
     def __init__(self):
@@ -60,16 +76,11 @@ def join_world(ip:str, port:int, name:str) -> Exception | None:
     return None
 
 def init_assets():
-    #TODO: only load at the start of the game, not every time we join a world
-    pass
-
-def load_world():
     global _sky_entity, _water_time_start
     water_shader_path = application.asset_folder / 'assets' / 'shader' / 'water.fsh'
     water_shader_fragment = water_shader_path.read_text(encoding='utf-8')
-
-    _sky_entity = Sky(color=color.violet)
-    world.init_world(scene)
+    _sky_entity = Sky(color=color.violet,parent=_world)
+    world.init_world(_world)
 
     if world.ground is None or world.water is None:
         raise RuntimeError("world.init_world() n'a pas initialisé ground/water")
@@ -78,7 +89,8 @@ def load_world():
         position=(-0.5, 0.4),
         scale=1.2,
         origin=(0, 0),
-        background=True
+        background=True,
+        parent=_world.ui
     )
     spot = FishingSpot(position=(0,2,0))
     data.world_entities = [spot]
@@ -91,10 +103,7 @@ def load_world():
         data.iris.play(on_black=_exit_black)
 
     data.fishing_scene = FishingScene(on_end=on_fishing_end)
-
-    
     spot.set_scene(data.fishing_scene)
-
     #loading textures
     world.ground.texture = 'assets/textures/grass.png'
     world.ground.texture_scale = (64,64)
@@ -119,6 +128,16 @@ def load_world():
     ChatMenu = Chat()
     menu.register_menu(ChatMenu)
     menu.register_menu(menu1)
+
+def load_world():
+    
+
+    
+   
+
+    
+    #registering menus
+   
     menu._background_menu.hide()
 
 def quit_to_menu():
@@ -126,6 +145,7 @@ def quit_to_menu():
     from client.packet.clientbound import ClientBoundInitPlayerPacket
 
     menu.show("main_menu")
+    menu.show_background()
 
     global _sky_entity, _water_time_start
     if _sky_entity:
@@ -165,10 +185,6 @@ def quit_to_menu():
     for e in data.world_entities:
         destroy(e)
     data.world_entities = []
-
-    if 'menu1' in menu._menus:
-        destroy(menu._menus['menu1'])
-        del menu._menus['menu1']
 
 def update():
     if not world.water or not world.water.model:

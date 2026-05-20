@@ -46,6 +46,7 @@ app = Ursina()
 appli.quit = custom_quit
 data.init()
 menu.init()
+world.init_assets()
 save.load_global_data()
 appli.pause()
 window.color = color.gray
