@@ -62,7 +62,6 @@ class Player(Entity):
             self.actor.loop('reste')
 
     def is_idle(self):
-        print("time since last input :",time.time() - self.last_position_update)
         return time.time() -self.last_position_update  > 0.1
     
     def update(self):
