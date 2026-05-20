@@ -8,6 +8,8 @@ import shared.world as world
 from client.transitions import IrisTransition,_exit_black
 from client.fish import FishingScene
 import time
+from panda3d.core import PandaNode, NodePath
+import copy
 
 _sky_entity = None
 _water_time_start = None
@@ -119,13 +121,16 @@ def init_assets():
     world.water.model.set_shader_input("iTime", 0.0)
     #registering menus
     menu1 = menu.Menu("menu1", False)
-    resume = Button(text='Resume', scale=(0.3, 0.1), position=(0,0.1))
+    node = copy.deepcopy(menu._background_menu.paper)
+    node.parent = menu1
+    node.position = (0,0,1)
+    resume = menu.FixedButton(text='Resume', scale=(0.3, 0.1), position=(0,0.1),text_size=2)
     def resume_game():
         menu.hide()
         mouse.locked = True
     resume.on_click = resume_game
     menu1.add_element(resume)
-    quit = Button(text='Quit', scale=(0.3, 0.1), position=(0,-0.1))
+    quit = menu.FixedButton(text='Quit', scale=(0.3, 0.1), position=(0,-0.1),text_size=2)
     quit.on_click = quit_to_menu
     menu1.add_element(quit)
     ChatMenu = Chat()

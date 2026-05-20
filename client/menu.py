@@ -56,10 +56,10 @@ class BackGround(Entity):
         super().__init__(parent=camera.ui,position=(0,0,1),scale=(1,1,1),ignore_paused=True)
         self.paper_pivot = Entity(parent=self,name="pivot",position=(-0.3,0,1))
         self.fake_paper = Entity(parent=self,model="cube",
-                            scale=(0.8,0.9,0.0),color=color.white,texture="assets/ui/menu.png",
+                            scale=(0.75,0.923188406,0.0),color=color.white,texture="assets/ui/menu.png",
                             ignore_paused=True,position=(0,0,1.01))
         self.paper = Entity(parent=self.paper_pivot,model="cube",
-                            scale=(0.8,0.9,0.0),color=color.white,texture="assets/ui/menu.png",
+                            scale=(0.75,0.923188406,0.0),color=color.white,texture="assets/ui/menu.png",
                             ignore_paused=True,position=(0.3,0,0))
         self.paper._texture._texture.setMagfilter(SamplerState.FT_nearest)
         self.paper.parent = self.paper_pivot
