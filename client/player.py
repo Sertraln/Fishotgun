@@ -56,13 +56,11 @@ class Player(Entity):
             invoke(self.play_conditional,'reste',delay=0.2)
 
     def play_conditional(self,animation:str):
-        if not self.is_idle() and animation == 'walk':
-            self.actor.loop('walk')
-        elif self.is_idle() and animation == 'reste':
-            self.actor.loop('reste')
+        if animation == self.animation:
+            self.actor.loop(animation)
 
     def is_idle(self):
-        return time.time() -self.last_position_update  > 0.1
+        return time.time() - self.last_position_update > 0.01
     
     def update(self):
         current_time = time.time()

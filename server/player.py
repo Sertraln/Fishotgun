@@ -26,7 +26,7 @@ class Player(Physic):
     
     @property
     def unique_id(self) -> str:
-        return self.player_name
+        return self.player_name+"_"+str(self.client.ip[0])
 
     def update_keystates(self, key_states):
         self.keys_states = key_states

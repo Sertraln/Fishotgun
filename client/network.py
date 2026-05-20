@@ -33,7 +33,10 @@ class Network:
             self.conn.connect(self.addr)
             self.conn.settimeout(None)  # Reset to blocking mode
             print("client : Connexion réussie")
-            return self.conn.recv(2048)[0]
+            recv = self.conn.recv(2048)
+            if not recv:
+                raise ConnectionError("Aucune donnée reçue du serveur")
+            return recv[0]
         except socket.timeout:
             print("client : Timeout de connexion")
             raise ConnectionRefusedError("Timeout de connexion")

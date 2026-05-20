@@ -119,6 +119,7 @@ def load_world():
     ChatMenu = Chat()
     menu.register_menu(ChatMenu)
     menu.register_menu(menu1)
+    menu._background_menu.hide()
 
 def quit_to_menu():
     from ursina import destroy

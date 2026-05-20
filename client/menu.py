@@ -63,7 +63,7 @@ class BackGround(Entity):
                             ignore_paused=True,position=(0.3,0,0))
         self.paper._texture._texture.setMagfilter(SamplerState.FT_nearest)
         self.paper.parent = self.paper_pivot
-        self.backgound = Entity(model="cube",parent=camera.ui,position=(0,0,4),rotation=(0,0,0),
+        self.backgound = Entity(model="cube",parent=self,position=(0,0,4),rotation=(0,0,0),
                                 texture="assets/ui/menu_bg.png",scale=(2,1,0.1),ignore_paused=True)
         self.paper._texture._texture.setMagfilter(SamplerState.FT_nearest)
         self.rotate_page = False

@@ -11,7 +11,6 @@ SCROLL_MAX_Y = 0.25
 
 
 class ServerButton(menu.FixedButton):
-
     lock_click = False
 
     def __init__(self, name, ip, port, parent,**kwargs):
@@ -71,10 +70,7 @@ class ServerButton(menu.FixedButton):
 class AddServerMenu(menu.Menu):
     def __init__(self):
         super().__init__("join_menu")
-        # shader = Shader(name='text', vertex=data.default_vertex, fragment=menu.set_static_color(color.black))
-        # shader.compile()
         self.text = Text("Ajouter un serveur", parent=self, position=(0, 0.28, -0.1), origin=(0, 0), scale=1.4, color=color.black,font=data.fisho_font)
-        # self.text.shader = shader
         self.texterr = Text("format : ip:port  (ex: localhost:5555)", parent=self, position=(0, 0.18, -0.1), origin=(0,0), scale=0.55, color=color.black,font=data.fisho_font,text_size=0.9)
         self.te = menu.CustomTextField(max_lines=1, parent=self, scale=(0.45, 0.07), position=(0, 0.07, -0.1), text_size=1, naming_box="ip", bg_color=color.black,text_color=color.black)
         self.te_name = menu.CustomTextField(max_lines=1, parent=self, scale=(0.45, 0.07), position=(0, -0.07, -0.1), text_size=1, naming_box="name", bg_color=color.black,text_color=color.black)
@@ -181,20 +177,16 @@ class ServerListMenu(menu.Menu):
     def __init__(self):
         super().__init__("server_list_menu")
         self.pause = True
-
         Text("Rejoindre un serveur", parent=self, position=(0, 0.3, -0.1), origin=(0, 0),
               scale=1.4, color=color.black,font=data.fisho_font)
-
         self.button_list = Entity(parent=self,name="button_list")
         self.button_list.shader = Shader(name='test', vertex=test_vertex, fragment=server_list_shader)
         self.button_list.shader.compile()
         self.button_list.show_error = self.show_error
         self.button_list.unselected = self.unselected
         add_server.server_list_menu = self
-
         self.button_list.position=Vec3(0.0,0,0.0)
         self.error_label = Text("", parent=self, position=(0, -0.28, -0.1), origin=(0, 0), scale=0.7, color=color.rgba32(220, 80, 80))
-
         self.back_but = menu.FixedButton(text="< Retour",
                         position=(-0.19, -0.3),scale=(0.22, 0.07),
                         text_size=1.2, parent=self, color=color.rgba32(70, 70, 80),
@@ -205,7 +197,6 @@ class ServerListMenu(menu.Menu):
             self.hide()
             menu.rotate_page_and_run([ lambda: menu.show(self.back_but.menu), lambda: self.show()],-1)
         self.back_but.on_click = back
-
         self.add_server_but = menu.FixedButton(text='+ Ajouter',
                         position=(0.2, -0.3), scale=(0.22, 0.07), text_size=1.2, parent=self,
                         color=color.rgba32(60, 130, 60), highlight_color=color.rgba32(80, 160, 80))
@@ -213,7 +204,6 @@ class ServerListMenu(menu.Menu):
              self.hide()
              menu.rotate_page_and_run([ lambda: menu.show(add_server), lambda: self.show()],1)
         self.add_server_but.on_click = add_server_func
-        self.add_server_to_list("localserver", "127.0.0.1", 5555)
         self.delete_button = menu.FixedButton(text='Supprimer',
                         position=(0, -0.3), scale=(0.22, 0.07), text_size=1.2, parent=self,
                         color=color.rgba32(130, 60, 60), highlight_color=color.rgba32(160, 80, 80))
@@ -228,7 +218,6 @@ class ServerListMenu(menu.Menu):
             new_shad.compile()
             but.text_entity.shader = new_shad
             but.text_entity.set_shader_input("cur_color", but.color)
-
 
     def show_error(self, error):
         self.error_label.text = f"Erreur : {error}"
@@ -247,12 +236,10 @@ class ServerListMenu(menu.Menu):
         num_buttons = len(self.button_list.children)
         if key not in ('scroll up', 'scroll down'):
             return
-
         # No scrolling needed while all entries fit in the visible area.
         if num_buttons <= 7:
             self.button_list.y = 0
             return
-
         top_button_y = SCROLL_MAX_Y - 0.05
         last_button_y = top_button_y - (num_buttons - 1) * 0.12
         max_offset = max(0, SCROLL_MIN_Y - last_button_y + 0.05)
@@ -272,6 +259,8 @@ class ServerListMenu(menu.Menu):
         button.parent = None
         button.disable()
         button.remove_node()
+        for i,but in enumerate(self.button_list.children):
+            but.position = Vec3(0, SCROLL_MAX_Y-0.05-i*0.06, -0.1)
         self.unselected()
 
     def save(self) -> bytes:
@@ -300,7 +289,9 @@ class ServerListMenu(menu.Menu):
             offset += ip_len
             port = int.from_bytes(bytes_data[offset:offset+2], 'big')
             offset += 2
-            add_server.server_list_menu.add_server_to_list(name, ip, port)
+            self.add_server_to_list(name, ip, port)
+        if nb_buttons == 0:
+            self.add_server_to_list("localhost", "0.0.0.0", 5555)
         return offset
 
 
