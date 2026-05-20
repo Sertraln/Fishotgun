@@ -290,8 +290,6 @@ class ServerListMenu(menu.Menu):
             port = int.from_bytes(bytes_data[offset:offset+2], 'big')
             offset += 2
             self.add_server_to_list(name, ip, port)
-        if nb_buttons == 0:
-            self.add_server_to_list("localhost", "0.0.0.0", 5555)
         return offset
 
 

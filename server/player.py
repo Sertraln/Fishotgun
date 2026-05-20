@@ -7,6 +7,8 @@ import array
 import server.data as data
 import struct
 from shared.parsedata.vec3data import Vec3Data
+from shared.parsedata.fishlist import FishList
+import shared.packetlib as packetlib
 if TYPE_CHECKING:
     from server.client import Client
 
@@ -17,7 +19,7 @@ class Player(Physic):
         self.player_name = player_name
         self.client = client
         self.keys_states = None
-        self.fish_unlocked = []
+        self.fish_unlocked = FishList(0)
         self.load()
 
     @property
@@ -35,14 +37,20 @@ class Player(Physic):
     def save(self):
         with open(f"{data.dataPath}{self.unique_id}.dat","wb") as f:
             f.write(Vec3Data.encode(self.position))
+            f.write(FishList.encode(self.fish_unlocked))
 
     def load(self):
         try:
             with open(f"{data.dataPath}{self.unique_id}.dat","rb") as f:
                 self.position = Vec3Data.decode(f.read(Vec3Data.size))
+                self.fish_unlocked = FishList.decode(f.read(FishList.get_size()))
         except FileNotFoundError:
             pass
         except Exception as e:
             print(f"Player load error : {e}")
+
+    def unlock_fish(self, fish:FishList):
+        self.fish_unlocked.unlock(fish)
+    
 
 

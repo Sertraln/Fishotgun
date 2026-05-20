@@ -69,7 +69,7 @@ class BackGround(Entity):
         self.rotate_page = False
         self.to_run = []
         self.rotation_direction = 1
-        self.rotation_speed = 400
+        self.rotation_speed = 600
         self.hide()
         
     def update(self):

@@ -30,8 +30,8 @@ from ursina import application as appli
 import client.world as world
 from client import menu
 from client.spot import FishingSpot
-from fish import FishingScene
-from transitions import IrisTransition,_exit_black
+from client.fish import FishingScene
+from client.transitions import IrisTransition,_exit_black
 import client.save as save
 
 
@@ -48,6 +48,9 @@ data.init()
 menu.init()
 world.init_assets()
 save.load_global_data()
+from client.menus.mainmenu import join_menu
+if len(join_menu.button_list.children) == 0:
+    join_menu.add_server_to_list("localhost", "0.0.0.0", 5555)
 appli.pause()
 window.color = color.gray
 _sun_light = DirectionalLight(shadows=True)
