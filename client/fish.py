@@ -33,6 +33,28 @@ class Fish(Entity):
         self.angle = 0
         self.collider = 'box'
 
+        self._splash = Entity(
+            parent=scene,
+            model='quad',
+            texture='assets/textures/water_splash.png',
+            texture_scale=(1/4, 1/2),
+            scale=2,
+            rotation=(90, 0, 0),
+            enabled=False
+        )
+        self._splash_frame = 0
+        self._splash_timer = 0
+        self._splash_playing = False
+
+    def play_splash(self):
+        self._splash_frame = 0
+        self._splash_timer = 0
+        self._splash_playing = True
+        self._splash.enabled = True
+        self._splash.position = self.position
+        self._splash.rotation = (90, 0, 0)
+        self._splash.texture_offset = (0, 0)
+
     def set_rotation(self, angle: float):
         self.angle = angle % 360
         self.rotation = (0, angle, 0)
@@ -59,6 +81,20 @@ class Fish(Entity):
             self.set_rotation(self.angle - speed)
         return False
 
+    def update(self):
+        if not self._splash_playing:
+            return
+        self._splash_timer += time.dt
+        if self._splash_timer > 0.15:
+            self._splash_timer = 0
+            self._splash_frame += 1
+            if self._splash_frame >= 8:
+                self._splash_playing = False
+                self._splash.enabled = False
+                return
+            col = self._splash_frame % 4
+            row = self._splash_frame // 4
+            self._splash.texture_offset = (col / 4, 1 - (row + 1) / 2)
 
 class FishingScene:
     BAR_X = 0.45
@@ -143,6 +179,8 @@ class FishingScene:
         # fish shot
         shot.play()
         fish.alpha_setter(0.2)
+        fish.play_splash()
+
         fish.scale = fish.fish_type['scale']/1.75
 
         if self._stopping:
@@ -222,7 +260,7 @@ class FishingScene:
     def update(self):
         if not self.enabled or self._stopping:
             return
-            
+
         for fish in self._fleeing:
             dx, dz = fish.flee_dir
             fish.position = (
@@ -230,8 +268,12 @@ class FishingScene:
                 fish.position[1],
                 fish.position[2] + dz*10*time.dt)
             fish.set_rotation((-degrees(atan2(dz, dx))) % 360)
+            fish.update()
 
         for fish, point in self._pairs:
+
+            # Splash !
+            fish.update()
 
             # fait réaparaitre le poisson
             if (fish.alpha_getter() < 1) :
