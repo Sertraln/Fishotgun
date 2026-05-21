@@ -20,6 +20,7 @@ class FishType:
 class Fish(Entity):
     def __init__(self, **kwargs):
         fish_type = kwargs.pop('fish_type', FishType.NORMAL)
+        self.fish_type = fish_type  
         super().__init__(**kwargs)
         self.model = 'plane'
         self.texture = 'assets/textures/fish_shadow.png'
@@ -139,17 +140,18 @@ class FishingScene:
             ] + [e for pair in self._pairs for e in pair]
 
     def _on_fish_click(self, fish):
+        # fish shot
         shot.play()
+        fish.alpha_setter(0.2)
+        fish.scale = fish.fish_type['scale']/1.75
+
         if self._stopping:
             return
+        
         if self._selected_fish is None:
-            # fish shot
-            # fish.alpha_setter(0.2)
             self._select(fish)
+
         elif self._selected_fish == fish:
-            # fish shot
-            # fish.alpha_setter(0.2)
-            # print("heyy !! you shot me !")
             self._deal_damage()
 
     def _get_shot(self):
@@ -175,6 +177,7 @@ class FishingScene:
                 destroy(point)
                 self._entities.remove(point)
                 self._fleeing.append(fish)
+                fish.on_click = lambda f=fish: None
                 dx  = fish.position[0] - chosen_fish.position[0]
                 dz  = fish.position[2] - chosen_fish.position[2]
                 mag = sqrt(dx**2 + dz**2)
@@ -219,6 +222,7 @@ class FishingScene:
     def update(self):
         if not self.enabled or self._stopping:
             return
+            
         for fish in self._fleeing:
             dx, dz = fish.flee_dir
             fish.position = (
@@ -226,11 +230,16 @@ class FishingScene:
                 fish.position[1],
                 fish.position[2] + dz*10*time.dt)
             fish.set_rotation((-degrees(atan2(dz, dx))) % 360)
-            # if (fish.alpha_getter() < 1) :
-            #     fish.alpha_setter(fish.alpha_getter() + 0.1)
+
         for fish, point in self._pairs:
-            # if (fish.alpha_getter() < 1) :
-            #         fish.alpha_setter(fish.alpha_getter() + 0.1)
+
+            # fait réaparaitre le poisson
+            if (fish.alpha_getter() < 1) :
+                    new_alpha = min(1.0, fish.alpha_getter() + 0.02 * time.dt * 60) # clamp à 1
+                    new_scale = min(fish.fish_type['scale'], fish.scale_x + 0.02 * time.dt * 60) # clamp
+
+                    fish.scale = new_scale
+                    fish.alpha_setter(new_alpha)
 
             if self._selected_fish and fish == self._selected_fish:
                 if mouse.world_point:
@@ -247,12 +256,13 @@ class FishingScene:
                 if self._pressure <= 0.0:
                     self.request_stop()
                     return
-                
-                
-
+            
             if fish and point:
                 if fish.look_at(point.position):
                     point.position = (randrange(-11, 11), Y_OFFSET-19, randrange(-6, 6))
+
+
+                    
 
     def stop(self):
         if not self.enabled:
