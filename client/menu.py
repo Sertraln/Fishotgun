@@ -1,4 +1,4 @@
-from ursina import Button, mouse, Vec2,Vec3,Entity,camera,TextField,Text,color,application,InputField,Shader,time,Texture
+from ursina import Button, mouse, Vec2,Vec3,Entity,camera,TextField,Text,color,application,InputField,Shader,time,Texture,invoke
 import client.data as data
 from panda3d.core import SamplerState
 
@@ -137,6 +137,9 @@ def show(menu : Menu | str):
     _currentMenu = menu
     menu.enable()
     application.paused = menu.pause
+    if data.main_theme and not data.main_theme.playing:
+        print("main_theme.play()")
+        data.main_theme.play()
 
 def ispausing():
     return _currentMenu is not None and _currentMenu.pause
@@ -152,6 +155,18 @@ def hide():
         _background_menu.hide()
     _currentMenu = None
     application.resume()
+    if data.main_theme:
+        # data.main_theme.volume = 0
+        # data.main_theme.pause()
+        
+        print("main_theme.stop()")
+        # data.main_theme.clip.stop()
+        data.main_theme.stop()
+    if data.life_is_awesome:
+        print("life_is_awesome.play()")
+        data.life_is_awesome.play()
+    if data.birds:
+        invoke(data.birds.play, delay=3)
 
 
 quit_button = FixedButton(text='Quitter', scale=(0.2, 0.1), position=(0,-0.1))

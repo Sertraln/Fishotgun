@@ -6,7 +6,7 @@ Y_OFFSET = -30
 shot = Audio(
     "assets/musics/shot.wav",
     autoplay=False,
-    volume=0.8
+    volume=0.2
 )
 
 def get_angle(dx, dz):
@@ -91,6 +91,7 @@ class Fish(Entity):
             if self._splash_frame >= 8:
                 self._splash_playing = False
                 self._splash.enabled = False
+                self._splash.texture_offset = (0, 0)
                 return
             col = self._splash_frame % 4
             row = self._splash_frame // 4
@@ -231,6 +232,7 @@ class FishingScene:
         for fish in self._fleeing:
             if fish in self._entities:
                 self._entities.remove(fish)
+            destroy(fish._splash)
             destroy(fish)
         self._fleeing = []
 
@@ -314,7 +316,9 @@ class FishingScene:
         camera.position = self._saved_cam_pos
         camera.rotation = self._saved_cam_rot
         camera.fov      = self._saved_cam_fov
-        for e in self._entities: # On reset tout mdr
+        for e in self._entities: # On reset tout mdr   # ya que joël pour faire des vannes en com de son code mdr
+            if hasattr(e, '_splash'):
+                destroy(e._splash)
             destroy(e)
         self._entities = []
         self._pairs = []

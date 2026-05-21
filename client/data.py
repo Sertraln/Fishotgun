@@ -16,7 +16,9 @@ app : 'Ursina' = None
 world : 'World' = None
 iris: 'IrisTransition' = None
 fishing_scene: 'FishingScene' = None
-
+main_theme = None
+life_is_awesome = None
+birds = None
 
 #const
 fisho_font = "assets/font/FishoFont.ttf"
