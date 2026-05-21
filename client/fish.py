@@ -3,6 +3,11 @@ from math import pi,atan2,sqrt,degrees,sin,cos
 from random import randrange, shuffle
 
 Y_OFFSET = -30
+shot = Audio(
+    "assets/musics/shot.wav",
+    autoplay=False,
+    volume=0.8
+)
 
 def get_angle(dx, dz):
     return (-degrees(atan2(dz, dx))) % 360
@@ -134,12 +139,22 @@ class FishingScene:
             ] + [e for pair in self._pairs for e in pair]
 
     def _on_fish_click(self, fish):
+        shot.play()
         if self._stopping:
             return
         if self._selected_fish is None:
+            # fish shot
+            # fish.alpha_setter(0.2)
             self._select(fish)
         elif self._selected_fish == fish:
+            # fish shot
+            # fish.alpha_setter(0.2)
+            # print("heyy !! you shot me !")
             self._deal_damage()
+
+    def _get_shot(self):
+        fish   = self._selected_fish
+        fish
 
     def _deal_damage(self):
         fish   = self._selected_fish
@@ -148,6 +163,7 @@ class FishingScene:
         self._update_hp_bar(fish)
         if fish.hp <= 0:
             self.request_stop()
+        
 
     def _select(self, chosen_fish):
         self._selected_fish = chosen_fish
@@ -210,7 +226,12 @@ class FishingScene:
                 fish.position[1],
                 fish.position[2] + dz*10*time.dt)
             fish.set_rotation((-degrees(atan2(dz, dx))) % 360)
+            # if (fish.alpha_getter() < 1) :
+            #     fish.alpha_setter(fish.alpha_getter() + 0.1)
         for fish, point in self._pairs:
+            # if (fish.alpha_getter() < 1) :
+            #         fish.alpha_setter(fish.alpha_getter() + 0.1)
+
             if self._selected_fish and fish == self._selected_fish:
                 if mouse.world_point:
                     mdx = mouse.world_point[0] - fish.position[0]
@@ -226,6 +247,9 @@ class FishingScene:
                 if self._pressure <= 0.0:
                     self.request_stop()
                     return
+                
+                
+
             if fish and point:
                 if fish.look_at(point.position):
                     point.position = (randrange(-11, 11), Y_OFFSET-19, randrange(-6, 6))

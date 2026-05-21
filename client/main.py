@@ -55,6 +55,14 @@ _sun_light.look_at(Vec3(0.1,-1,0))
 _sun_light._light.specular_color = color.gold
 _ambient_light = AmbientLight(color=color.rgba(0.3, 0.28, 0.25, 0.5))
 
+# main_theme = Audio(
+#     "assets/musics/fishotgun_main_theme.mp3",
+#     loop=True,
+#     autoplay=True,
+#     volume=0.6
+# )
+
+
 
 def enter_fishing():
     data.iris.play(on_black=_enter_black)
@@ -123,6 +131,5 @@ class MenuLogic(Entity):
                 menu.show(chat_menu)
 
 MenuLogic()
-
 try: app.run()
 except SystemExit: custom_quit()
