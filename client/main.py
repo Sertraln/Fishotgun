@@ -44,6 +44,7 @@ def custom_quit():
 
 app = Ursina()
 appli.quit = custom_quit
+import client.menus.fishodex as fishodex
 data.init()
 menu.init()
 world.init_assets()
@@ -92,7 +93,7 @@ def update():
     
     # Gotta check this for all spots in the map constantly (will need a list later)
     if distance(spot.position, player.position) < spot.interaction_range:
-        if held_keys['e']:
+        if held_keys['f']:
             enter_fishing()
         else:
             spot.color = color.yellow
@@ -113,9 +114,10 @@ def update():
 class MenuLogic(Entity):
     def __init__(self):
         super().__init__(ignore_paused=True)
+
     def input(self,key):
         if key == 'escape':
-            if menu._currentMenu is not None and menu._currentMenu.enabled:
+            if menu.hasMenuShow():
                 mouse.locked = True
                 menu.hide()
             else:
@@ -124,6 +126,16 @@ class MenuLogic(Entity):
         chat_menu = menu.getMenu("chat")
         if key == 't up' and chat_menu and not chat_menu.enabled:
                 menu.show(chat_menu)
+        fishodex = menu.getMenu("fishodex")
+        if key == 'e':
+            if fishodex and fishodex.enabled:
+                mouse.locked = True
+                menu.hide()
+            elif not menu.hasMenuShow() and fishodex and not fishodex.enabled:
+                mouse.locked = False
+                menu.show("fishodex")
+
+
 
 MenuLogic()
 

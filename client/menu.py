@@ -99,11 +99,6 @@ class Menu(Entity):
         self.elements.append(element)
         element.parent = self
 
-    def update(self):
-        for child in self.children:
-            if isinstance(child, FixedButton) and hasattr(child, 'text_entity') and child.text_entity:
-                child.text_entity.color = color.white
-
 class LinkingButton(FixedButton):
     def __init__(self, menu : Menu, **kwargs):
         super().__init__()
@@ -191,3 +186,6 @@ def init():
 def rotate_page_and_run(func : list[callable],rotation_speed=1):
     if _background_menu.enabled:
         _background_menu.rotate_and_run(func,rotation_speed)
+
+def hasMenuShow():
+    return _currentMenu is not None and _currentMenu.enabled

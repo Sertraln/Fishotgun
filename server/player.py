@@ -6,7 +6,6 @@ from ursina import Vec3
 import server.data as data
 from shared.parsedata.vec3data import Vec3Data
 from shared.parsedata.fishlist import FishInventory
-import shared.packetlib as packetlib
 from server.packet.clientbound import ClientBoundAddFishPacket, ClientBoundClearInventoryPacket
 if TYPE_CHECKING:
     from server.client import Client
@@ -32,7 +31,6 @@ class Player(Physic):
     def update_keystates(self, key_states):
         self.keys_states = key_states
 
-
     def save(self):
         with open(f"{data.dataPath}{self.unique_id}.dat","wb") as f:
             f.write(Vec3Data.encode(self.position))
@@ -50,9 +48,8 @@ class Player(Physic):
 
     def add_fish(self, fish:FishInventory):
         self.fish_inventory.add_fish(fish)
+        self.client.conn.send(ClientBoundAddFishPacket(fish))
 
     def clear_inventory(self):
         self.fish_inventory = FishInventory()
-    
-
-
+        self.client.conn.send(ClientBoundClearInventoryPacket())
