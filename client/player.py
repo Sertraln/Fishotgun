@@ -9,6 +9,7 @@ from client import data
 import time
 import collections
 import math
+from shared.parsedata.fishlist import FishInventory
 
 class Player(Entity):
     def __init__(self, id : int, name : str, position :Vec3 = Vec3(0,0,0)):
@@ -140,7 +141,7 @@ class Player(Entity):
 
 
 class ThirdPersonController(Player):
-    def __init__(self,id:int, name :str, position:Vec3 = Vec3(0,0,0)):
+    def __init__(self,id:int, name :str, position:Vec3 = Vec3(0,0,0), fish_inventory: FishInventory  = FishInventory()):
         super().__init__(id,name,position)
         self.name = "ThirdPersonController"
         self._auto_face_movement = True
@@ -165,6 +166,7 @@ class ThirdPersonController(Player):
         self._reconcile_speed = 100.0
         #th.Thread(target=self.constant_update, daemon=True).start()
         self.on_destroy = self.on_disable
+        self.fish_inventory = fish_inventory
 
     def _attach_camera_to_pivot(self):
         # Reset scale before parenting to avoid cumulative stretch across reconnects.

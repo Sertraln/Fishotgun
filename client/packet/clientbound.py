@@ -12,11 +12,11 @@ class ClientBoundIdPacket(ClientBoundPacket):
 class ClientBoundInitPlayerPacket(ClientBoundDataPacket):
     player = None
 
-    def __init__(self,data:list):
+    def __init__(self,data:list[object]):
         super().__init__(data)
         self.position = self.data[0]
         self.fishunlocked = self.data[1]
-         # Reset player reference on new init packet
+        # Reset player reference on new init packet
 
     def handle(self):
         if data.player is None:
@@ -30,7 +30,9 @@ class ClientBoundInitPlayerPacket(ClientBoundDataPacket):
             print("client : waiting for init player packet...", flush=True)
             return
         from client.player import ThirdPersonController
-        data.player = ThirdPersonController(data.network.id,data.network.name, position=ClientBoundInitPlayerPacket.player.position)
+        data.player = ThirdPersonController(data.network.id,data.network.name,
+                                            position=ClientBoundInitPlayerPacket.player.position,
+                                            fish_inventory=ClientBoundInitPlayerPacket.player.fishunlocked)
 
 class ClientBoundMessagePacket(ClientBoundDataPacket):
     def __init__(self,data:list[str]):
@@ -92,3 +94,20 @@ class ClientBoundReconcilePositionPacket(ClientBoundDataPacket):
     def handle(self):
         #print("client : player reconcile position get :",self.timestamp,self.position, flush=True)
         data.player.register_server_pos(self.timestamp,self.position)
+
+class ClientBoundAddFishPacket(ClientBoundDataPacket):
+    def __init__(self,data:list[int]):
+        super().__init__(data)
+        self.fish_id : int = data[0]
+
+    def handle(self):
+        print("client : add fish get :",self.fish_id, flush=True)
+        data.player.fish_inventory.add_fish(self.fish_id)
+
+class ClientBoundClearInventoryPacket(ClientBoundPacket):
+    def __init__(self):
+        super().__init__()
+
+    def handle(self):
+        print("clear inventory")
+        data.player.fish_inventory.clear_inventory()

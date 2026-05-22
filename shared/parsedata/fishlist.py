@@ -1,10 +1,9 @@
 
 from enum import Flag, auto
-from shared.parser import Parser
-from shared.packetlib import register_parser
+from shared.parser import Wrapper,Parser
+from shared.packetlib import register_wrapper,register_parser
 
-@register_parser
-class FishList(Flag,Parser):
+class FishList(Flag):
     #Normal fish
     BAR = auto()
     SARDINE = auto()
@@ -34,8 +33,8 @@ class FishList(Flag,Parser):
     RAIE_ECTOPLASME = auto()
     POISSON_RADIOACTIF = auto()
 
-    def get_size(self) -> int:
-        return (self.value.bit_length() + 7) // 8
+    def get_size() -> int:
+        return len(FishList)// 8
     
     def unlock(self, fish:'FishList'):
         self.value |= fish.value
@@ -46,13 +45,51 @@ class FishList(Flag,Parser):
     def ordinal(flag_member):
         return flag_member.value.bit_length() - 1
     
+@register_wrapper(FishList)
+class FishListWrapper(Wrapper):
     @staticmethod
-    def decode(data:bytes):
+    def decode(data:bytes) -> 'FishList':
         return FishList(int.from_bytes(data, 'big'))
 
     @staticmethod
-    def encode(data:'FishList') -> str:
-        return data.value.to_bytes((data.value.bit_length() + 7) // 8, 'big')
+    def encode(data:FishList) -> bytes:
+        return data.value.to_bytes(FishList.get_size(), 'big') 
+
+@register_parser
+class FishInventory(Parser):
+    size = FishList.get_size() + len(FishList)*4
+
+    def __init__(self):
+        self.fish_list = FishList(0)
+        self.capacity = [0] * len(FishList)
+
+    def add_fish(self, fish:FishList, quantity:int=1):
+        self.fish_list.unlock(fish)
+        index = FishList.ordinal(fish)
+        self.capacity[index] += quantity
+    
+    def clear_inventory(self):
+        self.capacity = [0] * len(FishList)
+
+    @staticmethod
+    def decode(data:bytes) -> 'FishInventory':
+        inventory = FishInventory()
+        size = FishList.get_size()
+        inventory.fish_list = FishListWrapper.decode(data[0:size])
+        for i in range(len(FishList)):
+            inventory.capacity[i] = int.from_bytes(data[size + i*4: size+4 + i*4], 'big')
+        return inventory
+        
+
+    @staticmethod
+    def encode(data: 'FishInventory') -> bytes:
+        encoded = FishListWrapper.encode(data.fish_list)
+        for i in range(len(data.capacity)):
+            encoded += data.capacity[i].to_bytes(4, 'big')
+        return encoded
+        
+
+    
 
 
     
