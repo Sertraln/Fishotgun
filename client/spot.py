@@ -22,3 +22,23 @@ class FishingSpot(Entity):
 
     def update(self):
         pass
+
+
+class BusSpot(Entity):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.model = 'sphere'
+        self.color = color.white
+        self.interaction_range = 5
+        for key, value in kwargs.items():
+            setattr(self, key, value)
+
+    def interact(self):
+        from client import data
+        from client.packet.serverbound import ServerBoundTeleportPacket
+        if data.player:
+            pos = Vec3(10, 0, -40) # <- changer ici par l emplacement voulu pour le shop les guys
+            data.player.position = pos
+            data.player.physic.position = pos
+            data.player._queue_pos.clear()
+            data.network.send(ServerBoundTeleportPacket(pos))

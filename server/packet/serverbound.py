@@ -53,6 +53,18 @@ class ServerBoundRotationPacket(ServerBoundDataPacket):
     def handle(self, client : 'Client'):
         client.server.world.update_player_rotation(client, self.rotation, self.timestamp)
 
+class ServerBoundTeleportPacket(ServerBoundDataPacket):
+    def __init__(self, data: list):
+        super().__init__(data)
+        self.position = data[0]
+
+    def handle(self, client: 'Client'):
+        player = client.server.world.players.get(client.id)
+        if player:
+            player.position = self.position
+            player.keys_states = None
+            client.server.world.send_position_updates(player)
+
 if __name__ == "__main__":
     from shared.loadfile import get_defined_classes
     print(issubclass(get_defined_classes("server/packet/serverbound.py")[0],ServerBoundDataPacket))

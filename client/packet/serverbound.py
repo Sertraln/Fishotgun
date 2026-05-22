@@ -27,3 +27,7 @@ class ServerBoundRotationPacket(ServerBoundDataPacket):
         self.rotation : float = rotation
         self.timestamp : int = timestamp
         
+class ServerBoundTeleportPacket(ServerBoundDataPacket):
+    def __init__(self, position: Vec3):
+        super().__init__(position)
+        self.position = position

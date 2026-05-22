@@ -1,6 +1,6 @@
 from client import data,menu,network
 from client.menus.chat import Chat
-from client.spot import FishingSpot
+from client.spot import FishingSpot, BusSpot
 from ursina import Shader,Button,destroy,color,Sky,mouse,Vec3,Text,camera,scene,application,Entity
 from client.player import Player
 import threading
@@ -97,8 +97,21 @@ def init_assets():
         background=True,
         parent=_world.ui
     )
+
+    #north = BusSpot(position=(50, 2, 0),parent=_world)
+    #south = BusSpot(position=(0, 2, -50),parent=_world)
+    #east = BusSpot(position=(-50, 2, 0),parent=_world)
+    #west = BusSpot(position=(0, 2, 50),parent=_world)
+
+    shop = BusSpot(position=(10, 2, -40),parent=_world)
+    spot_bus_1 = BusSpot(position=(-20, 2, 100),parent=_world)
+    spot_bus_2 = BusSpot(position=(-67, 2, 0),parent=_world)
+    spot_bus_3 = BusSpot(position=(120, 2, -25),parent=_world)
+    spot_bus_4 = BusSpot(position=(100, 2, 50),parent=_world)
+
     spot = FishingSpot(position=(0,2,0),parent=_world)
-    data.world_entities = [spot]
+
+    data.world_entities = [spot, spot_bus_1, spot_bus_2, spot_bus_3, spot_bus_4, shop]
     camera.fov = 90
 
     data.iris = IrisTransition(close_duration=0.8, black_duration=0.5, open_duration=0.8)

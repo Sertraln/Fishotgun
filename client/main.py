@@ -29,7 +29,7 @@ import client.data as data
 from ursina import application as appli
 import client.world as world
 from client import menu
-from client.spot import FishingSpot
+from client.spot import FishingSpot, BusSpot
 from fish import FishingScene
 from transitions import IrisTransition,_exit_black
 import client.save as save
@@ -69,17 +69,12 @@ def on_fishing_end(result):
 
 # Fonction update GLOBALE - en dehors de start()
 
-
 def update():
     player = data.player
-    if player is None: return
-    # Récupérer les références depuis data
+    if player is None:
+        return
     world.update()
     player = data.player
-    spot = next((e for e in data.world_entities if isinstance(e, FishingSpot)), None)
-    if spot is None:
-        return
-    instructions = data.instructions
     iris, fishing_scene = data.iris, data.fishing_scene
     iris.update()
 
@@ -87,14 +82,24 @@ def update():
         fishing_scene.update()
         return
     
-    # Gotta check this for all spots in the map constantly (will need a list later)
-    if distance(spot.position, player.position) < spot.interaction_range:
-        if held_keys['e']:
-            enter_fishing()
-        else:
-            spot.color = color.yellow
-    else:
-        spot.color = color.white
+    for spot in data.world_entities:
+        if isinstance(spot, FishingSpot):
+            if distance(spot.position, player.position) < spot.interaction_range:
+                if held_keys['e']:
+                    enter_fishing()
+                else:
+                    spot.color = color.yellow
+            else:
+                spot.color = color.white
+
+        elif isinstance(spot, BusSpot):
+            if distance(spot.position, player.position) < spot.interaction_range:
+                if held_keys['e']:
+                    data.iris.play(spot.interact())
+                else:
+                    spot.color = color.yellow
+            else:
+                spot.color = color.white
     
     # Check if the camera is clipping anywhere
     direction = camera.forward * -1
