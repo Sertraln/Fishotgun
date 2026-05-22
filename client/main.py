@@ -110,6 +110,15 @@ class MenuLogic(Entity):
     def __init__(self):
         super().__init__(ignore_paused=True)
     def input(self,key):
+
+        if key == 'p' and data.player:
+            p = data.player.position
+            # print(f"{p.x:.2f},{p.y:.2f},{p.z:.2f}")
+            print(f"{p.x:.2f},{p.z:.2f}")
+            with open('trees_coord.csv', 'a') as f:
+                # f.write(f"{p.x:.2f},{p.y:.2f},{p.z:.2f}\n")
+                f.write(f"{p.x:.2f},{p.z:.2f}\n")
+
         if key == 'escape' and not menu._background_menu.enabled:
             if menu.ispausing() :
                 mouse.locked = True

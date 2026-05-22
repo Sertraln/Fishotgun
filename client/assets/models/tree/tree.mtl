@@ -1,0 +1,22 @@
+# Blender 5.0.1 MTL File: 'Pine Tree.blend'
+# www.blender.org
+
+newmtl Leaf
+Ns 0.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd -s 2.5 2.5 1 pines.png
+
+newmtl Trunk
+Ns 0.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd -s 8 12.500001 1 C:/Users/adrie/Documents/le saint tout pour tout/tout pour EPITA/Fishotgun/Assets/Shop/bark.png
