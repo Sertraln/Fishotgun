@@ -62,9 +62,9 @@ class FishPage(Entity):
         self._show_fish = True
         base_position = self.position
         self.page = Entity(parent=self,position=(self.position[0],self.position[1],0.0),texture="assets/ui/menu.png",scale=(0.75,0.923188406,0.0),model="cube")
-        self.type_name = Text(type_name,parent=self,position=(self.position[0]-0.2,self.position[1]+0.35,-0.1),scale=1.3,color=color.black,font=data.fisho_font)
+        self.type_name = Text("<bold>"+type_name+"<bold>",parent=self,position=(self.position[0]-0.2,self.position[1]+0.35,-0.1),scale=1.5,color=color.black,font=data.fisho_font)
         if type_name2:
-            self.type_name2 = Text(type_name2,parent=self,position=(self.position[0]+0.2,self.position[1]+0.35,0.2),scale=1.3,color=color.black,font=data.fisho_font)
+            self.type_name2 = Text("<bold>"+type_name2+"<bold>",parent=self,position=(self.position[0]+0.2,self.position[1]+0.35,0.2),scale=1.5,color=color.black,font=data.fisho_font)
             self.type_name2.rotation_y = 180
         self.position = (0,0,self.position[2])
         self.dir = 1 if is_left else -1
