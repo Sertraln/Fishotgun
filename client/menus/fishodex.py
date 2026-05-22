@@ -12,13 +12,17 @@ class FishDisplay(Entity):
     def __init__(self,fish_instance:FishData,**kwargs):
         super().__init__(**kwargs)
         self.fish_instance = fish_instance
-        self.model = "cube"
-        self.texture = f"assets/fish/{fish_instance.name}.png"
+        self.unlock = False
+        self.model = "quad"
+        self.texture = f"assets/textures/fish/{fish_instance.id}.png"
         self._quantity = 0
-        self._quantity_text = Text("",parent=self,position=(0,-0.5,0),scale=0.05,font=data.fisho_font,enabled=False)
+        self._quantity_text = Text("",parent=self,position=(-0.8,-0.7,-0.6),scale=12,font=data.fisho_font,enabled=False,color=color.black)
         self.description = Text(fish_instance.description,parent=self,position=(0,0,-10),scale=10,enabled=False,color=color.white,font=data.fisho_font)
         self.description.wordwrap_setter(15)
+        Entity(model="quad",parent=self.description,scale=(0.46,0.22,0.1),color=color.rgba(0.4,0.4,0.4,0.6),position=(0.21,-0.1,0.1))
+        self.name_text = Text(fish_instance.name,parent=self.description,position=(0,0.04,0),scale=1.2,color=self.fish_instance.rarity[0],font=data.fisho_font)
         self.scale = (0.1,0.1,0.1)
+        self._model.set_scale(1.5,1.5,1)
         self.color = color.black
         self.collider = "box"
 
@@ -28,10 +32,13 @@ class FishDisplay(Entity):
     
     @quantity.setter
     def quantity(self, value):
-        self._quantity = value
-        self._quantity_text.text = "x"+str(self._quantity)
-    
+        if self.unlock:
+            self._quantity = value
+            self._quantity_text.text = "x"+str(self._quantity)
+        
     def update(self):
+        if not self.unlock:
+            return
         if self.hovered and not self.description.enabled:
             self.description.enable()
         elif not self.hovered and self.description.enabled:
@@ -40,20 +47,25 @@ class FishDisplay(Entity):
     def unlocked(self):
         self.color = color.white
         self._quantity_text.enabled = True
+        self.unlock = True
 
-start_pos = (0.1,0.2)
+start_pos = (-0.1,0.2)
 hight_space = -0.2
-width_space = -0.2
+width_space = 0.2
 max_per_line = 2
 base_offset = -0.1
 
 class FishPage(Entity):
-    def __init__(self,fish_list:list[FishData],is_left:bool,offset=0,**kwargs):
+    def __init__(self,fish_list:list[FishData],is_left:bool,type_name:str,type_name2:str = None,offset=0,**kwargs):
         super().__init__(**kwargs)
         self.fish_displays : list[FishDisplay] = []
         self._show_fish = True
         base_position = self.position
         self.page = Entity(parent=self,position=(self.position[0],self.position[1],0.0),texture="assets/ui/menu.png",scale=(0.75,0.923188406,0.0),model="cube")
+        self.type_name = Text(type_name,parent=self,position=(self.position[0]-0.2,self.position[1]+0.35,-0.1),scale=1.3,color=color.black,font=data.fisho_font)
+        if type_name2:
+            self.type_name2 = Text(type_name2,parent=self,position=(self.position[0]+0.2,self.position[1]+0.35,0.2),scale=1.3,color=color.black,font=data.fisho_font)
+            self.type_name2.rotation_y = 180
         self.position = (0,0,self.position[2])
         self.dir = 1 if is_left else -1
         if is_left:
@@ -83,15 +95,15 @@ class FishPage(Entity):
 
 class FishodexMenu(menu.Menu):
     def __init__(self):
-        super().__init__("fishodex",False)
+        super().__init__("fishodex",True)
         self.parent = camera.ui
-        self.leftpage = FishPage(fish_list[0:6],True,parent=self,name="leftpage",position=(-0.31,0,0.01))
-        self.middlepage = FishPage(fish_list[6:18],False,0.2,parent=self,name="middlepage",position=(0.31,0,-0.15))
-        self.rightpage = FishPage(fish_list[18:24],False,parent=self,name="rightpage",position=(0.31,0,0))
+        self.leftpage = FishPage(fish_list[0:6],True,"Poisson Commun",parent=self,name="leftpage",position=(-0.31,0,0.01))
+        self.middlepage = FishPage(fish_list[6:18],False,"Crustace","Requin",0.2,parent=self,name="middlepage",position=(0.31,0,-0.15))
+        self.rightpage = FishPage(fish_list[18:24],False,"Poisson Magique",parent=self,name="rightpage",position=(0.31,0,0))
         self.rotation_direction = -1
         self.rotation_speed = 400
-        self.next_button = menu.FixedButton(parent=self,text="Page suivante",position=(0.3,-0.4,0),scale=(0.2,0.1,1),on_click=self.rotate_middle_page)
-        self.prev_button = menu.FixedButton(parent=self,text="Page précédente",position=(-0.3,-0.4,0),scale=(0.2,0.1,1),on_click=self.rotate_middle_page)
+        self.next_button = menu.FixedButton(parent=self,text="Page suivante",position=(0.3,-0.35,0),scale=(0.2,0.1,1),on_click=self.rotate_middle_page)
+        self.prev_button = menu.FixedButton(parent=self,text="Page précédente",position=(-0.3,-0.35,0),scale=(0.2,0.1,1),on_click=self.rotate_middle_page)
         self.prev_button.disable()
 
     def enable(self):

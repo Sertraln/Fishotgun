@@ -1,6 +1,7 @@
-from ursina import Button, mouse, Vec2,Vec3,Entity,camera,TextField,Text,color,application,InputField,Shader,time,Texture
+from ursina import Button, mouse, Vec2,Vec3,Entity,camera,Text,color,application,InputField,Shader,time,Texture
 import client.data as data
 from panda3d.core import SamplerState
+from shared.parsedata.input import KeyStates
 
 def set_color():
     return f'''
@@ -131,8 +132,10 @@ def show(menu : Menu | str):
         _currentMenu.disable()
     _currentMenu = menu
     menu.enable()
-    application.paused = menu.pause
-
+    if data.player and not data.player._last_input.is_idle():
+        last_input = data.player._last_input
+        data.player._update_input(KeyStates())
+        data.player._last_input = last_input
 def ispausing():
     return _currentMenu is not None and _currentMenu.pause
 
@@ -147,6 +150,11 @@ def hide():
         _background_menu.hide()
     _currentMenu = None
     application.resume()
+    if data.player and not data.player._last_input.is_idle():
+        print("last input:",data.player._last_input)
+        last_input =data.player._last_input
+        data.player._last_input = KeyStates()
+        data.player._update_input(last_input)
 
 
 quit_button = FixedButton(text='Quitter', scale=(0.2, 0.1), position=(0,-0.1))

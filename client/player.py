@@ -178,7 +178,7 @@ class ThirdPersonController(Player):
 
     def update(self):
         #super().update()
-        if menu._currentMenu is not None and data.network != None:
+        if menu.ispausing():
             return
         self.update_cam()
         self.update_mouv_input()
@@ -273,13 +273,16 @@ class ThirdPersonController(Player):
         if held_keys['control']:
             key_strokes.press(KeyStates.SNEAK)
         if key_strokes != self._last_input:
-            if key_strokes.is_idle():
+            self._update_input(key_strokes)
+            
+    def _update_input(self, key_strokes: KeyStates):
+        if key_strokes.is_idle():
                 self.play_idle_animation()
-            elif self._last_input.is_idle():
-                self.play_walk_animation()
-            self._last_input = key_strokes
-            self._last_input_time = time.time_ns()
-            self._send_input()
+        elif self._last_input.is_idle():
+            self.play_walk_animation()
+        self._last_input = key_strokes
+        self._last_input_time = time.time_ns()
+        self._send_input()
 
     def on_enable(self):
         mouse.locked = True
