@@ -18,9 +18,8 @@ class FishDisplay(Entity):
         self._quantity_text = Text("",parent=self,position=(0,-0.5,0),scale=0.05,font=data.fisho_font,enabled=False)
         self.description = Text(fish_instance.description,parent=self,position=(0,0,-10),scale=10,enabled=False,color=color.white,font=data.fisho_font)
         self.description.wordwrap_setter(15)
-        self.scale = (0.1,0.1,0.05)
+        self.scale = (0.1,0.1,0.1)
         self.color = color.black
-        self.ignore_paused = True
         self.collider = "box"
 
     @property
@@ -62,7 +61,8 @@ class FishPage(Entity):
         for i,fish_data in enumerate(fish_list):
             fish_display = FishDisplay(fish_data,parent=self)
             fish_display.position = (start_pos[0]+base_position[0] + (i%max_per_line)*width_space,start_pos[1]+base_position[1] + (i%max_per_page//max_per_line)*hight_space,(i//max_per_page)*offset+base_offset)
-            print(f"Fish {fish_data.name} position : {fish_display.position}")
+            if i//max_per_page > 0:
+                fish_display.rotation_y = 180
             self.fish_displays.append(fish_display)
 
     def update_display(self,fish_inventory:FishInventory):
@@ -78,7 +78,7 @@ class FishPage(Entity):
     @show_fish.setter
     def show_fish(self, value):
         self._show_fish = value
-        for fish_display in self.fish_displays:
+        for i,fish_display in enumerate(self.fish_displays):
             fish_display.enabled = value
 
 class FishodexMenu(menu.Menu):
@@ -89,14 +89,16 @@ class FishodexMenu(menu.Menu):
         self.middlepage = FishPage(fish_list[6:18],False,0.2,parent=self,name="middlepage",position=(0.31,0,-0.15))
         self.rightpage = FishPage(fish_list[18:24],False,parent=self,name="rightpage",position=(0.31,0,0))
         self.rotation_direction = -1
-        self.rotation_speed = 200
+        self.rotation_speed = 400
         self.next_button = menu.FixedButton(parent=self,text="Page suivante",position=(0.3,-0.4,0),scale=(0.2,0.1,1),on_click=self.rotate_middle_page)
         self.prev_button = menu.FixedButton(parent=self,text="Page précédente",position=(-0.3,-0.4,0),scale=(0.2,0.1,1),on_click=self.rotate_middle_page)
         self.prev_button.disable()
 
     def enable(self):
         super().enable()
-        #self.rightpage.update_display(data.player.fish_inventory)
+        self.rightpage.update_display(data.player.fish_inventory)
+        self.middlepage.update_display(data.player.fish_inventory)
+        self.leftpage.update_display(data.player.fish_inventory)
 
     def update(self):
         if self.enabled and self.middlepage.rotation_y+self.rotation_direction > 0 and self.middlepage.rotation_y+self.rotation_direction < 180:
@@ -106,9 +108,11 @@ class FishodexMenu(menu.Menu):
             if self.rotation_direction > 0:
                 self.prev_button.enabled = True
                 self.next_button.enabled = False
+                self.middlepage.rotation_y = 180
             else:
                 self.prev_button.enabled = False
                 self.next_button.enabled = True
+                self.middlepage.rotation_y = 0
 
     def rotate_middle_page(self):
         self.rotation_direction *= -1
