@@ -1,5 +1,5 @@
 from typing import TYPE_CHECKING
-from ursina import application,Path
+from ursina import application,Path,Audio
 if TYPE_CHECKING:
     from client.player import ThirdPersonController
     from client.network import Network
@@ -16,9 +16,30 @@ app : 'Ursina' = None
 world : 'World' = None
 iris: 'IrisTransition' = None
 fishing_scene: 'FishingScene' = None
-main_theme = None
-life_is_awesome = None
-birds = None
+
+#Audios
+main_theme = Audio(
+    "assets/musics/fishotgun_main_theme.wav",
+    # "assets/musics/shot.wav",
+    loop=True,
+    autoplay=False,
+    volume=0.6,
+    ignore_paused=True
+)
+life_is_awesome = Audio(
+    "assets/musics/life_is_awesome.wav",
+    autoplay=False,
+    loop=True,
+    volume=0.4,
+    ignore_paused=True
+)
+birds = Audio(
+    "assets/musics/birds.wav",
+    autoplay=False,
+    loop=True,
+    volume=0.2,
+    ignore_paused=True
+)
 
 #const
 fisho_font = "assets/font/FishoFont.ttf"

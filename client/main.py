@@ -55,42 +55,6 @@ _sun_light.look_at(Vec3(0.1,-1,0))
 _sun_light._light.specular_color = color.gold
 _ambient_light = AmbientLight(color=color.rgba(0.3, 0.28, 0.25, 0.5))
 
-main_theme = Audio(
-    "assets/musics/fishotgun_main_theme.wav",
-    # "assets/musics/shot.wav",
-    loop=True,
-    autoplay=False,
-    volume=0.6
-)
-data.main_theme = main_theme
-
-def _play_main_theme():
-    if menu._currentMenu is not None:  # on est encore dans le menu
-        data.main_theme.volume = 0.6
-        data.main_theme.play()
-
-
-invoke(_play_main_theme, delay=0.5)
-
-life_is_awesome = Audio(
-    "assets/musics/life_is_awesome.wav",
-    autoplay=False,
-    loop=True,
-    volume=0.4
-)
-data.life_is_awesome = life_is_awesome
-
-birds = Audio(
-    "assets/musics/birds.wav",
-    autoplay=False,
-    loop=True,
-    volume=0.2
-)
-data.birds = birds
-
-# invoke(life_is_awesome.play, delay=0.5)
-# invoke(birds.play, delay=4)
-
 def enter_fishing():
     data.iris.play(on_black=_enter_black)
 
@@ -146,8 +110,8 @@ class MenuLogic(Entity):
     def __init__(self):
         super().__init__(ignore_paused=True)
     def input(self,key):
-        if key == 'escape':
-            if menu._currentMenu is not None and menu._currentMenu.enabled:
+        if key == 'escape' and not menu._background_menu.enabled:
+            if menu.ispausing() :
                 mouse.locked = True
                 menu.hide()
             else:

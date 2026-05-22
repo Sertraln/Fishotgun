@@ -1,7 +1,7 @@
 from client import data,menu,network
 from client.menus.chat import Chat
 from client.spot import FishingSpot
-from ursina import Shader,Button,destroy,color,Sky,mouse,Vec3,Text,camera,scene,application,Entity
+from ursina import Shader,Button,destroy,color,Sky,mouse,Vec3,Text,camera,scene,application,Entity,invoke
 from client.player import Player
 import threading
 import shared.world as world
@@ -25,12 +25,22 @@ class WorldScene(Entity):
         super().disable()
         self.ui.disable()
         menu.show_background()
+        print("main_theme.play()")
+        #manage music
+        data.main_theme.play()
+        data.life_is_awesome.stop()
+        data.birds.stop()
 
     def enable(self):
         print("Enabling world scene")
         super().enable()
         self.ui.enable()
-        menu._background_menu.hide()
+        menu._background_menu.disable()
+        #manage music
+        data.main_theme.stop()
+        data.life_is_awesome.play()
+        invoke(data.birds.play, delay=3)
+        
 
 _world = WorldScene()
     
@@ -124,13 +134,13 @@ def init_assets():
     node = copy.deepcopy(menu._background_menu.paper)
     node.parent = menu1
     node.position = (0,0,1)
-    resume = menu.FixedButton(text='Resume', scale=(0.3, 0.1), position=(0,0.1),text_size=2)
+    resume = menu.FixedButton(text='Continuer', scale=(0.3, 0.1), position=(0,0.1),text_size=2)
     def resume_game():
         menu.hide()
         mouse.locked = True
     resume.on_click = resume_game
     menu1.add_element(resume)
-    quit = menu.FixedButton(text='Quit', scale=(0.3, 0.1), position=(0,-0.1),text_size=2)
+    quit = menu.FixedButton(text='Quitter', scale=(0.3, 0.1), position=(0,-0.1),text_size=2)
     quit.on_click = quit_to_menu
     menu1.add_element(quit)
     ChatMenu = Chat()

@@ -312,7 +312,7 @@ class MainMenu(menu.Menu):
             character_limit=16
         )
         self.multijoueur = menu.FixedButton(
-            text='Multijoueur',
+            text='Jouer',
             scale=(0.35, 0.08),
             position=(0, -0.15), parent=self,
             text_size=2
@@ -341,7 +341,7 @@ class MainMenu(menu.Menu):
             self.hide()
             menu.rotate_page_and_run([button, lambda: self.show()])
         return default_switch
-
+    
 
 main_menu = MainMenu()
 menu.show(main_menu)

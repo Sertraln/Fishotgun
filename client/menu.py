@@ -61,16 +61,14 @@ class BackGround(Entity):
         self.paper = Entity(parent=self.paper_pivot,model="cube",
                             scale=(0.75,0.923188406,0.0),color=color.white,texture="assets/ui/menu.png",
                             ignore_paused=True,position=(0.3,0,0))
-        self.paper._texture._texture.setMagfilter(SamplerState.FT_nearest)
         self.paper.parent = self.paper_pivot
         self.backgound = Entity(model="cube",parent=self,position=(0,0,4),rotation=(0,0,0),
                                 texture="assets/ui/menu_bg.png",scale=(2,1,0.1),ignore_paused=True)
-        self.paper._texture._texture.setMagfilter(SamplerState.FT_nearest)
         self.rotate_page = False
         self.to_run = []
         self.rotation_direction = 1
         self.rotation_speed = 400
-        self.hide()
+        self.disable()
         
     def update(self):
         if self.rotate_page:
@@ -137,36 +135,22 @@ def show(menu : Menu | str):
     _currentMenu = menu
     menu.enable()
     application.paused = menu.pause
-    if data.main_theme and not data.main_theme.playing:
-        print("main_theme.play()")
-        data.main_theme.play()
 
 def ispausing():
     return _currentMenu is not None and _currentMenu.pause
 
 def show_background():
-    _background_menu.show()
+    _background_menu.enable()
 
 def hide():
     mouse.position = Vec2(0,0)
     global _currentMenu
     if _currentMenu is not None:
         _currentMenu.disable()
-        _background_menu.hide()
+        _background_menu.disable()
     _currentMenu = None
     application.resume()
-    if data.main_theme:
-        # data.main_theme.volume = 0
-        # data.main_theme.pause()
-        
-        print("main_theme.stop()")
-        # data.main_theme.clip.stop()
-        data.main_theme.stop()
-    if data.life_is_awesome:
-        print("life_is_awesome.play()")
-        data.life_is_awesome.play()
-    if data.birds:
-        invoke(data.birds.play, delay=3)
+
 
 
 quit_button = FixedButton(text='Quitter', scale=(0.2, 0.1), position=(0,-0.1))
