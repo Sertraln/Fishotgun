@@ -34,7 +34,10 @@ class FishDisplay(Entity):
     def quantity(self, value):
         if self.unlock:
             self._quantity = value
-            self._quantity_text.text = "x"+str(self._quantity)
+            if self._quantity > 0:
+                self._quantity_text.text = "x"+str(self._quantity)
+            else:
+                self._quantity_text.text = ""
         
     def update(self):
         if not self.unlock:
@@ -81,7 +84,7 @@ class FishPage(Entity):
         for fish_display in self.fish_displays:
             if fish_inventory.fish_list.is_unlocked(fish_display.fish_instance.fishid):
                 fish_display.unlocked()
-                fish_display.quantity = fish_inventory.capacity[fish_display.fish_instance]
+                fish_display.quantity = fish_inventory.capacity[fish_display.fish_instance.fishid.ordinal()]
 
     @property
     def show_fish(self):
