@@ -24,9 +24,10 @@ class FishType:
     INSAISISSABLES = {'max_hp': 100, 'speed': 8, 'speedrot': 110, 'scale': 1.5}
 
 class Fish(Entity):
-    def __init__(self, **kwargs):
+    def __init__(self,fish_id, **kwargs):
         fish_type = kwargs.pop('fish_type', FishType.ABONDANTS)
         super().__init__(**kwargs)
+        self.fish_id = fish_id
         self.model = 'plane'
         self.texture = 'assets/textures/fish_shadow.png'
         self.texture_scale = (1, 1)
@@ -93,7 +94,7 @@ class FishingScene:
     def start(self, server_fish_ids: list[int]):
         self.enabled = True
         self._stopping = False
-        self._selected_fish = None
+        self._selected_fish : Fish = None
         self._fleeing = []
         self._pressure = 0.8
         self._saved_cam_pos = camera.position
@@ -125,11 +126,10 @@ class FishingScene:
             else:
                 ftype = FishType.ABONDANTS
 
-            fish = Fish(position=pos, rotation=(0,0,0), fish_type=ftype)
-            fish.fish_id = f_id
+            fish = Fish(f_id,position=pos, rotation=(0,0,0), fish_type=ftype)
 
             point = Entity(model='sphere', position=(pos[0], y, pos[2]), alpha=0)
-            fish.on_click = lambda f=fish: self._on_fish_click(f)
+            fish.on_click = lambda: self._on_fish_click(fish)
             self._pairs.append((fish, point))
 
         self._hp_bar_bg = Entity(parent=camera.ui, model='quad', color=color.dark_gray, scale=(0.4, 0.03), position=(-0.2, 0.42), origin=(-0.5, 0), enabled=False)
@@ -157,7 +157,7 @@ class FishingScene:
             self._label_top, self._label_bot
             ] + [e for pair in self._pairs for e in pair]
 
-    def _on_fish_click(self, fish):
+    def _on_fish_click(self, fish:Fish):
         if self._stopping:
             return
         if self._selected_fish is None:
@@ -176,14 +176,6 @@ class FishingScene:
                 if hasattr(fish, 'fish_id') and 0 <= fish.fish_id < len(fish_list):
                     fish_data = fish_list[fish.fish_id]
                     self._caught_fish_name = fish_data.name
-                    
-                    if hasattr(data, 'player') and data.player and hasattr(data.player, 'fish_inventory'):
-                        inv = data.player.fish_inventory
-                        inv.fish_list = FishList(inv.fish_list.value | fish_data.fishid.value)
-                        
-                        index = FishList.ordinal(fish_data.fishid)
-                        if index < len(inv.capacity):
-                            inv.capacity[index] += 1
                             
                     from client.packet.serverbound import ServerBoundCatchFishPacket
                     if hasattr(data, 'network') and data.network:
@@ -195,7 +187,7 @@ class FishingScene:
                 self._caught_fish_name = "Unknown Fish"
             self.request_stop()
 
-    def _select(self, chosen_fish):
+    def _select(self, chosen_fish:Fish):
         self._selected_fish = chosen_fish
         chosen_point = None
         for fish, point in self._pairs:
@@ -290,7 +282,7 @@ class FishingScene:
         self._pairs = []
         self._fish = None
         self._point = None
-        self._selected_fish = None
+        self._selected_fish : Fish = None
         self._fleeing = []
         self._pressure = 0.5
         self._hp_bar_bg = None

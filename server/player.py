@@ -72,9 +72,10 @@ class Player(Physic):
             self.fish_inventory = FishInventory()
 
     def add_fish(self, fish: FishList, quantity: int = 1):
+        print(f"Player {self.unique_id} : Ajout de {quantity} x {fish.name}")
         self.fish_inventory.add_fish(fish, quantity)
-        self.client.conn.send(ClientBoundAddFishPacket(fish))
+        self.client.send(ClientBoundAddFishPacket(fish))
 
     def clear_inventory(self):
         self.fish_inventory.clear_inventory()
-        self.client.conn.send(ClientBoundClearInventoryPacket())
+        self.client.send(ClientBoundClearInventoryPacket())

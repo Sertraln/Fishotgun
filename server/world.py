@@ -30,7 +30,6 @@ class World:
         return world.world_scene
 
     def join_player(self, player:'Player') -> int:
-        player.client.player = player
         player.client.send(ClientBoundInitPlayerPacket(player))
         player.client.send(ClientBoundPlayerListPacket(list(self.players.values())))
         pid = player.client.id

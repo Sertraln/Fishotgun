@@ -2,6 +2,10 @@ from client.packet.packetstruct import ClientBoundPacket,ClientBoundDataPacket
 from ursina import Vec3
 import client.menu as menu
 import client.data as data
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from shared.parsedata.fishlist import FishList
+
 #client_bound server -> client
 #server_bound client -> server
 
@@ -112,20 +116,22 @@ class ClientBoundReconcilePositionPacket(ClientBoundDataPacket):
 class ClientBoundAddFishPacket(ClientBoundDataPacket):
     def __init__(self, data: list):
         super().__init__(data)
-        self.fish_flag = data[0] 
+        self.fish_flag : 'FishList' = data[0] 
 
     def handle(self):
         import client.data as data
         from shared.parsedata.fishlist import FishList
         
         if hasattr(data, 'player') and data.player and hasattr(data.player, 'fish_inventory'):
+            
             inv = data.player.fish_inventory
+            print(f"Client : capacité du poisson {self.fish_flag.name} mise à jour : {inv.capacity[index]}")
             inv.fish_list.unlock(self.fish_flag)
             
             index = FishList.ordinal(self.fish_flag)
-            if index < len(inv.capacity):
+            if 0 <= index < len(inv.capacity):
                 inv.capacity[index] += 1
-                
+                print(f"Client : capacité du poisson {self.fish_flag.name} mise à jour : {inv.capacity[index]}")    
             print(f"Client : Inventaire synchronisé pour {self.fish_flag.name}")
 
 class ClientBoundClearInventoryPacket(ClientBoundPacket):

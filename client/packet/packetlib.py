@@ -28,7 +28,7 @@ def getClientBoundPacket(data:bytes) -> tuple[list[ClientBoundPacket],bytes]:
             result.append(packet(decode))
         else :
             result.append(packet())
-    print("client : clientboundget :",str(result))
+    #print("client : clientboundget :",str(result))
     return result,trailing_data
 
 def getServerBoundPacket(id:int,data:str = "") -> ServerBoundPacket:
