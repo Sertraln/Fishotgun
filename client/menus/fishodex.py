@@ -111,9 +111,10 @@ class FishodexMenu(menu.Menu):
 
     def enable(self):
         super().enable()
-        self.rightpage.update_display(data.player.fish_inventory)
-        self.middlepage.update_display(data.player.fish_inventory)
-        self.leftpage.update_display(data.player.fish_inventory)
+        if hasattr(data, 'player') and data.player and hasattr(data.player, 'fish_inventory'):
+            self.rightpage.update_display(data.player.fish_inventory)
+            self.middlepage.update_display(data.player.fish_inventory)
+            self.leftpage.update_display(data.player.fish_inventory)
 
     def update(self):
         if self.enabled and self.middlepage.rotation_y+self.rotation_direction > 0 and self.middlepage.rotation_y+self.rotation_direction < 180:

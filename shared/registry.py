@@ -25,9 +25,9 @@ fish_list : list[FishData] = [
     #Poissons de base
     FishData(FishList.BAR,"bar_commun","Bar Commun","Un prédateur discret aux reflets d’argent, rapide comme l’éclair sous les vagues.",Rarity.ABONDANTS),
     FishData(FishList.SARDINE,"sardine","Sardine","Petite mais insaisissable, elle nage toujours là où on ne l’attend pas.",Rarity.ABONDANTS),
-    FishData(FishList.BARRACOUDA,"barracouda","Barracouda","Une torpille vivante aux dents acérées et au regard glacé.",Rarity.ABONDANTS),
+    FishData(FishList.BARRACUDA,"barracuda","Barracuda","Une torpille vivante aux dents acérées et au regard glacé.",Rarity.ABONDANTS),
     FishData(FishList.PIRANHA,"piranha","Piranha","Minuscule monstre des rivières, capable de transformer la panique en carnage.",Rarity.DISCRETS),
-    FishData(FishList.POISSON_CLOW,"poisson_clown","Poisson Clown","Le roi coloré des récifs, aussi drole qu’imprévisible.",Rarity.DISCRETS),
+    FishData(FishList.POISSON_CLOWN,"poisson_clown","Poisson Clown","Le roi coloré des récifs, aussi drole qu’imprévisible.",Rarity.DISCRETS),
     FishData(FishList.POISSON_LUNE,"poisson_lune","Poisson Lune","Un géant paisible qui dérive dans l’océan comme une planète perdue.",Rarity.INSAISISSABLES),
     #Crustacés et mollusques
     FishData(FishList.CREVETTE,"crevette","Crevette","Petite acrobate marine, toujours prête à bondir hors du danger.",Rarity.ABONDANTS),

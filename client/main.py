@@ -34,6 +34,8 @@ from client.fish import FishingScene
 from client.transitions import IrisTransition,_exit_black
 import client.save as save
 
+from client.packet.serverbound import ServerBoundRequestFishingPacket
+
 
 def custom_quit():
     print("quit")
@@ -66,18 +68,16 @@ def enter_fishing():
 def _enter_black():
     data.player.disable()
     mouse.locked = False
-    data.fishing_scene.start()
+    if data.network:
+        data.network.send(ServerBoundRequestFishingPacket())
 
 def on_fishing_end(result):
     data.iris.play(on_black=_exit_black)
-
-# Fonction update GLOBALE - en dehors de start()
 
 
 def update():
     player = data.player
     if player is None: return
-    # Récupérer les références depuis data
     world.update()
     player = data.player
     spot = next((e for e in data.world_entities if isinstance(e, FishingSpot)), None)

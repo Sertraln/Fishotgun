@@ -56,3 +56,26 @@ class ServerBoundRotationPacket(ServerBoundDataPacket):
 if __name__ == "__main__":
     from shared.loadfile import get_defined_classes
     print(issubclass(get_defined_classes("server/packet/serverbound.py")[0],ServerBoundDataPacket))
+
+class ServerBoundRequestFishingPacket(ServerBoundDataPacket):
+    def __init__(self, data: list):
+        super().__init__(data)
+
+    def handle(self, client: 'Client'):
+        from server.fishing_manager import generate_fishing_pool
+        fish_ids = generate_fishing_pool()
+        client.send(cb.ClientBoundFishingSessionPacket(fish_ids))
+
+class ServerBoundCatchFishPacket(ServerBoundDataPacket):
+    def __init__(self, data: list):
+        super().__init__(data)
+
+    def handle(self, client: 'Client'):
+        if client.player:
+            from shared.registry import fish_list
+            fish_id = self.data[0]
+            
+            if 0 <= fish_id < len(fish_list):
+                fish_data = fish_list[fish_id]
+                client.player.add_fish(fish_data.fishid, 1)
+                client.player.save()

@@ -22,6 +22,15 @@ class ClientBoundInitPlayerPacket(ClientBoundDataPacket):
         if data.player is None:
             data.world.player_init.set()  # Signal that the player has been initialized
             ClientBoundInitPlayerPacket.player = self
+            
+            # AJOUT ICI : Inspecter les données brutes reçues du serveur
+            print("=== DEBUG SERVEUR : Paquet d'initialisation reçu ===")
+            print(f"Position : {self.position}")
+            if hasattr(self.fishunlocked, 'fish_list'):
+                print(f"Bitmask fish_list (int) : {self.fishunlocked.fish_list.value}")
+            if hasattr(self.fishunlocked, 'capacity'):
+                print(f"Quantités par index : {self.fishunlocked.capacity}")
+            print("====================================================")
         else:
             print("client : init player packet received but player already exist", flush=True)
 
@@ -34,6 +43,11 @@ class ClientBoundInitPlayerPacket(ClientBoundDataPacket):
                                             position=ClientBoundInitPlayerPacket.player.position,
                                             fish_inventory=ClientBoundInitPlayerPacket.player.fishunlocked)
 
+        if hasattr(menu, 'menus') and 'fishodex' in menu.menus:
+            f_menu = menu.menus['fishodex']
+            f_menu.rightpage.update_display(data.player.fish_inventory)
+            f_menu.middlepage.update_display(data.player.fish_inventory)
+            f_menu.leftpage.update_display(data.player.fish_inventory)
 class ClientBoundMessagePacket(ClientBoundDataPacket):
     def __init__(self,data:list[str]):
         super().__init__(data)
@@ -96,13 +110,23 @@ class ClientBoundReconcilePositionPacket(ClientBoundDataPacket):
         data.player.register_server_pos(self.timestamp,self.position)
 
 class ClientBoundAddFishPacket(ClientBoundDataPacket):
-    def __init__(self,data:list[int]):
+    def __init__(self, data: list):
         super().__init__(data)
-        self.fish_id : int = data[0]
+        self.fish_flag = data[0] 
 
     def handle(self):
-        print("client : add fish get :",self.fish_id, flush=True)
-        data.player.fish_inventory.add_fish(self.fish_id)
+        import client.data as data
+        from shared.parsedata.fishlist import FishList
+        
+        if hasattr(data, 'player') and data.player and hasattr(data.player, 'fish_inventory'):
+            inv = data.player.fish_inventory
+            inv.fish_list.unlock(self.fish_flag)
+            
+            index = FishList.ordinal(self.fish_flag)
+            if index < len(inv.capacity):
+                inv.capacity[index] += 1
+                
+            print(f"Client : Inventaire synchronisé pour {self.fish_flag.name}")
 
 class ClientBoundClearInventoryPacket(ClientBoundPacket):
     def __init__(self):
@@ -111,3 +135,13 @@ class ClientBoundClearInventoryPacket(ClientBoundPacket):
     def handle(self):
         print("clear inventory")
         data.player.fish_inventory.clear_inventory()
+
+class ClientBoundFishingSessionPacket(ClientBoundDataPacket):
+    def __init__(self, data: list):
+        super().__init__(data)
+        self.fish_ids: list[int] = data[0]
+
+    def handle(self):
+        import client.data as data
+        if hasattr(data, 'fishing_scene') and data.fishing_scene:
+            data.fishing_scene.start(self.fish_ids)

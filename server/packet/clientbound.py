@@ -61,4 +61,7 @@ class ClientBoundAddFishPacket(ClientBoundDataPacket):
 class ClientBoundClearInventoryPacket(ClientBoundPacket):
     def __init__(self):
         super().__init__()
-    
+
+class ClientBoundFishingSessionPacket(ClientBoundDataPacket):
+    def __init__(self, fish_ids: list[int]):
+        super().__init__(fish_ids)

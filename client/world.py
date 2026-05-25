@@ -44,6 +44,7 @@ class World:
     def spawn_player(self,player_id:int,name:str,position:Vec3,rotation:float=0):
         print(f"World: spawning player {player_id} at {position}")
         new_player = Player(player_id,name=name,position=position)
+        data.player = new_player
         new_player.rotation_y = rotation
         self.players[player_id] = new_player
 

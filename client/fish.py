@@ -2,19 +2,30 @@ from ursina import *
 from math import pi,atan2,sqrt,degrees,sin,cos
 from random import randrange, shuffle
 
+import os
+import sys
+# Ensure project root is on sys.path so sibling packages like `shared` can be imported
+_ROOT = os.path.dirname(os.path.dirname(__file__))
+if _ROOT not in sys.path:
+    sys.path.insert(0, _ROOT)
+
+from shared.parsedata.fishlist import FishList
+from shared.registry import fish_list, Rarity
+import client.data as data
+
 Y_OFFSET = -30
 
 def get_angle(dx, dz):
     return (-degrees(atan2(dz, dx))) % 360
 
 class FishType:
-    WEAK   = {'max_hp': 25,  'speed': 1, 'speedrot': 50, 'scale': 1.3}
-    NORMAL = {'max_hp': 50, 'speed': 3,   'speedrot': 70, 'scale': 1.0}
-    STRONG = {'max_hp': 100, 'speed': 5, 'speedrot': 90, 'scale': 0.7}
+    ABONDANTS   = {'max_hp': 20,  'speed': 1.5, 'speedrot': 50, 'scale': 1.0}
+    DISCRETS = {'max_hp': 50, 'speed': 4,   'speedrot': 70, 'scale': 0.8}
+    INSAISISSABLES = {'max_hp': 100, 'speed': 8, 'speedrot': 110, 'scale': 1.5}
 
 class Fish(Entity):
     def __init__(self, **kwargs):
-        fish_type = kwargs.pop('fish_type', FishType.NORMAL)
+        fish_type = kwargs.pop('fish_type', FishType.ABONDANTS)
         super().__init__(**kwargs)
         self.model = 'plane'
         self.texture = 'assets/textures/fish_shadow.png'
@@ -79,7 +90,7 @@ class FishingScene:
         self._press_bar_bg = None
         self._press_bar = None
 
-    def start(self):
+    def start(self, server_fish_ids: list[int]):
         self.enabled = True
         self._stopping = False
         self._selected_fish = None
@@ -94,24 +105,37 @@ class FishingScene:
         camera.fov      = 60
 
         y = Y_OFFSET - 19
-        water = Entity(model='plane', texture='assets/textures/water.png', scale=30, position=(0, Y_OFFSET-20, 0), rotation=(0,0,0),texture_scale=(5,5))
+        water = Entity(model='plane', texture='assets/textures/water.png', scale=30, position=(0, Y_OFFSET-20, 0), rotation=(0,0,0), texture_scale=(5,5))
 
-        types = [FishType.WEAK, FishType.NORMAL, FishType.NORMAL, FishType.STRONG]
-        shuffle(types)
         spawns = [(-4, y, -4), (4, y, -4), (-4, y, 4), (4, y, 4)]
         self._pairs = []
-        for pos, ftype in zip(spawns, types):
-            fish  = Fish(position=pos, rotation=(0,0,0), fish_type=ftype)
+        
+        # Import de ton fichier partagé pour récupérer les données de rareté
+        from shared.registry import fish_list, Rarity
+
+        for pos, f_id in zip(spawns, server_fish_ids):
+            real_rarity = Rarity.ABONDANTS
+            if 0 <= f_id < len(fish_list):
+                real_rarity = fish_list[f_id].rarity
+
+            if real_rarity == Rarity.INSAISISSABLES:
+                ftype = FishType.INSAISISSABLES
+            elif real_rarity == Rarity.DISCRETS:
+                ftype = FishType.DISCRETS
+            else:
+                ftype = FishType.ABONDANTS
+
+            fish = Fish(position=pos, rotation=(0,0,0), fish_type=ftype)
+            fish.fish_id = f_id
+
             point = Entity(model='sphere', position=(pos[0], y, pos[2]), alpha=0)
             fish.on_click = lambda f=fish: self._on_fish_click(f)
             self._pairs.append((fish, point))
 
-        # BARRE HP DU POISCAILLE
         self._hp_bar_bg = Entity(parent=camera.ui, model='quad', color=color.dark_gray, scale=(0.4, 0.03), position=(-0.2, 0.42), origin=(-0.5, 0), enabled=False)
         self._hp_bar = Entity(parent=camera.ui, model='quad', color=color.lime, scale=(0.4, 0.03), position=(-0.2, 0.42), origin=(-0.5, 0), enabled=False, z=-0.01)
         self._hp_text = Text('', parent=camera.ui, position=(0, 0.46), origin=(0, 0), scale=1, enabled=False)
 
-        # BARRE "PRESSION" DU JOUEUR
         self._press_bar_bg = Entity(
             parent=camera.ui, model='quad', color=color.dark_gray,
             scale=(self.BAR_W, self.BAR_H),
@@ -147,6 +171,28 @@ class FishingScene:
         fish.hp -= damage
         self._update_hp_bar(fish)
         if fish.hp <= 0:
+            try:
+                from shared.registry import fish_list
+                if hasattr(fish, 'fish_id') and 0 <= fish.fish_id < len(fish_list):
+                    fish_data = fish_list[fish.fish_id]
+                    self._caught_fish_name = fish_data.name
+                    
+                    if hasattr(data, 'player') and data.player and hasattr(data.player, 'fish_inventory'):
+                        inv = data.player.fish_inventory
+                        inv.fish_list = FishList(inv.fish_list.value | fish_data.fishid.value)
+                        
+                        index = FishList.ordinal(fish_data.fishid)
+                        if index < len(inv.capacity):
+                            inv.capacity[index] += 1
+                            
+                    from client.packet.serverbound import ServerBoundCatchFishPacket
+                    if hasattr(data, 'network') and data.network:
+                        data.network.send(ServerBoundCatchFishPacket(fish.fish_id))
+                else:
+                    self._caught_fish_name = fish_list[0].name
+            except Exception as e:
+                print(f"Erreur FishoDex local : {e}")
+                self._caught_fish_name = "Unknown Fish"
             self.request_stop()
 
     def _select(self, chosen_fish):
@@ -238,7 +284,7 @@ class FishingScene:
         camera.position = self._saved_cam_pos
         camera.rotation = self._saved_cam_rot
         camera.fov      = self._saved_cam_fov
-        for e in self._entities: # On reset tout mdr
+        for e in self._entities:
             destroy(e)
         self._entities = []
         self._pairs = []
@@ -254,3 +300,16 @@ class FishingScene:
         self._press_bar = None
         self._label_top = None
         self._label_bot = None
+
+        if hasattr(self, '_caught_fish_name') and self._caught_fish_name:
+            banner = Text(
+                text=f"Caught: {self._caught_fish_name}!",
+                position=(0, 0.4),
+                origin=(0, 0),
+                scale=2,
+                color=color.yellow,
+                parent=camera.ui,
+                ignore_paused=True
+            )
+            destroy(banner, delay=2.5)
+            self._caught_fish_name = None

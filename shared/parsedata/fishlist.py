@@ -7,11 +7,11 @@ class FishList(Flag):
     #Normal fish
     BAR = auto()
     SARDINE = auto()
-    BARRACOUDA = auto()
+    BARRACUDA = auto()
     PIRANHA = auto()
-    POISSON_CLOW = auto()
+    POISSON_CLOWN = auto()
     POISSON_LUNE = auto()
-    #Crustace / molluscque
+    #Crustace / mollusque
     CREVETTE = auto()
     MOULE = auto()
     BULOT = auto()
