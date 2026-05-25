@@ -123,10 +123,9 @@ def spawn_trees():
     with open(file_path, mode='r', encoding='utf-8') as f:
             reader = csv.DictReader(f, delimiter=';')
             for row in reader:
-                print(f"x : {float(row['x'])} et z : {float(row['z'])}")
                 Entity(
                     model='assets/models/tree.glb',
-                    position=(float(row['x']), 2.4668*2, float(row['z'])),
+                    position=(float(row['x']), 2.4668*2, float(row['y'])),
                     rotation_y=float(row['rotation_z_deg']),
                     scale=2,
                     collider='box',
