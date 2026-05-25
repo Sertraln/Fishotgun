@@ -23,9 +23,9 @@ def generate_fishing_pool() -> list[int]:
     chosen_ids = []
     for _ in range(4):
         rand = random.random()
-        if rand < 0.60:
+        if rand < 0.75:
             chosen_ids.append(random.choice(abondants))
-        elif rand < 0.90:
+        elif rand < 0.95:
             chosen_ids.append(random.choice(discrets))
         else:
             chosen_ids.append(random.choice(insaisissables))
