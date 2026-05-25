@@ -57,8 +57,8 @@ class World:
 
     def stop(self):
         print("World: Arret du monde, sauvegarde de tous les joueurs connectes...")
-        for pid in list(self.players.keys()):
-            self.left_player(pid)
+        for player in self.players.values():
+            player.client.kick()
         self.players.clear()
 
     def save(self):

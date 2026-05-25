@@ -76,6 +76,7 @@ class Client:
     
     def kick(self):
         self.server.world.left_player(self.id)
+        self.conn.shutdown(socket.SHUT_RDWR)
         self.conn.close()
         
 

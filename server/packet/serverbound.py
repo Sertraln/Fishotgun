@@ -60,7 +60,8 @@ if __name__ == "__main__":
     from shared.loadfile import get_defined_classes
     print(issubclass(get_defined_classes("server/packet/serverbound.py")[0],ServerBoundDataPacket))
 
-class ServerBoundRequestFishingPacket(ServerBoundDataPacket):
+class ServerBoundRequestFishingPacket(ServerBoundPacket):
+
     def handle(self, client: 'Client'):
         from server.fishing_manager import generate_fishing_pool
         fish_ids = generate_fishing_pool()
@@ -80,6 +81,7 @@ class ServerBoundCatchFishPacket(ServerBoundDataPacket):
                 player.add_fish(fish_data.fishid)
 
 class ServerBoundSellFishPacket(ServerBoundPacket):
+
     def handle(self, client: 'Client'):
         player : 'Player' = client.player
         import shared.world as world
