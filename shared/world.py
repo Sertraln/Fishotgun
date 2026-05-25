@@ -112,6 +112,8 @@ def init_world(base_scene:'NodePath'=None):
     attach_world_bodies(world_scene.bullet_world, base_scene)
     return world_scene
 
+scale_factor = 3
+
 def spawn_trees():
     _ROOT = os.path.dirname(os.path.dirname(__file__))
     file_path = os.path.join(_ROOT, 'shared', 'data', 'trees.csv')
@@ -125,7 +127,7 @@ def spawn_trees():
             for row in reader:
                 Entity(
                     model='assets/models/tree.glb',
-                    position=(float(row['x']), 2.4668*2, float(row['y'])),
+                    position=(-float(row['x'])*scale_factor, 2.4668*2, -float(row['y'])*scale_factor),
                     rotation_y=float(row['rotation_z_deg']),
                     scale=2,
                     collider='box',
