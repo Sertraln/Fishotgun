@@ -80,7 +80,7 @@ class FishInventory(Parser):
         for i in range(len(FishList)):
             if self.capacity[i] > 0:
                 fish_data : 'FishData' = fish_list[i]
-                total += self.capacity[i] * fish_data.rarity.sell_price
+                total += self.capacity[i] * fish_data.rarity[2]
         return total
 
     @staticmethod

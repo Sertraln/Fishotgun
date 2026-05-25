@@ -83,5 +83,6 @@ class ServerBoundSellFishPacket(ServerBoundPacket):
         player : 'Player' = client.player
         if player is not None: #TODO: check distance from the shop
             earnings = player.fish_inventory.get_total_price()
-            player.clear_inventory()
-            player.currency += earnings
+            if earnings > 0:
+                player.clear_inventory()
+                player.currency += earnings

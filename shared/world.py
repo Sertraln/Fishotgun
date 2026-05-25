@@ -16,6 +16,9 @@ from panda3d.core import NodePath
 
 world_scene = WorldScene()
 
+def get_shopkeeper_pos():
+    return Vec3(27, 0.2, -10)
+
 def create_static_box(
     bullet_world,
     parent,
@@ -56,10 +59,6 @@ def create_static_box(
 #     name='ground',
 #     parent=world_scene)
 
-def get_shopkeeper():
-    global shopkeeper
-    return shopkeeper
-
 def init_world(base_scene:'NodePath'=None):
     global world_scene
     world_scene.parent = base_scene
@@ -98,15 +97,6 @@ def init_world(base_scene:'NodePath'=None):
         name='shop_building',
         parent=world_scene
     )
-
-    shopkeeper = Actor('assets/models/Shopkeeper.glb')
-
-    shopkeeper.reparent_to(world_scene)
-    shopkeeper.set_pos(27, 0.2, -10)
-    shopkeeper.set_hpr(90, 360, 0)
-    shopkeeper.set_scale(1.2)
-    shopkeeper.name = 'shopkeeper'
-    shopkeeper.loop('idle')
 
     attach_world_bodies(world_scene.bullet_world, base_scene)
     return world_scene

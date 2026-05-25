@@ -189,7 +189,9 @@ def getMenu(menu_id:str) -> Menu | None:
 def init():
     from ursina import application
     quit_button.on_click = application.quit
-    import client.menus.mainmenu as mainmenu
+    #load files
+    import client.menus.mainmenu
+    import client.menus.hud
 
 def rotate_page_and_run(func : list[callable],rotation_speed=1):
     if _background_menu.enabled:

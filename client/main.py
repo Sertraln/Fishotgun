@@ -35,8 +35,6 @@ from client.shop import open_shop_dialogue
 
 from client.packet.serverbound import ServerBoundRequestFishingPacket
 
-from shared.world import get_shopkeeper
-
 def custom_quit():
     print("quit")
     if data.network:
@@ -92,7 +90,7 @@ def update():
         fishing_scene.update()
         return
     
-    shopkeeper = get_shopkeeper()
+    shopkeeper = world.shopkeeper
     if data.player and shopkeeper:
         d = distance(data.player.position, shopkeeper.get_pos())
         
