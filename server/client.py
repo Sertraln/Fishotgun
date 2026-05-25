@@ -20,6 +20,10 @@ class Client:
         self.buffer = b""
         
 
+    @property
+    def player(self):
+        return self.server.world.players.get(self.id)
+
     def send(self,packet:ClientBoundPacket):
         try:
             packet.send(self.conn)

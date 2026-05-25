@@ -15,6 +15,7 @@ from shared.movement import Physic
 if TYPE_CHECKING:
     from server.client import Client
     from shared.parsedata.input import KeyStates
+    from shared.registry import FishData
 
 #client_bound server -> client
 #server_bound client -> server
@@ -31,7 +32,7 @@ class ServerBoundMessagePacket(ServerBoundDataPacket):
 
     def handle(self, client : 'Client'):
         print("server : message get :",self.message, flush=True)
-        player = client.server.world.players.get(client.id)
+        player = client.player
         if player != None:
             client.server.broadcast(cb.ClientBoundMessagePacket(player.player_name,self.message))
 
@@ -71,11 +72,11 @@ class ServerBoundCatchFishPacket(ServerBoundDataPacket):
         super().__init__(data)
 
     def handle(self, client: 'Client'):
-        if client.player:
+        player = client.player
+        if player is not None:
             from shared.registry import fish_list
             fish_id = self.data[0]
-            
+            print(f"Player {player.unique_id} tente de pêcher le poisson avec l'id {fish_id}")
             if 0 <= fish_id < len(fish_list):
-                fish_data = fish_list[fish_id]
-                client.player.add_fish(fish_data.fishid, 1)
-                client.player.save()
+                fish_data : 'FishData' = fish_list[fish_id]
+                player.add_fish(fish_data.fishid)

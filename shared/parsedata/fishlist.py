@@ -34,10 +34,10 @@ class FishList(Flag):
     POISSON_RADIOACTIF = auto()
 
     def get_size() -> int:
-        return len(FishList)// 8
+        return (len(FishList) + 7) // 8
     
     def unlock(self, fish:'FishList'):
-        self.value |= fish.value
+        return FishList(self.value | fish.value)
 
     def is_unlocked(self, fish:'FishList') -> bool:
         return (self.value & fish.value) != 0
@@ -64,7 +64,7 @@ class FishInventory(Parser):
         self.capacity = [0] * len(FishList)
 
     def add_fish(self, fish:FishList, quantity:int=1):
-        self.fish_list.unlock(fish)
+        self.fish_list = self.fish_list.unlock(fish)
         index = FishList.ordinal(fish)
         self.capacity[index] += quantity
     
