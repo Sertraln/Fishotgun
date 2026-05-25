@@ -74,7 +74,7 @@ def _enter_black():
 def on_fishing_end(result):
     data.iris.play(on_black=_exit_black)
 
-shop_interact_text = Text(text="'E' to interact", enabled=False, position=(0, -0.3), origin=(0,0), scale=2)
+shop_interact_text = Text(text="'E' to interact", enabled=False, position=(0, -0.4), origin=(0,0), scale=2, font = data.fisho_font)
 
 def update():
     player = data.player
@@ -94,7 +94,7 @@ def update():
     
     shopkeeper = get_shopkeeper()
     if data.player and shopkeeper:
-        d = distance(data.player.position, shopkeeper.position)
+        d = distance(data.player.position, shopkeeper.get_pos())
         
         if d < 5:
             if not shop_interact_text.enabled:

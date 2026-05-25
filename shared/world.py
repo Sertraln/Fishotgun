@@ -1,9 +1,9 @@
 from ursina import Entity, Terrain, Vec3, Plane, color, Texture
 from panda3d.bullet import BulletBoxShape, BulletRigidBodyNode, BulletWorld
 from panda3d.core import Vec3 as PVec3, NodePath
+from direct.actor.Actor import Actor
 import csv
 import os
-from ursina import application
 
 class WorldScene(Entity):
     def __init__(self, **kwargs):
@@ -99,15 +99,14 @@ def init_world(base_scene:'NodePath'=None):
         parent=world_scene
     )
 
-    shopkeeper = Entity(
-        model='assets/models/Shopkeeper.glb',
-        position=(27, 0.2, -10),
-        rotation=(0, 270, 0),\
-        scale=1.2,
-        collider='box',
-        name='shopkeeper',
-        parent=world_scene
-    )
+    shopkeeper = Actor('assets/models/Shopkeeper.glb')
+
+    shopkeeper.reparent_to(world_scene)
+    shopkeeper.set_pos(27, 0.2, -10)
+    shopkeeper.set_hpr(90, 360, 0)
+    shopkeeper.set_scale(1.2)
+    shopkeeper.name = 'shopkeeper'
+    shopkeeper.loop('idle')
 
     attach_world_bodies(world_scene.bullet_world, base_scene)
     return world_scene
