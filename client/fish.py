@@ -24,12 +24,20 @@ class FishType:
     DISCRETS = {'max_hp': 50, 'speed': 4,   'speedrot': 70, 'scale': 0.8}
     INSAISISSABLES = {'max_hp': 100, 'speed': 8, 'speedrot': 110, 'scale': 1.5}
 
+SHADOW_MAP = {
+    "COMMUN": "assets/textures/fish_shadows/Communs.png",
+    "CRUSTACE": "assets/textures/fish_shadows/Crustacés.png",
+    "REQUIN": "assets/textures/fish_shadows/Requins.png",
+    "MAGIQUE": "assets/textures/fish_shadows/Magiques.png"
+}
+
 class Fish(Entity):
     def __init__(self, **kwargs):
         fish_type = kwargs.pop('fish_type', FishType.ABONDANTS)
+        fish_category = kwargs.pop('category', 'COMMUN')
         super().__init__(**kwargs)
         self.model = 'plane'
-        self.texture = f'assets/textures/fish_shadows/Communs.png'
+        self.texture = SHADOW_MAP.get(fish_category)
         self.texture_scale = (1, 1)
         self.speedrot = fish_type['speedrot']
         self.scale = fish_type['scale']
@@ -111,7 +119,6 @@ class FishingScene:
         spawns = [(-4, y, -4), (4, y, -4), (-4, y, 4), (4, y, 4)]
         self._pairs = []
         
-        # Import de ton fichier partagé pour récupérer les données de rareté
         from shared.registry import fish_list, Rarity
 
         for pos, f_id in zip(spawns, server_fish_ids):
@@ -126,7 +133,7 @@ class FishingScene:
             else:
                 ftype = FishType.ABONDANTS
 
-            fish = Fish(position=pos, rotation=(0,0,0), fish_type=ftype)
+            fish = Fish(position=pos, rotation=(0,0,0), fish_type=ftype, category=fish_list[f_id].category)
             fish.fish_id = f_id
 
             point = Entity(model='sphere', position=(pos[0], y, pos[2]), alpha=0)
