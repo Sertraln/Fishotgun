@@ -2,6 +2,9 @@
 from enum import Flag, auto
 from shared.parser import Wrapper,Parser
 from shared.packetlib import register_wrapper,register_parser
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from shared.registry import FishData
 
 class FishList(Flag):
     #Normal fish
@@ -70,6 +73,15 @@ class FishInventory(Parser):
     
     def clear_inventory(self):
         self.capacity = [0] * len(FishList)
+
+    def get_total_price(self) -> int:
+        from shared.registry import fish_list
+        total = 0
+        for i in range(len(FishList)):
+            if self.capacity[i] > 0:
+                fish_data : 'FishData' = fish_list[i]
+                total += self.capacity[i] * fish_data.rarity.sell_price
+        return total
 
     @staticmethod
     def decode(data:bytes) -> 'FishInventory':

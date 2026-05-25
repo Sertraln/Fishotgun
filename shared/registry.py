@@ -1,15 +1,16 @@
 from shared.parsedata.fishlist import FishList
 from enum import EnumDict
-from ursina import color
+from ursina import color,Color
 
 class Rarity(EnumDict):
-    ABONDANTS = (color.gray, "Abondants")
-    DISCRETS = (color.orange, "Discrets")
-    INSAISISSABLES = (color.violet, "Insaississables")
+    ABONDANTS = (color.gray, "Abondants",100)
+    DISCRETS = (color.orange, "Discrets",300)
+    INSAISISSABLES = (color.violet, "Insaississables",1000)
 
-    def __init__(self, color, name):
+    def __init__(self, color:'Color', name:str, sell_price:int):
         self.color = color
         self.name = name
+        self.sell_price = sell_price
 
 
 class FishData:
