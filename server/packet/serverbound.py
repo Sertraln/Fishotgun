@@ -11,6 +11,7 @@ import server.packet.clientbound as cb
 from server.packet.packetstruct import ServerBoundDataPacket,ServerBoundPacket
 from typing import TYPE_CHECKING
 from shared.movement import Physic
+from ursina import distance
 
 if TYPE_CHECKING:
     from server.client import Client
@@ -81,7 +82,8 @@ class ServerBoundCatchFishPacket(ServerBoundDataPacket):
 class ServerBoundSellFishPacket(ServerBoundPacket):
     def handle(self, client: 'Client'):
         player : 'Player' = client.player
-        if player is not None: #TODO: check distance from the shop
+        import shared.world as world
+        if player is not None and distance(player.position,world.get_shopkeeper_pos()) < 5:
             earnings = player.fish_inventory.get_total_price()
             if earnings > 0:
                 player.clear_inventory()
