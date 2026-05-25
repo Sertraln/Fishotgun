@@ -129,7 +129,7 @@ class FishingScene:
             fish = Fish(f_id,position=pos, rotation=(0,0,0), fish_type=ftype)
 
             point = Entity(model='sphere', position=(pos[0], y, pos[2]), alpha=0)
-            fish.on_click = lambda: self._on_fish_click(fish)
+            fish.on_click = lambda f=fish: self._on_fish_click(f)
             self._pairs.append((fish, point))
 
         self._hp_bar_bg = Entity(parent=camera.ui, model='quad', color=color.dark_gray, scale=(0.4, 0.03), position=(-0.2, 0.42), origin=(-0.5, 0), enabled=False)
