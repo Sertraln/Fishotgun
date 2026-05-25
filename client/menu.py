@@ -5,33 +5,32 @@ from shared.parsedata.input import KeyStates
 
 def set_color():
     return f'''
-#version 120
+    #version 120
 
-uniform sampler2D p3d_Texture0;
-uniform vec3 color;
+    uniform sampler2D p3d_Texture0;
+    uniform vec3 color;
 
-varying vec2 uv;
-    
-void main() {{
-     gl_FragColor = vec4(1.0)*texture2D(p3d_Texture0, uv) + vec4(color,0.0);
-}}
+    varying vec2 uv;
+        
+    void main() {{
+        gl_FragColor = vec4(1.0)*texture2D(p3d_Texture0, uv) + vec4(color,0.0);
+    }}
 
-'''
+    '''
 
 def set_static_color(color:color):
     return f'''
-#version 120
+    #version 120
 
-uniform sampler2D p3d_Texture0;
+    uniform sampler2D p3d_Texture0;
 
-varying vec2 uv;
-    
-void main() {{
-     gl_FragColor = vec4(1.0)*texture2D(p3d_Texture0, uv) + vec4({color[0]},{color[1]},{color[2]},0.0);
-}}
+    varying vec2 uv;
+        
+    void main() {{
+        gl_FragColor = vec4(1.0)*texture2D(p3d_Texture0, uv) + vec4({color[0]},{color[1]},{color[2]},0.0);
+    }}
 
-'''
-
+    '''
 
 class FixedButton(Button):
     def __init__(self, **kwargs):

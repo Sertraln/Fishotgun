@@ -1,7 +1,9 @@
-from ursina import Entity, Terrain,Vec3, Plane, color, Texture
+from ursina import Entity, Terrain, Vec3, Plane, color, Texture
 from panda3d.bullet import BulletBoxShape, BulletRigidBodyNode, BulletWorld
 from panda3d.core import Vec3 as PVec3, NodePath
-
+import csv
+import os
+from ursina import application
 
 class WorldScene(Entity):
     def __init__(self, **kwargs):
@@ -54,16 +56,19 @@ def create_static_box(
 #     name='ground',
 #     parent=world_scene)
 
-ground = None
-water = None
+def get_shopkeeper():
+    global shopkeeper
+    return shopkeeper
 
 def init_world(base_scene:'NodePath'=None):
     global world_scene
     world_scene.parent = base_scene
 
+    spawn_trees()
+
     global ground
     ground = Entity(
-        model= "assets/models/terrain",
+        model= "assets/models/terrain.obj",
         scale=Vec3(3),
         texture_scale=(10, 10),
         # collider='box',
@@ -81,26 +86,53 @@ def init_world(base_scene:'NodePath'=None):
         # collider='box',
         name='water',
         parent=world_scene)
-    # create_static_box(
-    #     bullet_world=world_scene.bullet_world,
-    #     parent=world_scene,
-    #     position=(0, -5, 0),
-    #     scale=(100, 10, 100),
-    #     texture='grass',
-    #     name='ground'
-    # )
+    
+    global shop_building, shopkeeper
 
-    # create_static_box(
-    #     bullet_world=world_scene.bullet_world,
-    #     parent=world_scene,
-    #     position=(5, 9, 15),
-    #     scale=(10, 10, 10),
-    #     texture='brick',
-    #     name='wall'
-    # )
+    shop_building = Entity(
+        model='assets/models/Shop.glb',
+        position=(28, 2.3, -10),
+        rotation=(0, 270, 0),
+        scale=1,
+        collider='mesh',
+        name='shop_building',
+        parent=world_scene
+    )
+
+    shopkeeper = Entity(
+        model='assets/models/Shopkeeper.glb',
+        position=(27, 0.2, -10),
+        rotation=(0, 270, 0),\
+        scale=1.2,
+        collider='box',
+        name='shopkeeper',
+        parent=world_scene
+    )
 
     attach_world_bodies(world_scene.bullet_world, base_scene)
     return world_scene
+
+def spawn_trees():
+    _ROOT = os.path.dirname(os.path.dirname(__file__))
+    file_path = os.path.join(_ROOT, 'shared', 'data', 'trees.csv')
+    
+    if not os.path.exists(file_path):
+        print(f"Erreur : Le fichier est introuvable à : {file_path}")
+        return
+
+    with open(file_path, mode='r', encoding='utf-8') as f:
+            reader = csv.DictReader(f, delimiter=';')
+            for row in reader:
+                print(f"x : {float(row['x'])} et z : {float(row['z'])}")
+                Entity(
+                    model='assets/models/tree.glb',
+                    position=(float(row['x']), 2.4668*2, float(row['z'])),
+                    rotation_y=float(row['rotation_z_deg']),
+                    scale=2,
+                    collider='box',
+                    parent=world_scene
+                )
+    print("Arbres chargés avec succès !")
 
 # --- Bullet helpers -------------------------------------------------------
 def add_static_box(entity: Entity, bullet_world: BulletWorld, parent_np: NodePath, friction: float = 0.8, mass: float = 0.0):

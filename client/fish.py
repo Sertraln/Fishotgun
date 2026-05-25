@@ -12,6 +12,7 @@ if _ROOT not in sys.path:
 from shared.parsedata.fishlist import FishList
 from shared.registry import fish_list, Rarity
 import client.data as data
+import client.menu as menu
 
 Y_OFFSET = -30
 
@@ -28,7 +29,7 @@ class Fish(Entity):
         fish_type = kwargs.pop('fish_type', FishType.ABONDANTS)
         super().__init__(**kwargs)
         self.model = 'plane'
-        self.texture = 'assets/textures/fish_shadow.png'
+        self.texture = f'assets/textures/fish_shadows/Communs.png'
         self.texture_scale = (1, 1)
         self.speedrot = fish_type['speedrot']
         self.scale = fish_type['scale']
@@ -66,7 +67,7 @@ class Fish(Entity):
 
 
 class FishingScene:
-    BAR_X = 0.45
+    BAR_X = 0.8
     BAR_BOTTOM = -0.3
     BAR_TOP = 0.3
     BAR_H = BAR_TOP - BAR_BOTTOM
@@ -134,7 +135,7 @@ class FishingScene:
 
         self._hp_bar_bg = Entity(parent=camera.ui, model='quad', color=color.dark_gray, scale=(0.4, 0.03), position=(-0.2, 0.42), origin=(-0.5, 0), enabled=False)
         self._hp_bar = Entity(parent=camera.ui, model='quad', color=color.lime, scale=(0.4, 0.03), position=(-0.2, 0.42), origin=(-0.5, 0), enabled=False, z=-0.01)
-        self._hp_text = Text('', parent=camera.ui, position=(0, 0.46), origin=(0, 0), scale=1, enabled=False)
+        self._hp_text = Text('', parent=camera.ui, position=(0, 0.46), origin=(0, 0), scale=1, enabled=False, font=data.fisho_font)
 
         self._press_bar_bg = Entity(
             parent=camera.ui, model='quad', color=color.dark_gray,
@@ -146,8 +147,8 @@ class FishingScene:
             scale=(self.BAR_W, self.BAR_H * self._pressure),
             position=(self.BAR_X, self.BAR_BOTTOM),
             origin=(0, -0.5), enabled=False, z=-0.01)
-        self._label_top = Text('x2 DMG', parent=camera.ui, position=(self.BAR_X, self.BAR_TOP + 0.03), origin=(0, 0), scale=0.8, color=color.yellow, enabled=False)
-        self._label_bot = Text('Fuite',  parent=camera.ui, position=(self.BAR_X, self.BAR_BOTTOM - 0.04), origin=(0, 0), scale=0.8, color=color.red, enabled=False)
+        self._label_top = Text('x2 DMG', parent=camera.ui, position=(self.BAR_X, self.BAR_TOP + 0.03), origin=(0, 0), scale=0.8, color=color.yellow, enabled=False, font=data.fisho_font)
+        self._label_bot = Text('Fuite',  parent=camera.ui, position=(self.BAR_X, self.BAR_BOTTOM - 0.04), origin=(0, 0), scale=0.8, color=color.red, enabled=False, font=data.fisho_font)
 
         self._entities = [
             water,
@@ -302,14 +303,23 @@ class FishingScene:
         self._label_bot = None
 
         if hasattr(self, '_caught_fish_name') and self._caught_fish_name:
-            banner = Text(
-                text=f"Caught: {self._caught_fish_name}!",
-                position=(0, 0.4),
-                origin=(0, 0),
-                scale=2,
-                color=color.yellow,
+            banner = menu.FixedButton(
+                text=f"You caught a {self._caught_fish_name} !!",
+                position=(0, -0.4),
+                scale=(0.1,0.1),
+                color=color.rgba(255, 255, 255, 0),
                 parent=camera.ui,
                 ignore_paused=True
             )
             destroy(banner, delay=2.5)
             self._caught_fish_name = None
+        else:
+            banner = menu.FixedButton(
+                text=f"You missed the fish... Better luck next time !",
+                position=(0, -0.4),
+                scale=(0.1,0.1),
+                color=color.rgba(255, 255, 255, 0),
+                parent=camera.ui,
+                ignore_paused=True
+            )
+            destroy(banner, delay=2.5)

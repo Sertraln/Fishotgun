@@ -24,18 +24,18 @@ void main() {
 
 shader.default_vertex_shader = test_vertex
 from ursina import *
-import client.network as network
 import client.data as data
 from ursina import application as appli
 import client.world as world
 from client import menu
 from client.spot import FishingSpot
-from client.fish import FishingScene
-from client.transitions import IrisTransition,_exit_black
+from client.transitions import _exit_black
 import client.save as save
+from client.shop import open_shop_dialogue
 
 from client.packet.serverbound import ServerBoundRequestFishingPacket
 
+from shared.world import get_shopkeeper
 
 def custom_quit():
     print("quit")
@@ -74,6 +74,7 @@ def _enter_black():
 def on_fishing_end(result):
     data.iris.play(on_black=_exit_black)
 
+shop_interact_text = Text(text="'E' to interact", enabled=False, position=(0, -0.3), origin=(0,0), scale=2)
 
 def update():
     player = data.player
@@ -91,9 +92,22 @@ def update():
         fishing_scene.update()
         return
     
-    # Gotta check this for all spots in the map constantly (will need a list later)
+    shopkeeper = get_shopkeeper()
+    if data.player and shopkeeper:
+        d = distance(data.player.position, shopkeeper.position)
+        
+        if d < 5:
+            if not shop_interact_text.enabled:
+                shop_interact_text.enabled = True
+            
+            if held_keys['e']:
+                open_shop_dialogue()
+        else:
+            if shop_interact_text.enabled:
+                shop_interact_text.enabled = False
+    
     if distance(spot.position, player.position) < spot.interaction_range:
-        if held_keys['f']:
+        if held_keys['e']:
             enter_fishing()
         else:
             spot.color = color.yellow
@@ -127,7 +141,7 @@ class MenuLogic(Entity):
         if key == 't up' and chat_menu and not chat_menu.enabled:
                 menu.show(chat_menu)
         fishodex = menu.getMenu("fishodex")
-        if key == 'e':
+        if key == 'f':
             if fishodex and fishodex.enabled:
                 mouse.locked = True
                 menu.hide()
