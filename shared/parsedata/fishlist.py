@@ -14,22 +14,22 @@ class FishList(Flag):
     #Crustace / mollusque
     CREVETTE = auto()
     MOULE = auto()
-    BULOT = auto()
     CRABE = auto()
     ARAIGNEE_DE_MER = auto()
     HOMARD = auto()
-    CALAMAR = auto()
+    CRACKEN = auto()
     #Sharks
     REQUIN_BLANC = auto()
-    REQUIN_MARTEAU = auto()
+    TRALALERO_TRALALA = auto()
     REQUIN_SCIE = auto()
-    REQUIN_TOURNEVIS = auto()
     REQUIN_GOBELIN = auto()
     BABY_SHARK = auto()
     REQUIN_TIGRE = auto()
     #Magical fish
     POISSON_ARC_EN_CIEL = auto()
     FISHOBUS = auto()
+    POISSON_JOEL = auto()
+    MAGIQUARPE = auto()
     RAIE_ECTOPLASME = auto()
     POISSON_RADIOACTIF = auto()
 
