@@ -1,6 +1,8 @@
 from ursina import *
 from client import menu
-from menu import FixedButton
+from client.menu import FixedButton
+from client.packet.serverbound import ServerBoundSellFishPacket
+import client.data as data
 
 class UpgradeItem(Entity):
     def __init__(self, name, level, max_level=10, **kwargs):
@@ -49,7 +51,7 @@ class ShopMenu(menu.Menu):
         self.btn_buy.on_click = self.buy_upgrade
 
     def sell_fish(self):
-        print("Selling all fish...")
+        data.network.send(ServerBoundSellFishPacket())
 
     def buy_upgrade(self):
         menu.show("upgrade")

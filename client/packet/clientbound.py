@@ -20,6 +20,7 @@ class ClientBoundInitPlayerPacket(ClientBoundDataPacket):
         super().__init__(data)
         self.position = self.data[0]
         self.fishunlocked = self.data[1]
+        self.currency = self.data[2]
         # Reset player reference on new init packet
 
     def handle(self):
@@ -44,14 +45,10 @@ class ClientBoundInitPlayerPacket(ClientBoundDataPacket):
             return
         from client.player import ThirdPersonController
         data.player = ThirdPersonController(data.network.id,data.network.name,
-                                            position=ClientBoundInitPlayerPacket.player.position,
-                                            fish_inventory=ClientBoundInitPlayerPacket.player.fishunlocked)
+                position=ClientBoundInitPlayerPacket.player.position,
+                fish_inventory=ClientBoundInitPlayerPacket.player.fishunlocked,
+                currency=ClientBoundInitPlayerPacket.player.currency)
 
-        if hasattr(menu, 'menus') and 'fishodex' in menu.menus:
-            f_menu = menu.menus['fishodex']
-            f_menu.rightpage.update_display(data.player.fish_inventory)
-            f_menu.middlepage.update_display(data.player.fish_inventory)
-            f_menu.leftpage.update_display(data.player.fish_inventory)
 class ClientBoundMessagePacket(ClientBoundDataPacket):
     def __init__(self,data:list[str]):
         super().__init__(data)
@@ -119,10 +116,9 @@ class ClientBoundAddFishPacket(ClientBoundDataPacket):
         self.fish_flag : 'FishList' = data[0] 
 
     def handle(self):
-        import client.data as data
         from shared.parsedata.fishlist import FishList
         
-        if hasattr(data, 'player') and data.player and hasattr(data.player, 'fish_inventory'):
+        if data.player:
             
             inv = data.player.fish_inventory
             print(f"Client : capacité du poisson {self.fish_flag.name} mise à jour : {inv.capacity[index]}")
@@ -148,6 +144,14 @@ class ClientBoundFishingSessionPacket(ClientBoundDataPacket):
         self.fish_ids: list[int] = data[0]
 
     def handle(self):
-        import client.data as data
-        if hasattr(data, 'fishing_scene') and data.fishing_scene:
+        if data.fishing_scene:
             data.fishing_scene.start(self.fish_ids)
+
+class ClientBoundUpdateMoneyPacket(ClientBoundDataPacket):
+    def __init__(self, data: list):
+        super().__init__(data)
+        self.currency: int = data[0]
+
+    def handle(self):
+        if hasattr(data, 'player') and data.player:
+            data.player.currency = self.currency

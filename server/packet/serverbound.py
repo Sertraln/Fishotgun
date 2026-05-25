@@ -11,11 +11,13 @@ import server.packet.clientbound as cb
 from server.packet.packetstruct import ServerBoundDataPacket,ServerBoundPacket
 from typing import TYPE_CHECKING
 from shared.movement import Physic
+from ursina import distance
 
 if TYPE_CHECKING:
     from server.client import Client
     from shared.parsedata.input import KeyStates
     from shared.registry import FishData
+    from server.player import Player
 
 #client_bound server -> client
 #server_bound client -> server
@@ -59,9 +61,6 @@ if __name__ == "__main__":
     print(issubclass(get_defined_classes("server/packet/serverbound.py")[0],ServerBoundDataPacket))
 
 class ServerBoundRequestFishingPacket(ServerBoundDataPacket):
-    def __init__(self, data: list):
-        super().__init__(data)
-
     def handle(self, client: 'Client'):
         from server.fishing_manager import generate_fishing_pool
         fish_ids = generate_fishing_pool()
@@ -70,13 +69,22 @@ class ServerBoundRequestFishingPacket(ServerBoundDataPacket):
 class ServerBoundCatchFishPacket(ServerBoundDataPacket):
     def __init__(self, data: list):
         super().__init__(data)
+        self.fish_id : int = data[0]
 
     def handle(self, client: 'Client'):
         player = client.player
         if player is not None:
             from shared.registry import fish_list
-            fish_id = self.data[0]
-            print(f"Player {player.unique_id} tente de pêcher le poisson avec l'id {fish_id}")
-            if 0 <= fish_id < len(fish_list):
-                fish_data : 'FishData' = fish_list[fish_id]
+            if 0 <= self.fish_id < len(fish_list):
+                fish_data : 'FishData' = fish_list[self.fish_id]
                 player.add_fish(fish_data.fishid)
+
+class ServerBoundSellFishPacket(ServerBoundPacket):
+    def handle(self, client: 'Client'):
+        player : 'Player' = client.player
+        import shared.world as world
+        if player is not None and distance(player.position,world.get_shopkeeper_pos()) < 5:
+            earnings = player.fish_inventory.get_total_price()
+            if earnings > 0:
+                player.clear_inventory()
+                player.currency += earnings

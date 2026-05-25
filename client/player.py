@@ -141,7 +141,7 @@ class Player(Entity):
 
 
 class ThirdPersonController(Player):
-    def __init__(self,id:int, name :str, position:Vec3 = Vec3(0,0,0), fish_inventory: FishInventory  = FishInventory()):
+    def __init__(self,id:int, name :str, position:Vec3 = Vec3(0,0,0), fish_inventory: FishInventory = FishInventory(), currency: int = 0):
         super().__init__(id,name,position)
         self.name = "ThirdPersonController"
         self._auto_face_movement = True
@@ -167,6 +167,16 @@ class ThirdPersonController(Player):
         #th.Thread(target=self.constant_update, daemon=True).start()
         self.on_destroy = self.on_disable
         self.fish_inventory = fish_inventory
+        self.currency = currency
+
+    @property
+    def currency(self):
+        return self._currency
+    
+    @currency.setter
+    def currency(self, value):
+        self._currency = value
+        data.hud.update_currency(self._currency)
 
     def _attach_camera_to_pivot(self):
         # Reset scale before parenting to avoid cumulative stretch across reconnects.
@@ -174,7 +184,6 @@ class ThirdPersonController(Player):
         camera.parent = self.camera_pivot
         camera.position = Vec3(0, 0, self.camera_offset)
         camera.rotation = Vec3(0, 0, 0)
-        
 
     def update(self):
         #super().update()

@@ -38,8 +38,8 @@ class FixedButton(Button):
         if self.text_entity:
             self.text_entity.position = Vec3(0,0,-1)
             self.text_entity.font = data.fisho_font
-            print(type(self.text_entity))  # vérifie le type
-            print(self.children)
+            #print(type(self.text_entity))  # vérifie le type
+            #print(self.children)
             test = Shader(fragment=set_color(),vertex=data.default_vertex)
             self.text_entity.set_shader_input("color",color.white)
             self.model.hide()
@@ -124,7 +124,7 @@ def register_menu(menu : Menu):
 def show(menu : Menu | str):
     if isinstance(menu, str):
         global _menus
-        print(_menus)
+        #print(_menus)
         menu = _menus[menu]
     global _currentMenu
     if _currentMenu is not None:
@@ -135,6 +135,7 @@ def show(menu : Menu | str):
         last_input = data.player._last_input
         data.player._update_input(KeyStates())
         data.player._last_input = last_input
+
 def ispausing():
     return _currentMenu is not None and _currentMenu.pause
 
@@ -150,7 +151,7 @@ def hide():
     _currentMenu = None
     application.resume()
     if data.player and not data.player._last_input.is_idle():
-        print("last input:",data.player._last_input)
+        #print("last input:",data.player._last_input)
         last_input =data.player._last_input
         data.player._last_input = KeyStates()
         data.player._update_input(last_input)
@@ -188,7 +189,9 @@ def getMenu(menu_id:str) -> Menu | None:
 def init():
     from ursina import application
     quit_button.on_click = application.quit
-    import client.menus.mainmenu as mainmenu
+    #load files
+    import client.menus.mainmenu
+    import client.menus.hud
 
 def rotate_page_and_run(func : list[callable],rotation_speed=1):
     if _background_menu.enabled:

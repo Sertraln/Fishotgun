@@ -9,6 +9,7 @@ from client.transitions import IrisTransition,_exit_black
 from client.fish import FishingScene
 import time
 from panda3d.core import PandaNode, NodePath
+from direct.actor.Actor import Actor
 import copy
 
 _sky_entity = None
@@ -25,15 +26,18 @@ class WorldScene(Entity):
         super().disable()
         self.ui.disable()
         menu.show_background()
+        data.hud.disable()
 
     def enable(self):
         print("Enabling world scene")
         super().enable()
         self.ui.enable()
         menu._background_menu.hide()
+        data.hud.enable()
 
-_world = WorldScene()
+_world =None
     
+shopkeeper = None
 
 class World:
     def __init__(self):
@@ -82,7 +86,8 @@ def join_world(ip:str, port:int, name:str) -> Exception | None:
     return None
 
 def init_assets():
-    global _sky_entity, _water_time_start
+    global _sky_entity, _water_time_start,_world
+    _world = WorldScene()
     water_shader_path = application.asset_folder / 'assets' / 'shader' / 'water.fsh'
     water_shader_fragment = water_shader_path.read_text(encoding='utf-8')
     _sky_entity = Sky(color=color.violet,parent=_world)
@@ -137,6 +142,15 @@ def init_assets():
     ChatMenu = Chat()
     menu.register_menu(ChatMenu)
     menu.register_menu(menu1)
+    global shopkeeper
+    shopkeeper = Actor('assets/models/Shopkeeper.glb')
+    shopkeeper.reparent_to(_world)
+    shopkeeper.set_pos(world.get_shopkeeper_pos())
+    shopkeeper.set_hpr(90, 360, 0)
+    shopkeeper.set_scale(1.2)
+    shopkeeper.name = 'shopkeeper'
+    shopkeeper.loop('idle')
+    
 
 def load_world():
     _world.enable()

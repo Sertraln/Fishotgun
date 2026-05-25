@@ -7,9 +7,10 @@ from ursina import Vec3
 import server.data as data
 from shared.parsedata.vec3data import Vec3Data
 from shared.parsedata.fishlist import FishInventory, FishList
-from server.packet.clientbound import ClientBoundAddFishPacket, ClientBoundClearInventoryPacket
+from server.packet.clientbound import ClientBoundAddFishPacket, ClientBoundClearInventoryPacket,ClientBoundUpdateMoneyPacket
 if TYPE_CHECKING:
     from server.client import Client
+    from shared.registry import FishData
 
 class Player(Physic):
     def __init__(self, player_name: str, client: 'Client', parent=None):
@@ -19,9 +20,18 @@ class Player(Physic):
         self.client = client
         self.keys_states = None
         self.fish_inventory = FishInventory()
-        self.currency: int = 0
+        self._currency: int = 0
         self.position = Vec3(0, 0, 0)
         self.load()
+
+    @property
+    def currency(self) -> int:
+        return self._currency
+
+    @currency.setter
+    def currency(self, value: int):
+        self._currency = value
+        self.client.send(ClientBoundUpdateMoneyPacket(self._currency))
 
     @property
     def id(self) -> int:
@@ -43,7 +53,7 @@ class Player(Physic):
             with open(f"{data.dataPath}{self.unique_id}.dat", "wb") as f:
                 f.write(Vec3Data.encode(self.position))
                 f.write(FishInventory.encode(self.fish_inventory))
-                f.write(struct.pack("i", self.currency))
+                f.write(self.currency.to_bytes(4))
             print(f"Serveur : Profil sauvegardé pour ID {self.unique_id}")
         except Exception as e:
             print(f"Serveur : Erreur sauvegarde {self.unique_id} : {e}")
@@ -55,12 +65,7 @@ class Player(Physic):
                 # On lit séquentiellement dans l'ordre de la sauvegarde
                 self.position = Vec3Data.decode(f.read(Vec3Data.size))
                 self.fish_inventory = FishInventory.decode(f.read(FishInventory.size))
-                
-                currency_bytes = f.read(4)
-                if len(currency_bytes) == 4:
-                    self.currency = struct.unpack("i", currency_bytes)[0]
-                else:
-                    self.currency = 0
+                self.currency = int.from_bytes(f.read(4))
                     
             print(f"Serveur : Profil chargé pour ID {self.unique_id}")
         except FileNotFoundError:
