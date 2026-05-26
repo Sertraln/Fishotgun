@@ -83,31 +83,33 @@ shop_done = False
 fish_done = False
 
 def update():
-    player = data.player
-    if player is None: return
     world.update()
-    player = data.player
-    spot = next((e for e in data.world_entities if isinstance(e, FishingSpot)), None)
-    if spot is None:
-        return
-    instructions = data.instructions
-    iris, fishing_scene = data.iris, data.fishing_scene
-    iris.update()
 
-    if fishing_scene.enabled:
-        fishing_scene.update()
+    if hasattr(data, 'iris') and data.iris._state != data.iris.IDLE:
+        data.iris.update()
+        return
+
+    player = data.player
+    if not player or getattr(player, 'destroyed', False):
+        return
+        
+    spot = next((e for e in data.world_entities if not getattr(e, 'destroyed', False) and isinstance(e, FishingSpot)), None)
+
+    if not spot:
+        return
+
+    if data.fishing_scene.enabled:
+        data.fishing_scene.update()
         return
     
     global shop_done, fish_done
     show_interact = False
 
-    if data.player and world.shopkeeper:
-        dist_shop = distance(data.player.position, world.shopkeeper.get_pos())
-        if dist_shop < 4:
+    if world.shopkeeper and not getattr(world.shopkeeper, 'destroyed', False):
+        if distance(player.position, world.shopkeeper.get_pos()) < 4:
             if held_keys['e'] and not shop_done:
                 open_shop_dialogue()
                 shop_done = True
-            
             if not shop_done:
                 show_interact = True
         else:
@@ -117,7 +119,6 @@ def update():
         if held_keys['e'] and not fish_done:
             enter_fishing()
             fish_done = True
-        
         if not fish_done:
             show_interact = True
             spot.color = color.lime
@@ -130,11 +131,10 @@ def update():
     interact_text.enabled = show_interact
 
     direction = camera.forward * -1
-    offset_clipping = 0.05
-    hit_camera = raycast(player.camera_pivot.world_position, direction, -player.camera_offset+offset_clipping, ignore=[player, camera, spot])
+    hit_camera = raycast(player.camera_pivot.world_position, direction, -player.camera_offset + 0.05, ignore=[player, camera, spot])
     
     if hit_camera.hit:
-        camera.z_setter(-hit_camera.distance+offset_clipping)
+        camera.z_setter(-hit_camera.distance + 0.05)
     else:
         camera.z_setter(player.camera_offset)
 

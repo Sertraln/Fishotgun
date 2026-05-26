@@ -159,36 +159,39 @@ def load_world():
     _world.enable()
 
 def quit_to_menu():
-    from ursina import destroy
-    from client.packet.clientbound import ClientBoundInitPlayerPacket
+    def on_black():
+        from ursina import destroy
+        from client.packet.clientbound import ClientBoundInitPlayerPacket
 
-    menu.show("main_menu")
-    menu.show_background()
-    _world.disable()
+        menu.show("main_menu")
+        menu.show_background()
+        _world.disable()
 
-    if data.network is not None:
-        # Avoid recursive quit_to_menu calls from Network.disconnect().
-        data.network.disconnect(trigger_quit_to_menu=False)
+        if data.network is not None:
+            data.network.disconnect(trigger_quit_to_menu=False)
+            data.network = None
 
-    if data.player:
-        try:
-            data.player.disable()
-        except Exception:
-            pass
-        destroy(data.player)
-        data.player = None
+        if data.player:
+            try:
+                data.player.disable()
+            except Exception:
+                pass
+            destroy(data.player)
+            data.player = None
 
-    if data.world is not None:
-        data.world.players.clear()
+        if data.world is not None:
+            data.world.players.clear()
 
-    # Prevent stale references across sessions.
-    ClientBoundInitPlayerPacket.player = None
+        data.world_entities.clear()
+        ClientBoundInitPlayerPacket.player = None
+
+    # Lance la transition en passant la fonction on_black comme callback
+    data.iris.play(on_black=on_black)
 
 def update():
     if not world.water or not world.water.model:
         return
 
-    # Relative monotonic time keeps animation smooth on GLSL 120 by avoiding huge epoch values.
     if _water_time_start is None:
         t = 0.0
     else:
@@ -196,5 +199,4 @@ def update():
 
     world.water.model.set_shader_input("iTime", t % 4096.0)
 
-# Initialize the world instance after defining the World class
 data.world = World()

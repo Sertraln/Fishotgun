@@ -43,16 +43,30 @@ class ServerButton(menu.FixedButton):
     def connect(self):
         global _name
         ServerButton.lock_click = True
-        try:
-            world.join_world(self.ip, self.port, _name)
-        except Exception as exc:
-            print("Erreur : " + str(exc))
-            traceback.print_exc()
-            self.parent.show_error(exc)
-            return
+        
+        ip = self.ip
+        port = self.port
+        parent = self.parent
+
+        def on_black():
+            try:
+                world.join_world(ip, port, _name)
+            except Exception as exc:
+                print("Erreur : " + str(exc))
+                traceback.print_exc()
+                if hasattr(data, 'iris'):
+                    data.iris.open()
+                parent.show_error(exc)
+                ServerButton.lock_click = False
+                return
+            else:
+                menu.hide()
+                ServerButton.lock_click = False
+
+        if hasattr(data, 'iris'):
+            data.iris.play(on_black=on_black)
         else:
-            menu.hide()
-        ServerButton.lock_click = False
+            on_black()
 
     @property
     def selected(self):
