@@ -17,9 +17,9 @@ def get_angle(dx, dz):
     return (-degrees(atan2(dz, dx))) % 360
 
 class FishType:
-    ABONDANTS   = {'max_hp': 50,  'speed': 2, 'speedrot': 50, 'scale': 1.0}
-    DISCRETS = {'max_hp': 100, 'speed': 4,   'speedrot': 70, 'scale': 0.8}
-    INSAISISSABLES = {'max_hp': 300, 'speed': 8, 'speedrot': 120, 'scale': 1.5}
+    ABONDANTS   = {'max_hp': 100,  'speed': 4, 'speedrot': 50, 'scale': 1.0}
+    DISCRETS = {'max_hp': 200, 'speed': 4,   'speedrot': 80, 'scale': 0.7}
+    INSAISISSABLES = {'max_hp': 500, 'speed': 8, 'speedrot': 130, 'scale': 1.6}
 
 RARITY_COLORS = {
     Rarity.ABONDANTS: color.white,
@@ -230,7 +230,7 @@ class FishingScene:
         self._pairs = [(chosen_fish, chosen_point)]
         self._fish = chosen_fish
         self._point = chosen_point
-        self._pressure = 0.5
+        self._pressure = 1.0
         invoke(self._destroy_fleeing, delay=1.2)
         invoke(lambda: self._show_bars(chosen_fish), delay=1.2)
 
@@ -393,5 +393,5 @@ class FishingScene:
             )
             anim_sequence.start()
         invoke(cleanup, delay=2.5)
-
+        data.hud.show()
         self._selected_fish = None

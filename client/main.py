@@ -116,6 +116,7 @@ def update():
     if distance(spot.position, player.position) < spot.interaction_range:
         if held_keys['e'] and not fish_done:
             enter_fishing()
+            data.hud.hide()
             fish_done = True
         
         if not fish_done:
