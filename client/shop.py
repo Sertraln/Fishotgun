@@ -29,7 +29,7 @@ class UpgradeItem(Entity):
             color=color.white, 
             font=data.fisho_font
         )
-        self.update_level_bar()
+        #self.update_level_bar()
     
     def get_dmg(self, level):
         return 5 + (level * 5)
