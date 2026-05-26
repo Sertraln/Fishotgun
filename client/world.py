@@ -111,7 +111,7 @@ def init_assets():
     data.hud.parent = _world.ui
     water_shader_path = application.asset_folder / 'assets' / 'shader' / 'water.fsh'
     water_shader_fragment = water_shader_path.read_text(encoding='utf-8')
-    _sky_entity = Sky(color=color.violet,parent=_world)
+    _sky_entity = Sky(color=color.rgb(1,1,1), texture='assets/textures/skybox4.png', parent=_world)
     world.init_world(_world)
 
     if world.ground is None or world.water is None:
