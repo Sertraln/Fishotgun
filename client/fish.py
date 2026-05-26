@@ -254,7 +254,6 @@ class FishingScene:
         destroy(damage_text, delay=0.8)
 
     def _deal_damage(self):
-        print("Player damage:", self.player_damage)
         fish   = self._selected_fish
         damage = self.player_damage * 2 if self._pressure >= 0.8 else self.player_damage
         self._spawn_damage_text(damage, fish.position)
