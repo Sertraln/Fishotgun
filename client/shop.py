@@ -102,7 +102,7 @@ class ShopMenu(menu.Menu):
         total = 0
         if hasattr(data, 'player') and hasattr(data.player, 'fish_inventory'):
             total = data.player.fish_inventory.get_total_price()  
-        self.btn_sell.text = f"Vendre tous les poissons - {total}$"
+        self.btn_sell.text = f"Vendre tous les poissons - {total} <image:assets/textures/fish_scale.png>"
 
     def sell_fish(self):
         data.network.send(ServerBoundSellFishPacket())
