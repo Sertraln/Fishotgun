@@ -144,7 +144,7 @@ class MenuLogic(Entity):
         super().__init__(ignore_paused=True)
 
     def input(self,key):
-        if key == 'escape':
+        if key == 'escape' and world._world.enabled:
             if menu.hasMenuShow():
                 mouse.locked = True
                 menu.hide()
