@@ -1,5 +1,3 @@
-from turtle import pos
-
 from ursina import *
 from math import pi,atan2,sqrt,degrees,sin,cos
 from random import randrange, shuffle
