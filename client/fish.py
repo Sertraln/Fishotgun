@@ -12,6 +12,11 @@ if _ROOT not in sys.path:
 from shared.registry import Rarity
 import client.data as data
 Y_OFFSET = -30
+shot = Audio(
+    "assets/musics/shot.wav",
+    autoplay=False,
+    volume=0.2
+)
 
 def get_angle(dx, dz):
     return (-degrees(atan2(dz, dx))) % 360
@@ -52,6 +57,28 @@ class Fish(Entity):
         self.angle = 0
         self.collider = 'box'
 
+        self._splash = Entity(
+            parent=scene,
+            model='quad',
+            texture='assets/textures/water_splash.png',
+            texture_scale=(1/4, 1/2),
+            scale=2,
+            rotation=(90, 0, 0),
+            enabled=False
+        )
+        self._splash_frame = 0
+        self._splash_timer = 0
+        self._splash_playing = False
+
+    def play_splash(self):
+        self._splash_frame = 0
+        self._splash_timer = 0
+        self._splash_playing = True
+        self._splash.enabled = True
+        self._splash.position = self.position
+        self._splash.rotation = (90, 0, 0)
+        self._splash.texture_offset = (0, 0)
+
     def set_rotation(self, angle: float):
         self.angle = angle % 360
         self.rotation = (0, angle, 0)
@@ -79,6 +106,22 @@ class Fish(Entity):
         return False
 
 _water_time_start = None
+    def update(self):
+        if not self._splash_playing:
+            return
+        self._splash_timer += time.dt
+        if self._splash_timer > 0.15:
+            self._splash_timer = 0
+            self._splash_frame += 1
+            if self._splash_frame >= 8:
+                self._splash_playing = False
+                self._splash.enabled = False
+                self._splash.texture_offset = (0, 0)
+                return
+            col = self._splash_frame % 4
+            row = self._splash_frame // 4
+            self._splash.texture_offset = (col / 4, 1 - (row + 1) / 2)
+
 class FishingScene:
     BAR_X = 0.8
     BAR_BOTTOM = -0.3
@@ -195,11 +238,20 @@ class FishingScene:
             self._label_top, self._label_bot
             ] + [e for pair in self._pairs for e in pair]
 
-    def _on_fish_click(self, fish:Fish):
+    def _on_fish_click(self, fish):
+        # fish shot
+        shot.play()
+        fish.alpha_setter(0.2)
+        fish.play_splash()
+
+        fish.scale = fish.fish_type['scale']/1.75
+
         if self._stopping:
             return
+        
         if self._selected_fish is None:
             self._select(fish)
+
         elif self._selected_fish == fish:
             self._deal_damage()
 
@@ -240,7 +292,7 @@ class FishingScene:
                 self._caught_fish_name = "Poisson Inconnu"
             self.request_stop()
 
-    def _select(self, chosen_fish:Fish):
+    def _select(self, chosen_fish):
         self._selected_fish = chosen_fish
         chosen_point = None
         for fish, point in self._pairs:
@@ -250,6 +302,7 @@ class FishingScene:
                 destroy(point)
                 self._entities.remove(point)
                 self._fleeing.append(fish)
+                fish.on_click = lambda f=fish: None
                 dx  = fish.position[0] - chosen_fish.position[0]
                 dz  = fish.position[2] - chosen_fish.position[2]
                 mag = sqrt(dx**2 + dz**2)
@@ -265,6 +318,7 @@ class FishingScene:
         for fish in self._fleeing:
             if fish in self._entities:
                 self._entities.remove(fish)
+            destroy(fish._splash)
             destroy(fish)
         self._fleeing = []
 
@@ -329,7 +383,21 @@ class FishingScene:
                 fish.position[1],
                 fish.position[2] + dz*10*time.dt)
             fish.set_rotation((-degrees(atan2(dz, dx))) % 360)
+            fish.update()
+
         for fish, point in self._pairs:
+
+            # Splash !
+            fish.update()
+
+            # fait réaparaitre le poisson
+            if (fish.alpha_getter() < 1) :
+                    new_alpha = min(1.0, fish.alpha_getter() + 0.02 * time.dt * 60) # clamp à 1
+                    new_scale = min(fish.fish_type['scale'], fish.scale_x + 0.02 * time.dt * 60) # clamp
+
+                    fish.scale = new_scale
+                    fish.alpha_setter(new_alpha)
+
             if self._selected_fish and fish == self._selected_fish:
                 if mouse.world_point:
                     mdx = mouse.world_point[0] - fish.position[0]
@@ -345,9 +413,13 @@ class FishingScene:
                 if self._pressure <= 0.0:
                     self.request_stop()
                     return
+            
             if fish and point:
                 if fish.look_at(point.position):
                     point.position = (randrange(-11, 11), Y_OFFSET-19, randrange(-6, 6))
+
+
+                    
 
     def stop(self):
         if not self.enabled:
@@ -360,7 +432,9 @@ class FishingScene:
         data.player.enable()
         #camera.fov = self._saved_cam_fov
 
-        for e in self._entities:
+        for e in self._entities:   # ya que joël pour faire des vannes en com de son code mdr
+            if hasattr(e, '_splash'):
+                destroy(e._splash)
             destroy(e)
         self._entities = []
         self._pairs = []
