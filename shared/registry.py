@@ -29,7 +29,7 @@ fish_list : list[FishData] = [
     FishData(FishList.SARDINE,"sardine","Sardine","Petite mais insaisissable, pour ne pas finir sérrée.",Rarity.ABONDANTS, "COMMUN"),
     FishData(FishList.BARRACUDA,"barracuda","Barracuda","Une torpille vivante aux dents acérées et au regard glacé.",Rarity.ABONDANTS, "COMMUN"),
     FishData(FishList.PIRANHA,"piranha","Piranha","Minuscule monstre des rivières, capable de transformer la panique en carnage.",Rarity.DISCRETS, "COMMUN"),
-    FishData(FishList.POISSON_CLOWN,"poisson_clown","Poisson Clown","Le roi comme le bouffon coloré des récifs.",Rarity.DISCRETS, "COMMUN"),
+    FishData(FishList.POISSON_CLOWN,"poisson_clown","Poisson Clown","Le roi comme le bouffon des récifs colorés.",Rarity.DISCRETS, "COMMUN"),
     FishData(FishList.POISSON_LUNE,"poisson_lune","Poisson Lune","Un géant paisible qui n'orbite plus autour de la terre.",Rarity.INSAISISSABLES, "COMMUN"),
 
     #Crustacés et mollusques
@@ -45,7 +45,7 @@ fish_list : list[FishData] = [
     FishData(FishList.REQUIN_TIGRE,"requin_tigre","Requin Tigre","Un prédateur redoutable avec des rayures distinctives, capable de s’attaquer à une grande variété de proies, même les plus coriaces.",Rarity.ABONDANTS, "REQUIN"),
     FishData(FishList.REQUIN_SCIE,"requin_scie","Requin Scie","Un prédateur à la mâchoire en forme de scie, capable de trancher ses proies en un clin d’œil.",Rarity.ABONDANTS, "REQUIN"),
     FishData(FishList.REQUIN_BLANC,"requin_blanc","Requin Blanc","Le roi des océans, un prédateur redoutable au sourire terrifiant.",Rarity.DISCRETS, "REQUIN"),
-    FishData(FishList.TRALALERO_TRALALA,"tralalero_tralala","Tralalero Tralala","Un terrible monstre à 3 pattes, il sème la terreur sur internet et porte des... sneakers?.",Rarity.INSAISISSABLES, "REQUIN"),
+    FishData(FishList.TRALALERO_TRALALA,"tralalero_tralala","Tralalero Tralala","Un terrible monstre à 3 pattes, il sème la terreur sur internet et porte des... sneakers?",Rarity.INSAISISSABLES, "REQUIN"),
     FishData(FishList.REQUIN_GOBELIN,"requin_gobelin","Requin Gobelin","Un prédateur des profondeurs, aussi connu comme le plus hideux des requins.",Rarity.INSAISISSABLES, "REQUIN"),
     
     #Poissons magiques

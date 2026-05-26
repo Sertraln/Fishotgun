@@ -22,9 +22,15 @@ def get_angle(dx, dz):
     return (-degrees(atan2(dz, dx))) % 360
 
 class FishType:
-    ABONDANTS   = {'max_hp': 20,  'speed': 1.5, 'speedrot': 50, 'scale': 1.0}
-    DISCRETS = {'max_hp': 50, 'speed': 4,   'speedrot': 70, 'scale': 0.8}
-    INSAISISSABLES = {'max_hp': 100, 'speed': 8, 'speedrot': 110, 'scale': 1.5}
+    ABONDANTS   = {'max_hp': 50,  'speed': 2, 'speedrot': 50, 'scale': 1.0}
+    DISCRETS = {'max_hp': 100, 'speed': 4,   'speedrot': 70, 'scale': 0.8}
+    INSAISISSABLES = {'max_hp': 300, 'speed': 8, 'speedrot': 120, 'scale': 1.5}
+
+RARITY_COLORS = {
+    Rarity.ABONDANTS: color.white,
+    Rarity.DISCRETS: color.blue,
+    Rarity.INSAISISSABLES: color.gold
+}
 
 SHADOW_MAP = {
     "COMMUN": "assets/textures/fish_shadows/Communs.png",
@@ -89,7 +95,7 @@ class FishingScene:
         self.on_end = on_end
         self.enabled = False
         self._stopping = False
-        self.player_damage = 1
+        self.player_damage = 5
         self._entities = []
         self._pairs = []
         self._fish = None
@@ -328,7 +334,6 @@ class FishingScene:
         self._pairs = []
         self._fish = None
         self._point = None
-        self._selected_fish : Fish = None
         self._fleeing = []
         self._pressure = 0.5
         self._hp_bar_bg = None
@@ -340,16 +345,56 @@ class FishingScene:
         self._label_bot = None
 
         bannertext = "Le poisson a fui... La prochaine fois sera la bonne!"
+        text_color = color.white
+        fish_id = None
+        
         if hasattr(self, '_caught_fish_name') and self._caught_fish_name:
+            from shared.registry import fish_list
+            fish_data = fish_list[self._selected_fish.fish_id]
+            
             bannertext = f"Tu as attrapé un {self._caught_fish_name} !!"
+            text_color = RARITY_COLORS.get(fish_data.rarity, color.white)
+            fish_id = self._selected_fish.fish_id
             self._caught_fish_name = None
 
-        banner = menu.FixedButton(
-                text=bannertext,
-                position=(0, 0.4),
-                scale=(0.1,0.1),
-                color=color.rgba(255, 255, 255, 0),
+        banner = Text(
+            text=bannertext,
+            position=(0, -0.4),
+            origin=(0, 0),
+            scale=1.5,
+            color=text_color,
+            parent=camera.ui,
+            ignore_paused=True,
+            font=data.fisho_font
+        )
+        
+        def cleanup():
+            banner.animate_scale(0, duration=0.5, curve=curve.in_out_expo)
+            if 'fish_img' in locals():
+                fish_img.animate_scale(0, duration=0.5, curve=curve.in_out_expo)
+                if anim_sequence: anim_sequence.finish()
+            
+            destroy(banner, delay=0.5)
+            if 'fish_img' in locals():
+                destroy(fish_img, delay=0.5)
+
+        if fish_id is not None:
+            fish_img = Entity(
                 parent=camera.ui,
+                model='quad',
+                texture=f"assets/textures/fish/{fish_list[fish_id].id}.png",
+                scale=(0.3, 0.3),
+                position=(0, -0.25),
                 ignore_paused=True
             )
-        destroy(banner, delay=2.5)
+            anim_sequence = Sequence(
+                Func(fish_img.animate, 'rotation_z', 15, duration=0.8, curve=curve.in_out_sine),
+                Wait(0.8),
+                Func(fish_img.animate, 'rotation_z', -15, duration=0.8, curve=curve.in_out_sine),
+                Wait(0.8),
+                loop=True
+            )
+            anim_sequence.start()
+        invoke(cleanup, delay=2.5)
+
+        self._selected_fish = None

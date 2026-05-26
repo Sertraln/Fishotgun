@@ -79,8 +79,11 @@ class FishInventory(Parser):
         total = 0
         for i in range(len(FishList)):
             if self.capacity[i] > 0:
-                fish_data : 'FishData' = fish_list[i]
+                fish_data = fish_list[i]
+                # DEBUG : Vérifie ce qui est calculé
+                print(f"Poisson {i}: {self.capacity[i]} x {fish_data.rarity[2]}")
                 total += self.capacity[i] * fish_data.rarity[2]
+        print(f"Total calculé : {total}")
         return total
 
     @staticmethod
@@ -99,9 +102,3 @@ class FishInventory(Parser):
         for i in range(len(data.capacity)):
             encoded += data.capacity[i].to_bytes(4, 'big')
         return encoded
-        
-
-    
-
-
-    
