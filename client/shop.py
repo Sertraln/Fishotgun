@@ -4,14 +4,17 @@ from client.menu import FixedButton
 from client.packet.serverbound import ServerBoundSellFishPacket
 import client.data as data
 
-class UpgradeItem(Entity):
+class UpgradeItemMenu(menu.Menu):
     def __init__(self, max_level=10, **kwargs):
-        super().__init__(**kwargs)
+        super().__init__("upgrade", pause=True, anim=True)
+        self.bg = Entity(parent=self, model='quad', color=color.rgba(0, 0, 0, 0.5), scale=(1.5, 0.8), position=(0, 0))
+        self.btn_back = FixedButton(parent=self, text="Back", scale=(0.2, 0.1), position=(0, -0.3))
+        self.btn_back.on_click = lambda: menu.show("shop")
         self.max_level = max_level
         self.icon = Entity(parent=self, model='quad', texture="assets/textures/Shotgun.png",scale=(0.6, 0.6), position=(-0.4, -0.1))
-        self.btn = Button(parent=self, text="Upgrade", scale=(0.2, 0.1), position=(0.4, 0))
+        self.btn = FixedButton(parent=self, text="Upgrade", color=color.white, text_size=1.5, position=(0.4, -0.3))
         self.btn.on_click = self.upgrade
-        self.level_bar = Entity(parent=self, model='quad', color=color.gray, scale=(0.05, 0.6), position=(-0.1, 0))
+        self.level_bar = Entity(parent=self, model='quad', color=color.white, scale=(0.05, 0.6), position=(-0.1, 0))
         self.progress_bar = Entity(parent=self.level_bar, model='quad', color=color.green, scale_y=0, origin_y=-0.5, position=(0, -0.5))
         self.dmg_text = Text(
             text="", 
@@ -29,10 +32,19 @@ class UpgradeItem(Entity):
             color=color.white, 
             font=data.fisho_font
         )
-        self.update_level_bar()
+        self.price_text = Text(
+            text="", 
+            parent=self, 
+            position=(0.4, -0.2),
+            scale=1.5,
+            font=data.fisho_font
+        )
     
+    def on_enable(self):
+        self.update_level_bar()
+
     def get_dmg(self, level):
-        return 5 + (level * 5)
+        return (level*5)
 
     def update_level_bar(self):
         if not data.player: return
@@ -40,28 +52,24 @@ class UpgradeItem(Entity):
 
         current_dmg = self.get_dmg(data.player.level)
         if data.player.level < self.max_level:
-            next_dmg = self.get_dmg(data.player.level + 1)
+            next_dmg = self.get_dmg(data.player.level+1)
             self.dmg_text.text = f"{current_dmg} -> {next_dmg} DMG"
         else:
             self.dmg_text.text = f"{current_dmg} DMG (MAX)"
+
         if data.player.level < self.max_level:
             self.lvl_text.text = f"Lvl.{data.player.level}"
         else:
             self.lvl_text.text = f"Lvl.{data.player.level} (MAX)"
+        
+        if data.player.level < self.max_level:
+            self.price_text.text = f"<image:assets/textures/fish_scale.png> {data.player.level * 1000}"
+        else:
+            self.price_text.text = ""
 
     def upgrade(self):
         if data.player.level < self.max_level:
             self.update_level_bar()
-
-class UpgradeMenu(menu.Menu):
-    def __init__(self):
-        super().__init__("upgrade", pause=True)
-        self.bg = Entity(parent=self, model='quad', color=color.rgba(0, 0, 0, 0.5), scale=(1.5, 0.8), position=(0, 0))
-        self.shotgun_item = UpgradeItem(name="Shotgun", parent=self, position=(0, 0.1))
-        self.add_element(self.shotgun_item)
-        self.btn_back = FixedButton(text="Back", scale=(0.2, 0.1), position=(0, -0.3))
-        self.btn_back.on_click = lambda: menu.show("shop")
-        self.add_element(self.btn_back)
 
 def hide_dialogue():
     menu.hide()
@@ -94,10 +102,6 @@ class ShopMenu(menu.Menu):
             total = data.player.fish_inventory.get_total_price()  
         self.btn_sell.text = f"Vendre tous les poissons - {total}$"
 
-    def on_enable(self):
-        if data.player:
-            self.update_level_bar()
-
     def sell_fish(self):
         data.network.send(ServerBoundSellFishPacket())
 
@@ -109,7 +113,7 @@ class ShopMenu(menu.Menu):
     def buy_upgrade(self):
         menu.show("upgrade")
 
-menu.register_menu(UpgradeMenu())
+menu.register_menu(UpgradeItemMenu())
 menu.register_menu(ShopMenu())
 
 def open_shop_dialogue():

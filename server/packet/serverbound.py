@@ -95,5 +95,6 @@ class ServerBoundUpgradePacket(ServerBoundPacket):
     def handle(self, client: 'Client'):
         player : 'Player' = client.player
         import shared.world as world
-        if player is not None and distance(player.position,world.get_shopkeeper_pos()) < 5 and player.level < 5:
+        if player is not None and distance(player.position,world.get_shopkeeper_pos()) < 5 and player.level < 10 and player.currency >= (player.level * 1000):
             player.level += 1
+            player.currency -= (player.level * 1000)
