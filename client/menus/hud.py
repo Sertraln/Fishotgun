@@ -17,5 +17,3 @@ class Hud(menu.Menu):
 
     def update_currency(self, amount: int):
         self.currency_text.text = f": {amount}"
-
-data.hud = Hud()

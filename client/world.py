@@ -105,6 +105,8 @@ def spawn_spots(l):
                 ))
 
 def init_assets():
+    from client.menus.hud import Hud
+    data.hud = Hud()
     global _sky_entity, _water_time_start,_world
     _world = WorldScene()
     water_shader_path = application.asset_folder / 'assets' / 'shader' / 'water.fsh'
