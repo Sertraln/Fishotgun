@@ -121,11 +121,12 @@ class ClientBoundAddFishPacket(ClientBoundDataPacket):
         if data.player:
             
             inv = data.player.fish_inventory
-            inv.fish_list.unlock(self.fish_flag)
+            inv.fish_list = inv.fish_list.unlock(self.fish_flag)
             
             index = FishList.ordinal(self.fish_flag)
             if 0 <= index < len(inv.capacity):
                 inv.capacity[index] += 1    
+            data
             print(f"Client : Inventaire synchronisé pour {self.fish_flag.name}")
 
 class ClientBoundClearInventoryPacket(ClientBoundPacket):
