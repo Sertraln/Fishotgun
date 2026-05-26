@@ -1,8 +1,6 @@
-from turtle import pos
-
 from ursina import *
 from math import pi,atan2,sqrt,degrees,sin,cos
-from random import randrange, shuffle
+from random import randrange
 
 import os
 import sys
@@ -11,11 +9,8 @@ _ROOT = os.path.dirname(os.path.dirname(__file__))
 if _ROOT not in sys.path:
     sys.path.insert(0, _ROOT)
 
-from shared.parsedata.fishlist import FishList
-from shared.registry import fish_list, Rarity
+from shared.registry import Rarity
 import client.data as data
-import client.menu as menu
-
 Y_OFFSET = -30
 
 def get_angle(dx, dz):

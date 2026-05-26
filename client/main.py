@@ -49,7 +49,7 @@ def custom_quit():
     except:
         pass
 
-app = Ursina()
+app = Ursina()#development_mode=False)
 appli.quit = custom_quit
 import client.menus.fishodex as fishodex
 data.init()

@@ -1,4 +1,4 @@
-from ursina import Button, mouse, Vec2,Vec3,Entity,camera,Text,color,application,InputField,Shader,time,Texture
+from ursina import *
 import client.data as data
 from panda3d.core import SamplerState
 from shared.parsedata.input import KeyStates
@@ -89,12 +89,29 @@ class BackGround(Entity):
         self.rotation_direction = rotation_direction
 
 class Menu(Entity):
-    def __init__(self,id:str,pause=True):
+    def __init__(self,id:str,pause=True, anim=False):
         super().__init__(parent=camera.ui,position=(0,0,0),scale=(1,1,0),ignore_paused=True,enabled=False)
         self.elements : list[Entity]  = []
         self.pause = pause
         self.id :str = id
         self.ignore_paused = True
+        self.anim = anim
+    
+    def enable(self):
+        if self.anim:
+            self.scale = 0
+            super().enable()
+            self.animate_scale(1, duration=0.2, curve=curve.out_back)
+        else:
+            self.scale = 1
+            super().enable()
+    
+    def disable(self):
+        if self.anim:
+            self.animate_scale(0, duration=0.15, curve=curve.in_sine)
+            invoke(super().disable, delay=0.15)
+        else:
+            super().disable()
 
     def add_element(self, element : Entity):
         self.elements.append(element)
@@ -148,8 +165,8 @@ def hide():
     global _currentMenu
     if _currentMenu is not None:
         _currentMenu.disable()
+        invoke(lambda: globals().__setitem__('_currentMenu', None), delay=0.16)
         _background_menu.hide()
-    _currentMenu = None
     application.resume()
     if data.player and not data.player._last_input.is_idle():
         #print("last input:",data.player._last_input)

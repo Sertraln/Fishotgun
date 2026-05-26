@@ -129,7 +129,7 @@ def init_assets():
     world.water.model.set_shader_input("iTime", 0.0)
 
     #registering menus
-    menu1 = menu.Menu("menu1", True)
+    menu1 = menu.Menu("menu1", True, True)
     node = copy.deepcopy(menu._background_menu.paper)
     node.parent = menu1
     node.position = (0,0,1)

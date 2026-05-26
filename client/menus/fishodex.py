@@ -19,7 +19,7 @@ class FishDisplay(Entity):
         self._quantity_text = Text("",parent=self,position=(-0.8,-0.7,-0.6),scale=12,font=data.fisho_font,enabled=False,color=color.black)
         self.description = Text(fish_instance.description,parent=self,position=(0,0,-10),scale=10,enabled=False,color=color.white,font=data.fisho_font)
         self.description.wordwrap_setter(15)
-        Entity(model="quad",parent=self.description,scale=(0.46,0.22,0.1),color=color.rgba(0.4,0.4,0.4,0.6),position=(0.21,-0.1,0.1))
+        Entity(model="quad",parent=self.description,scale=(0.46,0.22,0.1),color=color.rgba(0.4,0.4,0.4,0.8),position=(0.21,-0.1,0.1))
         self.name_text = Text(fish_instance.name,parent=self.description,position=(0,0.04,0),scale=1.2,color=self.fish_instance.rarity[0],font=data.fisho_font)
         self.scale = (0.1,0.1,0.1)
         self._model.set_scale(1.5,1.5,1)
@@ -109,6 +109,7 @@ class FishodexMenu(menu.Menu):
         self.next_button = menu.FixedButton(parent=self,text="Page suivante",position=(0.3,-0.35,0),scale=(0.2,0.1,1),on_click=self.rotate_middle_page)
         self.prev_button = menu.FixedButton(parent=self,text="Page précédente",position=(-0.3,-0.35,0),scale=(0.2,0.1,1),on_click=self.rotate_middle_page)
         self.prev_button.disable()
+        self.anim = True
 
     def enable(self):
         super().enable()
