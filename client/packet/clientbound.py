@@ -21,6 +21,7 @@ class ClientBoundInitPlayerPacket(ClientBoundDataPacket):
         self.position = self.data[0]
         self.fishunlocked = self.data[1]
         self.currency = self.data[2]
+        self.level = self.data[3]
         # Reset player reference on new init packet
 
     def handle(self):
@@ -47,7 +48,8 @@ class ClientBoundInitPlayerPacket(ClientBoundDataPacket):
         data.player = ThirdPersonController(data.network.id,data.network.name,
                 position=ClientBoundInitPlayerPacket.player.position,
                 fish_inventory=ClientBoundInitPlayerPacket.player.fishunlocked,
-                currency=ClientBoundInitPlayerPacket.player.currency)
+                currency=ClientBoundInitPlayerPacket.player.currency,
+                level=ClientBoundInitPlayerPacket.player.level)
 
 class ClientBoundMessagePacket(ClientBoundDataPacket):
     def __init__(self,data:list[str]):

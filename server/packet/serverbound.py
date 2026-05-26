@@ -90,3 +90,10 @@ class ServerBoundSellFishPacket(ServerBoundPacket):
             if earnings > 0:
                 player.clear_inventory()
                 player.currency += earnings
+
+class ServerBoundUpgradePacket(ServerBoundPacket):
+    def handle(self, client: 'Client'):
+        player : 'Player' = client.player
+        import shared.world as world
+        if player is not None and distance(player.position,world.get_shopkeeper_pos()) < 5 and player.level < 5:
+            player.level += 1
