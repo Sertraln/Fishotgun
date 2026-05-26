@@ -1,7 +1,6 @@
-from ursina import Entity, Terrain, Vec3, Plane, color, Texture
+from ursina import Entity, Vec3
 from panda3d.bullet import BulletBoxShape, BulletRigidBodyNode, BulletWorld
 from panda3d.core import Vec3 as PVec3, NodePath
-from direct.actor.Actor import Actor
 import csv
 import os
 
@@ -90,9 +89,9 @@ def init_world(base_scene:'NodePath'=None):
 
     shop_building = Entity(
         model='assets/models/Shop.glb',
-        position=(28, 2.3, -10),
+        position=(28, 2.3*1.5, -10),
         rotation=(0, 270, 0),
-        scale=1,
+        scale=(1,1.5,1),
         collider='mesh',
         name='shop_building',
         parent=world_scene
@@ -116,9 +115,9 @@ def spawn_trees():
             for row in reader:
                 Entity(
                     model='assets/models/tree.glb',
-                    position=(-float(row['x'])*scale_factor, 2.4668*scale_factor, -float(row['y'])*scale_factor),
+                    position=(-float(row['x'])*scale_factor, 2.4668*scale_factor*1.5, -float(row['y'])*scale_factor),
                     rotation_y=float(row['rotation_z_deg']),
-                    scale=scale_factor,
+                    scale=(scale_factor, scale_factor*1.5, scale_factor),
                     collider='box',
                     parent=world_scene
                 )
