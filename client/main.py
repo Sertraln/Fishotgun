@@ -31,6 +31,7 @@ from client import menu
 from client.spot import FishingSpot
 from client.transitions import _exit_black
 import client.save as save
+import menus
 from client.shop import open_shop_dialogue
 
 from client.packet.serverbound import ServerBoundRequestFishingPacket
@@ -78,7 +79,7 @@ def _enter_black():
 def on_fishing_end(result):
     data.iris.play(on_black=_exit_black)
 
-interact_text = Text(text="Appuyez sur 'E' pour interagir", enabled=False, position=(0, -0.45), origin=(0,0), scale=2, font = data.fisho_font)
+interact_text = Text(text="Appuyez sur 'E' pour interagir", parent=menus.hud, enabled=False, position=(0, -0.45), origin=(0,0), scale=2, font = data.fisho_font)
 shop_done = False
 fish_done = False
 
