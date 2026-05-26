@@ -49,6 +49,7 @@ class ServerButton(menu.FixedButton):
             print("Erreur : " + str(exc))
             traceback.print_exc()
             self.parent.show_error(exc)
+            ServerButton.lock_click = False
             return
         else:
             menu.hide()
