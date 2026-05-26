@@ -51,6 +51,7 @@ class Fish(Entity):
         self.texture_scale = (1, 1)
         self.speedrot = fish_type['speedrot']
         self.scale = fish_type['scale']
+        self.base_scale = self.scale
         self.speed = fish_type['speed']
         self.max_hp = fish_type['max_hp']
         self.hp = self.max_hp
@@ -105,7 +106,6 @@ class Fish(Entity):
             self.set_rotation(self.angle - speed)
         return False
 
-_water_time_start = None
     def update(self):
         if not self._splash_playing:
             return
@@ -121,6 +121,8 @@ _water_time_start = None
             col = self._splash_frame % 4
             row = self._splash_frame // 4
             self._splash.texture_offset = (col / 4, 1 - (row + 1) / 2)
+
+_water_time_start = None
 
 class FishingScene:
     BAR_X = 0.8
@@ -244,7 +246,7 @@ class FishingScene:
         fish.alpha_setter(0.2)
         fish.play_splash()
 
-        fish.scale = fish.fish_type['scale']/1.75
+        fish.scale = fish.scale/1.75
 
         if self._stopping:
             return
@@ -291,8 +293,8 @@ class FishingScene:
                 print(f"Erreur FishoDex local : {e}")
                 self._caught_fish_name = "Poisson Inconnu"
             self.request_stop()
-
-    def _select(self, chosen_fish):
+            
+    def _select(self, chosen_fish:Fish):
         self._selected_fish = chosen_fish
         chosen_point = None
         for fish, point in self._pairs:
@@ -392,8 +394,9 @@ class FishingScene:
 
             # fait réaparaitre le poisson
             if (fish.alpha_getter() < 1) :
-                    new_alpha = min(1.0, fish.alpha_getter() + 0.02 * time.dt * 60) # clamp à 1
-                    new_scale = min(fish.fish_type['scale'], fish.scale_x + 0.02 * time.dt * 60) # clamp
+                    new_alpha = min(1.0, fish.alpha_getter() + 0.02 * time.dt * 60) # clamp à 1.0
+                    #fish.scale.x = max(fish.scale.x, fish.base_scale/2) # clamp
+                    new_scale = min(fish.base_scale, fish.scale.x + 0.02 * time.dt * 60) # clamp
 
                     fish.scale = new_scale
                     fish.alpha_setter(new_alpha)
