@@ -108,7 +108,7 @@ def init_assets():
     from client.menus.hud import Hud
     global _sky_entity, _water_time_start,_world
     _world = WorldScene()
-    data.hud = Hud()
+    data.hud.parent = _world.ui
     water_shader_path = application.asset_folder / 'assets' / 'shader' / 'water.fsh'
     water_shader_fragment = water_shader_path.read_text(encoding='utf-8')
     _sky_entity = Sky(color=color.violet,parent=_world)
