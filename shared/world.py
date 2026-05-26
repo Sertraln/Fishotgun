@@ -1,7 +1,6 @@
 from ursina import *
 from panda3d.bullet import BulletBoxShape, BulletRigidBodyNode, BulletWorld
 from panda3d.core import Vec3 as PVec3, NodePath
-from client.spot import FishingSpot
 import csv
 import os
 
@@ -120,22 +119,6 @@ def spawn_trees():
                     scale=(scale_factor, scale_factor*1.5, scale_factor),
                     collider='box',
                     parent=world_scene
-                )
-
-def spawn_trees():
-    _ROOT = os.path.dirname(os.path.dirname(__file__))
-    file_path = os.path.join(_ROOT, 'shared', 'data', 'pdpeche.csv')
-    
-    if not os.path.exists(file_path):
-        print(f"Erreur : Le fichier est introuvable à : {file_path}")
-        return
-
-    with open(file_path, mode='r', encoding='utf-8') as f:
-            reader = csv.DictReader(f, delimiter=';')
-            for row in reader:
-                FishingSpot(
-                    position=(-float(row['x'])*scale_factor, 2, -float(row['y'])*scale_factor),
-                    color = color.rgba(0, 0, 0, 1)
                 )
 
 # --- Bullet helpers -------------------------------------------------------

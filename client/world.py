@@ -1,4 +1,5 @@
 from client import data,menu,network
+import os, csv
 from client.menus.chat import Chat
 from client.spot import FishingSpot
 from ursina import Shader,Button,destroy,color,Sky,mouse,Vec3,Text,camera,scene,application,Entity
@@ -85,6 +86,24 @@ def join_world(ip:str, port:int, name:str) -> Exception | None:
     load_world()
     return None
 
+def spawn_spots(l):
+    _ROOT = os.path.dirname(os.path.dirname(__file__))
+    file_path = os.path.join(_ROOT, 'shared', 'data', 'pdpeche.csv')
+    scale_factor = 3
+    
+    if not os.path.exists(file_path):
+        print(f"Erreur : Le fichier est introuvable à : {file_path}")
+        return
+
+    with open(file_path, mode='r', encoding='utf-8') as f:
+            reader = csv.DictReader(f, delimiter=';')
+            for row in reader:
+                l.append(FishingSpot(
+                    position=(-float(row['x'])*scale_factor, 2, -float(row['y'])*scale_factor),
+                    color = color.rgba(0, 0, 0, 0),
+                    parent=scene
+                ))
+
 def init_assets():
     global _sky_entity, _water_time_start,_world
     _world = WorldScene()
@@ -103,18 +122,16 @@ def init_assets():
         background=True,
         parent=_world.ui
     )
-    spot = FishingSpot(position=(0,2,0),parent=_world)
-    data.world_entities = [spot]
+    data.world_entities = []
+    spawn_spots(data.world_entities)
     camera.fov = 90
 
     data.iris = IrisTransition(close_duration=0.8, black_duration=0.5, open_duration=0.8)
 
-    
     def on_fishing_end(result):
         data.iris.play(on_black=_exit_black)
 
     data.fishing_scene = FishingScene(on_end=on_fishing_end)
-    spot.set_scene(data.fishing_scene)
     #loading textures
     world.ground.texture = 'assets/textures/grass.png'
     world.ground.texture_scale = (64,64)

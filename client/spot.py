@@ -5,7 +5,7 @@ class FishingSpot(Entity):
         super().__init__(**kwargs)
         self.model = 'sphere'
         self.color = color.white
-        self.interaction_range = 50
+        self.interaction_range = 35
         self._scene = None
         for key, value in kwargs.items():
             setattr(self, key, value)

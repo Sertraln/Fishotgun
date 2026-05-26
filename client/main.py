@@ -115,18 +115,19 @@ def update():
         else:
             shop_done = False
 
-    if distance(spot.position, player.position) < spot.interaction_range:
-        if held_keys['e'] and not fish_done:
-            enter_fishing()
-            data.hud.hide()
-            fish_done = True
-        if not fish_done:
-            show_interact = True
-            spot.color = color.lime
-        else:
-            spot.color = color.white
-    else:
-        spot.color = color.white
+    fishing_spots = [e for e in data.world_entities if not getattr(e, 'destroyed', False) and isinstance(e, FishingSpot)]
+
+    for spot in fishing_spots:
+        if distance(spot.position, player.position) < spot.interaction_range:
+            if held_keys['e'] and not fish_done:
+                enter_fishing()
+                data.hud.hide()
+                fish_done = True
+            
+            if not fish_done:
+                show_interact = True
+
+    if not held_keys['e']:
         fish_done = False
 
     interact_text.enabled = show_interact
