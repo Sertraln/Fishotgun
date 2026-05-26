@@ -116,7 +116,7 @@ road_story = Audio(
     resource_path("assets/musics/road_story.wav"),
     autoplay=False,
     loop=False,
-    volume=0.4,
+    volume=0.6,
     ignore_paused=True
 )
 
