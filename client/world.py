@@ -118,13 +118,16 @@ def init_assets():
     #loading textures
     world.ground.texture = 'assets/textures/grass.png'
     world.ground.texture_scale = (64,64)
+
     world.water.texture = 'assets/textures/water.png'
     world.water.texture_scale = (64,64)
     water_shader = Shader(name="water", vertex=data.default_vertex, fragment=water_shader_fragment)
     water_shader.compile()
+    world.water.model.set_shader_input("texScale", 128.0)
     world.water.model.setShader(water_shader._shader)
     _water_time_start = time.perf_counter()
     world.water.model.set_shader_input("iTime", 0.0)
+
     #registering menus
     menu1 = menu.Menu("menu1", True)
     node = copy.deepcopy(menu._background_menu.paper)

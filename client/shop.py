@@ -38,20 +38,33 @@ class ShopMenu(menu.Menu):
     def __init__(self):
         super().__init__("shop", pause=True)
         self.bg = Entity(parent=self, model='quad', color=color.rgba(0, 0, 0, 0.5), scale=(1.3, 0.4), position=(0, -0.3), z=0)
-        self.npc_text = FixedButton(text="Hey, you got some fish for me ?", color=color.white, position=(-0.4, -0.15), scale=(0.1, 0.1), z=0)
-        self.btn_sell = FixedButton(text="Sell All Fish", color=color.white, position=(-0.5, -0.35), scale=(0.3, 0.1))
-        self.btn_buy = FixedButton(text="Buy Upgrade", color=color.white, position=(-0.5, -0.425), scale=(0.3, 0.1))
-        
-        for btn in [self.btn_sell, self.btn_buy]:
-            btn.set_bin('fixed', 1)
+        self.npc_text_a = Text(text="Hey, t'as des poissons pour moi ?", color=color.white, position=(-0.6, -0.15), scale=1.5, font=data.fisho_font)
+        self.npc_text_b = Text(text="Je commence à avoir faim...", color=color.white, position=(-0.6, -0.2), scale=1.5, font=data.fisho_font)
+        self.btn_sell = FixedButton(text="Vendre tous les poissons - 0$", color=color.white, position=(-0.6, -0.35), scale=(0.3, 0.1), origin=(-0.5, 0))
+        self.btn_buy = FixedButton(text="Acheter une amélioration", color=color.white, position=(-0.6, -0.40), scale=(0.3, 0.1), origin=(-0.5, 0))
+
+        for btn in [self.npc_text_a, self.npc_text_b, self.btn_sell, self.btn_buy]:
+            btn.origin = (-0.5, 0)
             self.add_element(btn)
-        
-        self.add_element(self.npc_text)
+            btn.set_bin('fixed', 1)
+
+        self.enabled = False      
+
         self.btn_sell.on_click = self.sell_fish
         self.btn_buy.on_click = self.buy_upgrade
 
+    def update_sell_button(self):
+        total = 0
+        if hasattr(data, 'player') and hasattr(data.player, 'fish_inventory'):
+            total = data.player.fish_inventory.get_total_price()  
+        self.btn_sell.text = f"Vendre tous les poissons - {total}$"
+
+    def on_enable(self):
+        self.update_sell_button()
+
     def sell_fish(self):
         data.network.send(ServerBoundSellFishPacket())
+        self.btn_sell.text = "Vendre tous les poissons - 0$"
 
     def buy_upgrade(self):
         menu.show("upgrade")

@@ -38,9 +38,16 @@ from client.packet.serverbound import ServerBoundRequestFishingPacket
 def custom_quit():
     print("quit")
     if data.network:
-        print("Disconnecting from server...")
-        data.network.disconnect()
-    save.save_global_data()
+        net = data.network
+        data.network = None 
+        try:
+            net.disconnect()
+        except:
+            pass
+    try:
+        save.save_global_data()
+    except:
+        pass
 
 app = Ursina()
 appli.quit = custom_quit
@@ -57,8 +64,7 @@ window.color = color.gray
 _sun_light = DirectionalLight(shadows=True)
 _sun_light.look_at(Vec3(0.1,-1,0))
 _sun_light._light.specular_color = color.gold
-_ambient_light = AmbientLight(color=color.rgba(0.3, 0.28, 0.25, 0.5))
-
+_ambient_light = AmbientLight(color=color.rgba(0.31, 0.28, 0.25, 0.5))
 
 def enter_fishing():
     data.iris.play(on_black=_enter_black)
@@ -72,7 +78,9 @@ def _enter_black():
 def on_fishing_end(result):
     data.iris.play(on_black=_exit_black)
 
-shop_interact_text = Text(text="'E' to interact", enabled=False, position=(0, -0.4), origin=(0,0), scale=2, font = data.fisho_font)
+interact_text = Text(text="Appuyez sur 'E' pour interagir", enabled=False, position=(0, -0.4), origin=(0,0), scale=2, font = data.fisho_font)
+shop_done = False
+fish_done = False
 
 def update():
     player = data.player
@@ -90,29 +98,37 @@ def update():
         fishing_scene.update()
         return
     
-    shopkeeper = world.shopkeeper
-    if data.player and shopkeeper:
-        d = distance(data.player.position, shopkeeper.get_pos())
-        
-        if d < 5:
-            if not shop_interact_text.enabled:
-                shop_interact_text.enabled = True
-            
-            if held_keys['e']:
+    global shop_done, fish_done
+    show_interact = False
+
+    if data.player and world.shopkeeper:
+        dist_shop = distance(data.player.position, world.shopkeeper.get_pos())
+        if dist_shop < 4:
+            if held_keys['e'] and not shop_done:
                 open_shop_dialogue()
+                shop_done = True
+            
+            if not shop_done:
+                show_interact = True
         else:
-            if shop_interact_text.enabled:
-                shop_interact_text.enabled = False
-    
+            shop_done = False
+
     if distance(spot.position, player.position) < spot.interaction_range:
-        if held_keys['e']:
+        if held_keys['e'] and not fish_done:
             enter_fishing()
+            fish_done = True
+        
+        if not fish_done:
+            show_interact = True
+            spot.color = color.lime
         else:
-            spot.color = color.yellow
+            spot.color = color.white
     else:
         spot.color = color.white
-    
-    # Check if the camera is clipping anywhere
+        fish_done = False
+
+    interact_text.enabled = show_interact
+
     direction = camera.forward * -1
     offset_clipping = 0.05
     hit_camera = raycast(player.camera_pivot.world_position, direction, -player.camera_offset+offset_clipping, ignore=[player, camera, spot])

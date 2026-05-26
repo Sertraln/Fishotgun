@@ -33,10 +33,11 @@ def set_static_color(color:color):
     '''
 
 class FixedButton(Button):
-    def __init__(self, **kwargs):
+    def __init__(self, origin: Vec2 = Vec2(0, 0), **kwargs):
         super().__init__(**kwargs)
         if self.text_entity:
             self.text_entity.position = Vec3(0,0,-1)
+            self.origin = origin
             self.text_entity.font = data.fisho_font
             #print(type(self.text_entity))  # vérifie le type
             #print(self.children)

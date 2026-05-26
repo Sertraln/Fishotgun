@@ -1,10 +1,12 @@
+from turtle import pos
+
 from ursina import *
 from math import pi,atan2,sqrt,degrees,sin,cos
 from random import randrange, shuffle
 
 import os
 import sys
-# Ensure project root is on sys.path so sibling packages like `shared` can be imported
+# Ensure project root is on sys.path so sibling packages like `shared` can be imported <--
 _ROOT = os.path.dirname(os.path.dirname(__file__))
 if _ROOT not in sys.path:
     sys.path.insert(0, _ROOT)
@@ -39,6 +41,7 @@ class Fish(Entity):
         self.fish_id = fish_id
         self.model = 'plane'
         self.texture = SHADOW_MAP.get(fish_category)
+        self.model.setShaderOff()
         self.texture_scale = (1, 1)
         self.speedrot = fish_type['speedrot']
         self.scale = fish_type['scale']
@@ -74,7 +77,7 @@ class Fish(Entity):
             self.set_rotation(self.angle - speed)
         return False
 
-
+_water_time_start = None
 class FishingScene:
     BAR_X = 0.8
     BAR_BOTTOM = -0.3
@@ -99,6 +102,7 @@ class FishingScene:
         self._hp_text = None
         self._press_bar_bg = None
         self._press_bar = None
+        #self._saved_cam_fov = camera.fov
 
     def start(self, server_fish_ids: list[int]):
         self.enabled = True
@@ -108,14 +112,26 @@ class FishingScene:
         self._pressure = 0.8
         self._saved_cam_pos = camera.position
         self._saved_cam_rot = camera.rotation
-        self._saved_cam_fov = camera.fov
 
         camera.position = (0, Y_OFFSET, 0)
         camera.rotation = (90, 0, 0)
-        camera.fov      = 60
+        #camera.fov = 60
 
-        y = Y_OFFSET - 19
-        water = Entity(model='plane', texture='assets/textures/water.png', scale=30, position=(0, Y_OFFSET-20, 0), rotation=(0,0,0), texture_scale=(5,5))
+        self.parallax_container = Entity()
+
+        y = Y_OFFSET - 10
+        water = Entity(model='plane', texture='assets/textures/water.png', scale=50, position=(0, Y_OFFSET-13, 0), rotation=(0,0,0), texture_scale=(1,1))
+
+        water.model.set_shader_input("texScale", 32.0)
+        water_shader_path = application.asset_folder / 'assets' / 'shader' / 'water.fsh'
+        water_shader_fragment = water_shader_path.read_text(encoding='utf-8')
+
+        water_shader = Shader(name="water", vertex=data.default_vertex, fragment=water_shader_fragment)
+        water_shader.compile()
+        water.model.setShader(water_shader._shader)
+        self._water_time_start = time.perf_counter()
+        water.model.set_shader_input("iTime", 0.0)
+        self._water_entity = water
 
         spawns = [(-4, y, -4), (4, y, -4), (-4, y, 4), (4, y, 4)]
         self._pairs = []
@@ -134,7 +150,7 @@ class FishingScene:
             else:
                 ftype = FishType.ABONDANTS
 
-            fish = Fish(f_id,position=pos, rotation=(0,0,0), fish_type=ftype, category=fish_list[f_id].category)
+            fish = Fish(f_id,position=pos, rotation=(0,0,0), fish_type=ftype, category=fish_list[f_id].category, parent=self.parallax_container)
 
             point = Entity(model='sphere', position=(pos[0], y, pos[2]), alpha=0)
             fish.on_click = lambda f=fish: self._on_fish_click(f)
@@ -192,7 +208,7 @@ class FishingScene:
                     self._caught_fish_name = fish_list[0].name
             except Exception as e:
                 print(f"Erreur FishoDex local : {e}")
-                self._caught_fish_name = "Unknown Fish"
+                self._caught_fish_name = "Poisson Inconnu"
             self.request_stop()
 
     def _select(self, chosen_fish:Fish):
@@ -245,10 +261,30 @@ class FishingScene:
         self._stopping = True
         if self.on_end:
             self.on_end('caught')
+    
+    def update_parallax(self):
+        screen_ratio = 1.778
+        limit_y = 0.5
+        limit_x = 0.5 * screen_ratio
+
+        target_x = max(min(mouse.x, limit_x), -limit_x)
+        target_z = max(min(mouse.y, limit_y), -limit_y)
+        
+        self.parallax_container.x = lerp(self.parallax_container.x, -target_x * 2.0, time.dt * 10)
+        self.parallax_container.z = lerp(self.parallax_container.z, -target_z * 2.0, time.dt * 10)
+        
+        if hasattr(self, '_water_entity'):
+            self._water_entity.x = -target_x
+            self._water_entity.z = -target_z
 
     def update(self):
         if not self.enabled or self._stopping:
             return
+        self.update_parallax()
+        if hasattr(self, '_water_entity') and self._water_entity:
+            t = time.perf_counter() - self._water_time_start
+            self._water_entity.model.set_shader_input("iTime", t % 4096.0)
+
         for fish in self._fleeing:
             dx, dz = fish.flee_dir
             fish.position = (
@@ -279,11 +315,13 @@ class FishingScene:
     def stop(self):
         if not self.enabled:
             return
-        self.enabled   = False
+        self.enabled = False
         self._stopping = False
+
         camera.position = self._saved_cam_pos
         camera.rotation = self._saved_cam_rot
-        camera.fov      = self._saved_cam_fov
+        #camera.fov = self._saved_cam_fov
+
         for e in self._entities:
             destroy(e)
         self._entities = []
@@ -301,24 +339,17 @@ class FishingScene:
         self._label_top = None
         self._label_bot = None
 
+        bannertext = "Le poisson a fui... La prochaine fois sera la bonne!"
         if hasattr(self, '_caught_fish_name') and self._caught_fish_name:
-            banner = menu.FixedButton(
-                text=f"You caught a {self._caught_fish_name} !!",
-                position=(0, -0.4),
-                scale=(0.1,0.1),
-                color=color.rgba(255, 255, 255, 0),
-                parent=camera.ui,
-                ignore_paused=True
-            )
-            destroy(banner, delay=2.5)
+            bannertext = f"Tu as attrapé un {self._caught_fish_name} !!"
             self._caught_fish_name = None
-        else:
-            banner = menu.FixedButton(
-                text=f"You missed the fish... Better luck next time !",
-                position=(0, -0.4),
+
+        banner = menu.FixedButton(
+                text=bannertext,
+                position=(0, 0.4),
                 scale=(0.1,0.1),
                 color=color.rgba(255, 255, 255, 0),
                 parent=camera.ui,
                 ignore_paused=True
             )
-            destroy(banner, delay=2.5)
+        destroy(banner, delay=2.5)

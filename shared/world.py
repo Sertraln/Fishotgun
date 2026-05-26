@@ -68,7 +68,7 @@ def init_world(base_scene:'NodePath'=None):
     global ground
     ground = Entity(
         model= "assets/models/terrain.obj",
-        scale=Vec3(3),
+        scale=3,
         texture_scale=(10, 10),
         # collider='box',
         # texture=Texture('assets/textures/grass.png'),
@@ -101,7 +101,7 @@ def init_world(base_scene:'NodePath'=None):
     attach_world_bodies(world_scene.bullet_world, base_scene)
     return world_scene
 
-scale_factor = 3
+scale_factor = 3 # DONT CHANGE
 
 def spawn_trees():
     _ROOT = os.path.dirname(os.path.dirname(__file__))
@@ -116,9 +116,9 @@ def spawn_trees():
             for row in reader:
                 Entity(
                     model='assets/models/tree.glb',
-                    position=(-float(row['x'])*scale_factor, 2.4668*2, -float(row['y'])*scale_factor),
+                    position=(-float(row['x'])*scale_factor, 2.4668*scale_factor, -float(row['y'])*scale_factor),
                     rotation_y=float(row['rotation_z_deg']),
-                    scale=2,
+                    scale=scale_factor,
                     collider='box',
                     parent=world_scene
                 )

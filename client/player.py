@@ -316,6 +316,8 @@ class ThirdPersonController(Player):
         
     def _send_input(self):
         new_packet = ServerBoundMovementPacket(self._last_input, self._last_input_time)
+        if data.network is None:
+            return
         data.network.send(new_packet)
     
         
