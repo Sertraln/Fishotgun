@@ -18,23 +18,24 @@ class FishList(Flag):
     CREVETTE = auto()
     MOULE = auto()
     CRABE = auto()
-    ARAIGNEE_DE_MER = auto()
     HOMARD = auto()
+    ARAIGNEE_DE_MER = auto()
     CRACKEN = auto()
     #Sharks
-    REQUIN_BLANC = auto()
-    TRALALERO_TRALALA = auto()
-    REQUIN_SCIE = auto()
-    REQUIN_GOBELIN = auto()
     BABY_SHARK = auto()
     REQUIN_TIGRE = auto()
+    REQUIN_SCIE = auto()
+    REQUIN_BLANC = auto()
+    TRALALERO_TRALALA = auto()
+    REQUIN_GOBELIN = auto()
+    
     #Magical fish
     POISSON_ARC_EN_CIEL = auto()
     FISHOBUS = auto()
     POISSON_JOEL = auto()
-    MAGIQUARPE = auto()
     RAIE_ECTOPLASME = auto()
     POISSON_RADIOACTIF = auto()
+    MAGIQUARPE = auto()
 
     def get_size() -> int:
         return (len(FishList) + 7) // 8

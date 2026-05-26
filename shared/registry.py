@@ -4,14 +4,13 @@ from ursina import color,Color
 
 class Rarity(EnumDict):
     ABONDANTS = (color.white, "Abondants", 100)
-    DISCRETS = (color.blue, "Discrets", 300)
-    INSAISISSABLES = (color.gold, "Insaississables", 1000)
+    DISCRETS = (color.gold, "Discrets", 300)
+    INSAISISSABLES = (color.violet, "Insaississables", 1000)
 
     def __init__(self, color:'Color', name:str, sell_price:int):
         self.color = color
         self.name = name
         self.sell_price = sell_price
-
 
 class FishData:
     def __init__(self, fish: FishList, id: str, name: str, description: str, rarity: Rarity, category: str):
