@@ -1,11 +1,13 @@
 import os
 import sys
+
 # Ensure project root is on sys.path so sibling packages like `shared` can be imported
 _ROOT = os.path.dirname(os.path.dirname(__file__))
 if _ROOT not in sys.path:
     sys.path.insert(0, _ROOT)
 
 import ursina.shader as shader
+
 
 test_vertex = '''
 #version 120
@@ -34,6 +36,10 @@ import client.save as save
 import menus
 from client.shop import open_shop_dialogue
 from client.packet.serverbound import ServerBoundRequestFishingPacket
+# from client.music_manager import MusicManager
+
+# music_manager = MusicManager()
+
 
 def custom_quit():
     print("quit")
@@ -84,6 +90,8 @@ fish_done = False
 
 def update():
     world.update()
+
+    # music_manager.update()
 
     if hasattr(data, 'iris') and data.iris._state != data.iris.IDLE:
         data.iris.update()

@@ -2,6 +2,7 @@ from typing import TYPE_CHECKING
 from ursina import application,Path,Audio
 import sys
 import os
+import random
 
 def resource_path(relative_path):
     """ Get absolute path to resource, works for dev and for Nuitka/PyInstaller """
@@ -46,13 +47,7 @@ main_theme = Audio(
     volume=0.6,
     ignore_paused=True
 )
-life_is_awesome = Audio(
-    resource_path("assets/musics/life_is_awesome.wav"),
-    autoplay=False,
-    loop=True,
-    volume=0.4,
-    ignore_paused=True
-)
+
 birds = Audio(
     resource_path("assets/musics/birds.wav"),
     autoplay=False,
@@ -60,6 +55,110 @@ birds = Audio(
     volume=0.2,
     ignore_paused=True
 )
+
+life_is_awesome = Audio(
+    resource_path("assets/musics/life_is_awesome.wav"),
+    autoplay=False,
+    loop=False,
+    volume=0.4,
+    ignore_paused=True
+)
+
+casino_magouilles = Audio(
+    resource_path("assets/musics/casino_magouilles.wav"),
+    autoplay=False,
+    loop=False,
+    volume=0.4,
+    ignore_paused=True
+)
+
+life_is_awesome_v2 = Audio(
+    resource_path("assets/musics/life_is_awesome_v2.wav"),
+    autoplay=False,
+    loop=False,
+    volume=0.4,
+    ignore_paused=True
+)
+
+flying_away_bossa = Audio(
+    resource_path("assets/musics/flying_away_bossa.wav"),
+    autoplay=False,
+    loop=False,
+    volume=0.4,
+    ignore_paused=True
+)
+
+flying_away = Audio(
+    resource_path("assets/musics/flying_away.wav"),
+    autoplay=False,
+    loop=False,
+    volume=0.4,
+    ignore_paused=True
+)
+
+kalimba = Audio(
+    resource_path("assets/musics/kalimba.wav"),
+    autoplay=False,
+    loop=False,
+    volume=0.4,
+    ignore_paused=True
+)
+
+pouette_pouette = Audio(
+    resource_path("assets/musics/pouette_pouette.wav"),
+    autoplay=False,
+    loop=False,
+    volume=0.4,
+    ignore_paused=True
+)
+
+road_story = Audio(
+    resource_path("assets/musics/road_story.wav"),
+    autoplay=False,
+    loop=False,
+    volume=0.4,
+    ignore_paused=True
+)
+
+shot = Audio(
+    resource_path("assets/musics/shot.wav"),
+    autoplay=False,
+    loop=False,
+    volume=0.4,
+    ignore_paused=True
+)
+
+take_a_nap = Audio(
+    resource_path("assets/musics/take_a_nap.wav"),
+    autoplay=False,
+    loop=False,
+    volume=0.4,
+    ignore_paused=True
+)
+
+the_bus_crashed = Audio(
+    resource_path("assets/musics/the_bus_crashed.wav"),
+    autoplay=False,
+    loop=False,
+    volume=0.4,
+    ignore_paused=True
+)
+
+music_playlist = [
+    birds, casino_magouilles, life_is_awesome, life_is_awesome_v2,
+    flying_away_bossa, flying_away, kalimba, pouette_pouette,
+    road_story, take_a_nap, the_bus_crashed
+]
+current_music = None
+
+def play_random_music():
+    global current_music
+    if current_music:
+        current_music.stop()
+    choices = [m for m in music_playlist if m != current_music]
+    current_music = random.choice(choices)
+    current_music.play()
+
 
 #const
 fisho_font = resource_path("assets/font/FishoFont.ttf")

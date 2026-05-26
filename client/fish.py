@@ -458,7 +458,7 @@ class FishingScene:
         mouse.hotspot = (0, 0)
         mouse.visible = True
 
-        bannertext = "Le poisson a fui... La prochaine fois sera la bonne!"
+        bannertext = "Le poisson a fuit... La prochaine fois sera la bonne!"
         text_color = color.white
         fish_id = None
         

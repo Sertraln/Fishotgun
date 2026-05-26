@@ -12,6 +12,10 @@ import time
 from panda3d.core import PandaNode, NodePath
 from direct.actor.Actor import Actor
 import copy
+from client.music_manager import MusicManager
+
+music_manager = MusicManager()
+
 
 _sky_entity = None
 _water_time_start = None
@@ -30,7 +34,8 @@ class WorldScene(Entity):
         print("main_theme.play()")
         #manage music
         data.main_theme.play()
-        data.life_is_awesome.stop()
+        # data.life_is_awesome.stop()
+        music_manager.pause_playlist()
         data.birds.stop()
 
     def enable(self):
@@ -40,7 +45,8 @@ class WorldScene(Entity):
         menu._background_menu.disable()
         #manage music
         data.main_theme.stop()
-        data.life_is_awesome.play()
+        # data.life_is_awesome.play()
+        music_manager.start()
         invoke(data.birds.play, delay=3)
         
 
