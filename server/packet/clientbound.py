@@ -71,3 +71,7 @@ class ClientBoundFishingSessionPacket(ClientBoundDataPacket):
 class ClientBoundUpdateMoneyPacket(ClientBoundDataPacket):
     def __init__(self, money:int):
         super().__init__(money)
+
+class ClientBoundUpdateLevelPacket(ClientBoundDataPacket):
+    def __init__(self, level:int):
+        super().__init__(level)

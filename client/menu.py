@@ -29,7 +29,6 @@ def set_static_color(color:color):
     void main() {{
         gl_FragColor = vec4(1.0)*texture2D(p3d_Texture0, uv) + vec4({color[0]},{color[1]},{color[2]},0.0);
     }}
-
     '''
 
 class FixedButton(Button):
