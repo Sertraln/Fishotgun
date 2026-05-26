@@ -113,7 +113,7 @@ def spawn_trees():
             reader = csv.DictReader(f, delimiter=';')
             for row in reader:
                 Entity(
-                    model='assets/models/tree.glb',
+                    model='assets/models/Tree.glb',
                     position=(-float(row['x'])*scale_factor, 2.4668*scale_factor*1.5, -float(row['y'])*scale_factor),
                     rotation_y=float(row['rotation_z_deg']),
                     scale=(scale_factor, scale_factor*1.5, scale_factor),
