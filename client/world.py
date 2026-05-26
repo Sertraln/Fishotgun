@@ -92,7 +92,7 @@ def join_world(ip:str, port:int, name:str) -> Exception | None:
 
 def init_assets():
     global _sky_entity, _water_time_start
-    water_shader_path = data.resource_path('assets/shader/water.fsh')
+    water_shader_path = application.asset_folder / data.resource_path('assets/shader/water.fsh')
     water_shader_fragment = Path(water_shader_path).read_text(encoding='utf-8')
     _sky_entity = Sky(color=color.violet,parent=_world)
     world.init_world(_world)

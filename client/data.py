@@ -15,7 +15,8 @@ def resource_path(relative_path):
         return os.path.join(base_path, relative_path)
     else:
         # Development mode
-        return os.path.join('client', relative_path)
+        print("Using development resource path")
+        return relative_path
 
 if TYPE_CHECKING:
     from client.player import ThirdPersonController
