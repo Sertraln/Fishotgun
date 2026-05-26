@@ -114,8 +114,9 @@ class FishingScene:
         self._saved_cam_pos = camera.position
         self._saved_cam_rot = camera.rotation
 
-        camera.position = (0, Y_OFFSET, 0)
-        camera.rotation = (90, 0, 0)
+        camera.world_position = (0, Y_OFFSET, 0)
+        camera.world_rotation = (90, 0, 0)
+        data.player.disable()
         #camera.fov = 60
 
         self.parallax_container = Entity()
@@ -321,6 +322,7 @@ class FishingScene:
 
         camera.position = self._saved_cam_pos
         camera.rotation = self._saved_cam_rot
+        data.player.enable()
         #camera.fov = self._saved_cam_fov
 
         for e in self._entities:

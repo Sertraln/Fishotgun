@@ -304,8 +304,7 @@ class ThirdPersonController(Player):
         mouse.locked = False
         if hasattr(self, 'cursor') and self.cursor:
             self.cursor.enabled = False
-        self._original_camera_transform = camera.transform  # store original position and rotation
-        camera.world_parent = scene
+        camera.parent = scene
         camera.scale = Vec3(1, 1, 1)
 
     #probably useless but keep for now
