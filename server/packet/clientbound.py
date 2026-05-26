@@ -19,10 +19,11 @@ class ClientBoundIdPacket(ClientBoundPacket):
 
 class ClientBoundInitPlayerPacket(ClientBoundDataPacket):
     def __init__(self,player:'Player'):
-        super().__init__(player.position,player.fish_inventory,player.currency)
+        super().__init__(player.position,player.fish_inventory,player.currency,player.level)
         self.position = player.position
         self.fishunlocked = player.fish_inventory
         self.currency = player.currency
+        self.level = player.level
 
 class ClientBoundMessagePacket(ClientBoundDataPacket):
     def __init__(self,origine:str, message:str):

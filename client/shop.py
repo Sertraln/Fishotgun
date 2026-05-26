@@ -5,15 +5,14 @@ from client.packet.serverbound import ServerBoundSellFishPacket
 import client.data as data
 
 class UpgradeItem(Entity):
-    def __init__(self, name, level, max_level=10, **kwargs):
+    def __init__(self, max_level=10, **kwargs):
         super().__init__(**kwargs)
-        self.level = level
         self.max_level = max_level
         self.icon = Entity(parent=self, model='quad', texture="assets/textures/Shotgun.png",scale=(0.6, 0.6), position=(-0.4, -0.1))
         self.btn = Button(parent=self, text="Upgrade", scale=(0.2, 0.1), position=(0.4, 0))
         self.btn.on_click = self.upgrade
-        self.level_bar = Entity(parent=self, model='quad', color=color.gray, scale=(0.05, 0.6), position=(-0.1, 0))
-        self.progress_bar = Entity(parent=self.level_bar, model='quad', color=color.green, scale_y=0, origin_y=-0.5, position=(0, -0.5))
+        data.player.level_bar = Entity(parent=self, model='quad', color=color.gray, scale=(0.05, 0.6), position=(-0.1, 0))
+        self.progress_bar = Entity(parent=data.player.level_bar, model='quad', color=color.green, scale_y=0, origin_y=-0.5, position=(0, -0.5))
         self.dmg_text = Text(
             text="", 
             parent=self, 
@@ -36,29 +35,28 @@ class UpgradeItem(Entity):
         return 5 + (level * 5)
 
     def update_level_bar(self):
-        self.progress_bar.scale_y = self.level / self.max_level
+        self.progress_bar.scale_y = data.player.level / self.max_level
 
-        current_dmg = self.get_dmg(self.level)
-        if self.level < self.max_level:
-            next_dmg = self.get_dmg(self.level + 1)
+        current_dmg = self.get_dmg(data.player.level)
+        if data.player.level < self.max_level:
+            next_dmg = self.get_dmg(data.player.level + 1)
             self.dmg_text.text = f"{current_dmg} -> {next_dmg} DMG"
         else:
             self.dmg_text.text = f"{current_dmg} DMG (MAX)"
-        if self.level < self.max_level:
-            self.lvl_text.text = f"Lvl.{self.level}"
+        if data.player.level < self.max_level:
+            self.lvl_text.text = f"Lvl.{data.player.level}"
         else:
-            self.lvl_text.text = f"Lvl.{self.level} (MAX)"
+            self.lvl_text.text = f"Lvl.{data.player.level} (MAX)"
 
     def upgrade(self):
-        if self.level < self.max_level:
-            self.level += 1
+        if data.player.level < self.max_level:
             self.update_level_bar()
 
 class UpgradeMenu(menu.Menu):
     def __init__(self):
         super().__init__("upgrade", pause=True)
         self.bg = Entity(parent=self, model='quad', color=color.rgba(0, 0, 0, 0.5), scale=(1.5, 0.8), position=(0, 0))
-        self.shotgun_item = UpgradeItem(name="Shotgun", level=1, parent=self, position=(0, 0.1))
+        self.shotgun_item = UpgradeItem(name="Shotgun", parent=self, position=(0, 0.1))
         self.add_element(self.shotgun_item)
         self.btn_back = FixedButton(text="Back", scale=(0.2, 0.1), position=(0, -0.3))
         self.btn_back.on_click = lambda: menu.show("shop")

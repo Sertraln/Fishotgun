@@ -37,3 +37,6 @@ class ServerBoundCatchFishPacket(ServerBoundDataPacket):
 
 class ServerBoundSellFishPacket(ServerBoundPacket):
     pass
+
+class ServerBoundUpgradePacket(ServerBoundPacket):
+    pass

@@ -22,6 +22,7 @@ class Player(Physic):
         self.fish_inventory = FishInventory()
         self._currency: int = 0
         self.position = Vec3(0, 0, 0)
+        self.level = 0
         self.load()
 
     @property
@@ -66,6 +67,7 @@ class Player(Physic):
                 self.position = Vec3Data.decode(f.read(Vec3Data.size))
                 self.fish_inventory = FishInventory.decode(f.read(FishInventory.size))
                 self.currency = int.from_bytes(f.read(4))
+                self.level = int.from_bytes(f.read(2))
                     
             print(f"Serveur : Profil chargé pour ID {self.unique_id}")
         except FileNotFoundError:
