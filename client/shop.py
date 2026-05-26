@@ -83,7 +83,7 @@ class ShopMenu(menu.Menu):
         self.bg = Entity(parent=self, model='quad', color=color.rgba(0, 0, 0, 0.5), scale=(1.3, 0.4), position=(0, -0.3), z=0)
         self.npc_text_a = Text(text="Hey, t'as des poissons pour moi ?", color=color.white, position=(-0.6, -0.15), scale=1.5, font=data.fisho_font)
         self.npc_text_b = Text(text="Je commence à avoir faim...", color=color.white, position=(-0.6, -0.22), scale=1.5, font=data.fisho_font)
-        self.btn_sell = FixedButton(text="Vendre tous les poissons - 0$", color=color.white, position=(-0.57, -0.33), scale=(0.3, 0.1), origin=(-0.5, 0))
+        self.btn_sell = FixedButton(text="Vendre tous les poissons - 0 <image:assets/textures/fish_scale.png>", color=color.white, position=(-0.57, -0.33), scale=(0.3, 0.1), origin=(-0.5, 0))
         self.btn_buy = FixedButton(text="Acheter une amélioration", color=color.white, position=(-0.6, -0.4), scale=(0.3, 0.1), origin=(-0.5, 0))
         self.btn_quit = FixedButton(text="Quitter", color=color.white, position=(-0.72, -0.47), scale=(0.3, 0.1), origin=(-0.5, 0))
 
