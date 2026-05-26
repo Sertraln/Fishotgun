@@ -7,7 +7,7 @@ from ursina import Vec3
 import server.data as data
 from shared.parsedata.vec3data import Vec3Data
 from shared.parsedata.fishlist import FishInventory, FishList
-from server.packet.clientbound import ClientBoundAddFishPacket, ClientBoundClearInventoryPacket,ClientBoundUpdateMoneyPacket
+from server.packet.clientbound import ClientBoundAddFishPacket, ClientBoundClearInventoryPacket,ClientBoundUpdateMoneyPacket,ClientBoundUpdateLevelPacket
 if TYPE_CHECKING:
     from server.client import Client
     from shared.registry import FishData
@@ -22,8 +22,17 @@ class Player(Physic):
         self.fish_inventory = FishInventory()
         self._currency: int = 0
         self.position = Vec3(0, 0, 0)
-        self.level = 0
+        self._level = 0
         self.load()
+
+    @property
+    def level(self) -> int:
+        return self._level
+    
+    @level.setter
+    def level(self, value: int):
+        self._level = value
+        self.client.send(ClientBoundUpdateLevelPacket(self._level)) 
 
     @property
     def currency(self) -> int:
@@ -55,6 +64,7 @@ class Player(Physic):
                 f.write(Vec3Data.encode(self.position))
                 f.write(FishInventory.encode(self.fish_inventory))
                 f.write(self.currency.to_bytes(4))
+                f.write(self.level.to_bytes(2))
             print(f"Serveur : Profil sauvegardé pour ID {self.unique_id}")
         except Exception as e:
             print(f"Serveur : Erreur sauvegarde {self.unique_id} : {e}")

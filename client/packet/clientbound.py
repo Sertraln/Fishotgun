@@ -156,3 +156,11 @@ class ClientBoundUpdateMoneyPacket(ClientBoundDataPacket):
     def handle(self):
         if hasattr(data, 'player') and data.player:
             data.player.currency = self.currency
+
+class ClientBoundUpdateLevelPacket(ClientBoundDataPacket):
+    def __init__(self,data:list):
+        super().__init__(data)
+        self.level : int = data[0]
+
+    def handle(self):
+        print("client : upgrade received", flush=True)
