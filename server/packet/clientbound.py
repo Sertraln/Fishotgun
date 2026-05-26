@@ -19,9 +19,11 @@ class ClientBoundIdPacket(ClientBoundPacket):
 
 class ClientBoundInitPlayerPacket(ClientBoundDataPacket):
     def __init__(self,player:'Player'):
-        super().__init__(player.position,player.fish_unlocked)
+        super().__init__(player.position,player.fish_inventory,player.currency,player.level)
         self.position = player.position
-        self.fishunlocked = player.fish_unlocked
+        self.fishunlocked = player.fish_inventory
+        self.currency = player.currency
+        self.level = player.level
 
 class ClientBoundMessagePacket(ClientBoundDataPacket):
     def __init__(self,origine:str, message:str):
@@ -53,4 +55,23 @@ class ClientBoundPlayerPositionPacket(ClientBoundDataPacket):
 class ClientBoundReconcilePositionPacket(ClientBoundDataPacket):
     def __init__(self, timestamp:int, position:'Vec3'):
         super().__init__(timestamp,position)
-    
+
+class ClientBoundAddFishPacket(ClientBoundDataPacket):
+    def __init__(self, fish_id:int):
+        super().__init__(fish_id)
+
+class ClientBoundClearInventoryPacket(ClientBoundPacket):
+    def __init__(self):
+        super().__init__()
+
+class ClientBoundFishingSessionPacket(ClientBoundDataPacket):
+    def __init__(self, fish_ids: list[int]):
+        super().__init__(fish_ids)
+
+class ClientBoundUpdateMoneyPacket(ClientBoundDataPacket):
+    def __init__(self, money:int):
+        super().__init__(money)
+
+class ClientBoundUpdateLevelPacket(ClientBoundDataPacket):
+    def __init__(self, level:int):
+        super().__init__(level)

@@ -10,10 +10,10 @@
 
 #define M_2PI 6.283185307
 #define M_6PI 18.84955592
-#define WATER_UV_SCALE 128.0
 #define amount 4800.0
 
 uniform float iTime;
+uniform float texScale;
 varying vec2 uv;
 
 float circ(vec2 pos, vec2 c, float s)
@@ -146,6 +146,6 @@ void main()
 {
     // Use mesh UVs so the animation is attached to the model, not the screen.
     vec2 model_uv = round_compat(uv * float(amount)) / float(amount);
-    model_uv *= WATER_UV_SCALE;
+    model_uv *= texScale;
     gl_FragColor = vec4(water(model_uv, vec3(0.0, 1.0, 0.0)), 1.0);
 }

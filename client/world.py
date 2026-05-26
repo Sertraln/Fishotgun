@@ -1,4 +1,5 @@
 from client import data,menu,network
+import os, csv
 from client.menus.chat import Chat
 from client.spot import FishingSpot
 from ursina import Shader,Button,destroy,color,Sky,mouse,Vec3,Text,camera,scene,application,Entity,invoke,Path
@@ -9,6 +10,7 @@ from client.transitions import IrisTransition,_exit_black
 from client.fish import FishingScene
 import time
 from panda3d.core import PandaNode, NodePath
+from direct.actor.Actor import Actor
 import copy
 
 _sky_entity = None
@@ -30,20 +32,23 @@ class WorldScene(Entity):
         data.main_theme.play()
         data.life_is_awesome.stop()
         data.birds.stop()
+        data.hud.disable()
 
     def enable(self):
         print("Enabling world scene")
         super().enable()
         self.ui.enable()
         menu._background_menu.disable()
+        data.hud.enable()
         #manage music
         data.main_theme.stop()
         data.life_is_awesome.play()
         invoke(data.birds.play, delay=3)
         
 
-_world = WorldScene()
+_world =None
     
+shopkeeper = None
 
 class World:
     def __init__(self):
@@ -54,6 +59,7 @@ class World:
     def spawn_player(self,player_id:int,name:str,position:Vec3,rotation:float=0):
         print(f"World: spawning player {player_id} at {position}")
         new_player = Player(player_id,name=name,position=position)
+        data.player = new_player
         new_player.rotation_y = rotation
         self.players[player_id] = new_player
 
@@ -90,8 +96,29 @@ def join_world(ip:str, port:int, name:str) -> Exception | None:
     load_world()
     return None
 
+def spawn_spots(l):
+    _ROOT = os.path.dirname(os.path.dirname(__file__))
+    file_path = os.path.join(_ROOT, 'shared', 'data', 'pdpeche.csv')
+    scale_factor = 3
+    
+    if not os.path.exists(file_path):
+        print(f"Erreur : Le fichier est introuvable à : {file_path}")
+        return
+
+    with open(file_path, mode='r', encoding='utf-8') as f:
+            reader = csv.DictReader(f, delimiter=';')
+            for row in reader:
+                l.append(FishingSpot(
+                    position=(-float(row['x'])*scale_factor, 2, -float(row['y'])*scale_factor),
+                    color = color.rgba(0, 0, 0, 0),
+                    parent=scene
+                ))
+
 def init_assets():
-    global _sky_entity, _water_time_start
+    from client.menus.hud import Hud
+    global _sky_entity, _water_time_start,_world
+    _world = WorldScene()
+    data.hud.parent = _world.ui
     water_shader_path = application.asset_folder / data.resource_path('assets/shader/water.fsh')
     water_shader_fragment = Path(water_shader_path).read_text(encoding='utf-8')
     _sky_entity = Sky(color=color.violet,parent=_world)
@@ -110,28 +137,31 @@ def init_assets():
     )
     spot = FishingSpot(position=(0,2,0),parent=_world)
     data.world_entities = [spot]
+    data.world_entities = []
+    spawn_spots(data.world_entities)
     camera.fov = 90
 
     data.iris = IrisTransition(close_duration=0.8, black_duration=0.5, open_duration=0.8)
 
-    
     def on_fishing_end(result):
         data.iris.play(on_black=_exit_black)
 
     data.fishing_scene = FishingScene(on_end=on_fishing_end)
-    spot.set_scene(data.fishing_scene)
     #loading textures
     world.ground.texture = 'assets/textures/grass.png'
     world.ground.texture_scale = (64,64)
+
     world.water.texture = 'assets/textures/water.png'
     world.water.texture_scale = (64,64)
     water_shader = Shader(name="water", vertex=data.default_vertex, fragment=water_shader_fragment)
     water_shader.compile()
+    world.water.model.set_shader_input("texScale", 128.0)
     world.water.model.setShader(water_shader._shader)
     _water_time_start = time.perf_counter()
     world.water.model.set_shader_input("iTime", 0.0)
+
     #registering menus
-    menu1 = menu.Menu("menu1", False)
+    menu1 = menu.Menu("menu1", True, True)
     node = copy.deepcopy(menu._background_menu.paper)
     node.parent = menu1
     node.position = (0,0,1)
@@ -147,41 +177,53 @@ def init_assets():
     ChatMenu = Chat()
     menu.register_menu(ChatMenu)
     menu.register_menu(menu1)
+    global shopkeeper
+    shopkeeper = Actor('assets/models/Shopkeeper.glb')
+    shopkeeper.reparent_to(_world)
+    shopkeeper.set_pos(world.get_shopkeeper_pos())
+    shopkeeper.set_hpr(90, 360, 0)
+    shopkeeper.set_scale(1.2)
+    shopkeeper.name = 'shopkeeper'
+    shopkeeper.loop('idle')
+    
 
 def load_world():
     _world.enable()
 
 def quit_to_menu():
-    from ursina import destroy
-    from client.packet.clientbound import ClientBoundInitPlayerPacket
+    def on_black():
+        from ursina import destroy
+        from client.packet.clientbound import ClientBoundInitPlayerPacket
 
-    menu.show("main_menu")
-    menu.show_background()
-    _world.disable()
+        menu.show("main_menu")
+        menu.show_background()
+        _world.disable()
 
-    if data.network is not None:
-        # Avoid recursive quit_to_menu calls from Network.disconnect().
-        data.network.disconnect(trigger_quit_to_menu=False)
+        if data.network is not None:
+            data.network.disconnect(trigger_quit_to_menu=False)
+            data.network = None
 
-    if data.player:
-        try:
-            data.player.disable()
-        except Exception:
-            pass
-        destroy(data.player)
-        data.player = None
+        if data.player:
+            try:
+                data.player.disable()
+            except Exception:
+                pass
+            destroy(data.player)
+            data.player = None
 
-    if data.world is not None:
-        data.world.players.clear()
+        if data.world is not None:
+            data.world.players.clear()
 
-    # Prevent stale references across sessions.
-    ClientBoundInitPlayerPacket.player = None
+        data.world_entities.clear()
+        ClientBoundInitPlayerPacket.player = None
+
+    # Lance la transition en passant la fonction on_black comme callback
+    data.iris.play(on_black=on_black)
 
 def update():
     if not world.water or not world.water.model:
         return
 
-    # Relative monotonic time keeps animation smooth on GLSL 120 by avoiding huge epoch values.
     if _water_time_start is None:
         t = 0.0
     else:
@@ -189,5 +231,4 @@ def update():
 
     world.water.model.set_shader_input("iTime", t % 4096.0)
 
-# Initialize the world instance after defining the World class
 data.world = World()

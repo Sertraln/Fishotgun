@@ -7,7 +7,8 @@ from shared.packetlib import HandlelingExeption,ParsingException,UncompletePacke
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from main import Server
+    from server.main import Server
+    from server.player import Player
 
 class Client:
     def __init__(self,conn:socket.socket,ip ,id:int,server:'Server'):
@@ -19,6 +20,10 @@ class Client:
         self.stopevent = self.server.stopevent
         self.buffer = b""
         
+
+    @property
+    def player(self)-> 'Player':
+        return self.server.world.players.get(self.id)
 
     def send(self,packet:ClientBoundPacket):
         try:
@@ -71,6 +76,7 @@ class Client:
     
     def kick(self):
         self.server.world.left_player(self.id)
+        self.conn.shutdown(socket.SHUT_RDWR)
         self.conn.close()
         
 

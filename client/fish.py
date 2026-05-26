@@ -1,5 +1,16 @@
 from ursina import *
 from math import pi,atan2,sqrt,degrees,sin,cos
+from random import randrange
+
+import os
+import sys
+# Ensure project root is on sys.path so sibling packages like `shared` can be imported <--
+_ROOT = os.path.dirname(os.path.dirname(__file__))
+if _ROOT not in sys.path:
+    sys.path.insert(0, _ROOT)
+
+from shared.registry import Rarity
+import client.data as data
 from random import randrange, shuffle
 from client import data
 
@@ -14,17 +25,32 @@ def get_angle(dx, dz):
     return (-degrees(atan2(dz, dx))) % 360
 
 class FishType:
-    WEAK   = {'max_hp': 25,  'speed': 1, 'speedrot': 50, 'scale': 1.3}
-    NORMAL = {'max_hp': 50, 'speed': 3,   'speedrot': 70, 'scale': 1.0}
-    STRONG = {'max_hp': 100, 'speed': 5, 'speedrot': 90, 'scale': 0.7}
+    ABONDANTS   = {'max_hp': 200,  'speed': 4, 'speedrot': 50, 'scale': 1.0}
+    DISCRETS = {'max_hp': 500, 'speed': 4,   'speedrot': 80, 'scale': 0.6}
+    INSAISISSABLES = {'max_hp': 1200, 'speed': 16, 'speedrot': 150, 'scale': 2}
+
+RARITY_COLORS = {
+    Rarity.ABONDANTS: color.white,
+    Rarity.DISCRETS: color.blue,
+    Rarity.INSAISISSABLES: color.gold
+}
+
+SHADOW_MAP = {
+    "COMMUN": "assets/textures/fish_shadows/Communs.png",
+    "CRUSTACE": "assets/textures/fish_shadows/Crustacés.png",
+    "REQUIN": "assets/textures/fish_shadows/Requins.png",
+    "MAGIQUE": "assets/textures/fish_shadows/Magiques.png"
+}
 
 class Fish(Entity):
-    def __init__(self, **kwargs):
-        fish_type = kwargs.pop('fish_type', FishType.NORMAL)
-        self.fish_type = fish_type  
+    def __init__(self,fish_id, **kwargs):
+        fish_type = kwargs.pop('fish_type', FishType.ABONDANTS)
+        fish_category = kwargs.pop('category', 'COMMUN')
         super().__init__(**kwargs)
+        self.fish_id = fish_id
         self.model = 'plane'
-        self.texture = 'assets/textures/fish_shadow.png'
+        self.texture = SHADOW_MAP.get(fish_category)
+        self.model.setShaderOff()
         self.texture_scale = (1, 1)
         self.speedrot = fish_type['speedrot']
         self.scale = fish_type['scale']
@@ -82,24 +108,9 @@ class Fish(Entity):
             self.set_rotation(self.angle - speed)
         return False
 
-    def update(self):
-        if not self._splash_playing:
-            return
-        self._splash_timer += time.dt
-        if self._splash_timer > 0.15:
-            self._splash_timer = 0
-            self._splash_frame += 1
-            if self._splash_frame >= 8:
-                self._splash_playing = False
-                self._splash.enabled = False
-                self._splash.texture_offset = (0, 0)
-                return
-            col = self._splash_frame % 4
-            row = self._splash_frame // 4
-            self._splash.texture_offset = (col / 4, 1 - (row + 1) / 2)
-
+_water_time_start = None
 class FishingScene:
-    BAR_X = 0.45
+    BAR_X = 0.8
     BAR_BOTTOM = -0.3
     BAR_TOP = 0.3
     BAR_H = BAR_TOP - BAR_BOTTOM
@@ -109,7 +120,7 @@ class FishingScene:
         self.on_end = on_end
         self.enabled = False
         self._stopping = False
-        self.player_damage = 1
+        self.player_damage = 5
         self._entities = []
         self._pairs = []
         self._fish = None
@@ -122,40 +133,77 @@ class FishingScene:
         self._hp_text = None
         self._press_bar_bg = None
         self._press_bar = None
+        self._cursor = None
 
-    def start(self):
+    def start(self, server_fish_ids: list[int]):
         self.enabled = True
         self._stopping = False
-        self._selected_fish = None
+        self._selected_fish : Fish = None
         self._fleeing = []
         self._pressure = 0.8
         self._saved_cam_pos = camera.position
         self._saved_cam_rot = camera.rotation
-        self._saved_cam_fov = camera.fov
 
-        camera.position = (0, Y_OFFSET, 0)
-        camera.rotation = (90, 0, 0)
-        camera.fov      = 60
+        self.player_damage = 5*data.player.level
 
-        y = Y_OFFSET - 19
-        water = Entity(model='plane', texture='assets/textures/water.png', scale=30, position=(0, Y_OFFSET-20, 0), rotation=(0,0,0),texture_scale=(5,5))
+        mouse.visible = False
+        self._cursor = Entity(
+            parent=camera.ui,
+            model='quad',
+            texture='assets/textures/crosshair.png',
+            scale=0.05,
+            z=-1
+        )
+        mouse.hotspot = (0.5, 0.5)
 
-        types = [FishType.WEAK, FishType.NORMAL, FishType.NORMAL, FishType.STRONG]
-        shuffle(types)
+        camera.world_position = (0, Y_OFFSET, 0)
+        camera.world_rotation = (90, 0, 0)
+        data.player.disable()
+        #camera.fov = 60
+
+        self.parallax_container = Entity()
+
+        y = Y_OFFSET - 10
+        water = Entity(model='plane', texture='assets/textures/water.png', scale=50, position=(0, Y_OFFSET-13, 0), rotation=(0,0,0), texture_scale=(1,1))
+
+        water.model.set_shader_input("texScale", 32.0)
+        water_shader_path = application.asset_folder / 'assets' / 'shader' / 'water.fsh'
+        water_shader_fragment = water_shader_path.read_text(encoding='utf-8')
+
+        water_shader = Shader(name="water", vertex=data.default_vertex, fragment=water_shader_fragment)
+        water_shader.compile()
+        water.model.setShader(water_shader._shader)
+        self._water_time_start = time.perf_counter()
+        water.model.set_shader_input("iTime", 0.0)
+        self._water_entity = water
+
         spawns = [(-4, y, -4), (4, y, -4), (-4, y, 4), (4, y, 4)]
         self._pairs = []
-        for pos, ftype in zip(spawns, types):
-            fish  = Fish(position=pos, rotation=(0,0,0), fish_type=ftype)
+        
+        from shared.registry import fish_list, Rarity
+
+        for pos, f_id in zip(spawns, server_fish_ids):
+            real_rarity = Rarity.ABONDANTS
+            if 0 <= f_id < len(fish_list):
+                real_rarity = fish_list[f_id].rarity
+
+            if real_rarity == Rarity.INSAISISSABLES:
+                ftype = FishType.INSAISISSABLES
+            elif real_rarity == Rarity.DISCRETS:
+                ftype = FishType.DISCRETS
+            else:
+                ftype = FishType.ABONDANTS
+
+            fish = Fish(f_id,position=pos, rotation=(0,0,0), fish_type=ftype, category=fish_list[f_id].category, parent=self.parallax_container)
+
             point = Entity(model='sphere', position=(pos[0], y, pos[2]), alpha=0)
             fish.on_click = lambda f=fish: self._on_fish_click(f)
             self._pairs.append((fish, point))
 
-        # BARRE HP DU POISCAILLE
         self._hp_bar_bg = Entity(parent=camera.ui, model='quad', color=color.dark_gray, scale=(0.4, 0.03), position=(-0.2, 0.42), origin=(-0.5, 0), enabled=False)
         self._hp_bar = Entity(parent=camera.ui, model='quad', color=color.lime, scale=(0.4, 0.03), position=(-0.2, 0.42), origin=(-0.5, 0), enabled=False, z=-0.01)
-        self._hp_text = Text('', parent=camera.ui, position=(0, 0.46), origin=(0, 0), scale=1, enabled=False,font=data.fisho_font)
+        self._hp_text = Text('', parent=camera.ui, position=(0, 0.46), origin=(0, 0), scale=1, enabled=False, font=data.fisho_font)
 
-        # BARRE "PRESSION" DU JOUEUR
         self._press_bar_bg = Entity(
             parent=camera.ui, model='quad', color=color.dark_gray,
             scale=(self.BAR_W, self.BAR_H),
@@ -168,6 +216,8 @@ class FishingScene:
             origin=(0, -0.5), enabled=False, z=-0.01)
         self._label_top = Text('x2 DMG', parent=camera.ui, position=(self.BAR_X, self.BAR_TOP + 0.03), origin=(0, 0), scale=0.8, color=color.yellow, enabled=False,font=data.fisho_font)
         self._label_bot = Text('Fuite',  parent=camera.ui, position=(self.BAR_X, self.BAR_BOTTOM - 0.04), origin=(0, 0), scale=0.8, color=color.red, enabled=False,font=data.fisho_font)
+        self._label_top = Text('x2 DMG', parent=camera.ui, position=(self.BAR_X, self.BAR_TOP + 0.03), origin=(0, 0), scale=0.8, color=color.yellow, enabled=False, font=data.fisho_font)
+        self._label_bot = Text('Fuite',  parent=camera.ui, position=(self.BAR_X, self.BAR_BOTTOM - 0.04), origin=(0, 0), scale=0.8, color=color.red, enabled=False, font=data.fisho_font)
 
         self._entities = [
             water,
@@ -177,14 +227,7 @@ class FishingScene:
             self._label_top, self._label_bot
             ] + [e for pair in self._pairs for e in pair]
 
-    def _on_fish_click(self, fish):
-        # fish shot
-        shot.play()
-        fish.alpha_setter(0.2)
-        fish.play_splash()
-
-        fish.scale = fish.fish_type['scale']/1.75
-
+    def _on_fish_click(self, fish:Fish):
         if self._stopping:
             return
         
@@ -198,16 +241,44 @@ class FishingScene:
         fish   = self._selected_fish
         fish
 
+    def _spawn_damage_text(self, amount, position):
+        damage_text = Text(
+            text=f"-{amount}",
+            position=position + Vec3(0, 2, 0),
+            scale=2,
+            color=color.red,
+            billboard=True
+        )
+
+        damage_text.animate_position(damage_text.position + Vec3(0, 2, 0), duration=0.5, curve=curve.out_expo)
+        damage_text.animate_scale(0, duration=0.5, delay=0.3, curve=curve.in_expo)
+        
+        destroy(damage_text, delay=0.8)
+
     def _deal_damage(self):
         fish   = self._selected_fish
         damage = self.player_damage * 2 if self._pressure >= 0.8 else self.player_damage
+        self._spawn_damage_text(damage, fish.position)
         fish.hp -= damage
         self._update_hp_bar(fish)
         if fish.hp <= 0:
+            try:
+                from shared.registry import fish_list
+                if hasattr(fish, 'fish_id') and 0 <= fish.fish_id < len(fish_list):
+                    fish_data = fish_list[fish.fish_id]
+                    self._caught_fish_name = fish_data.name
+                            
+                    from client.packet.serverbound import ServerBoundCatchFishPacket
+                    if hasattr(data, 'network') and data.network:
+                        data.network.send(ServerBoundCatchFishPacket(fish.fish_id))
+                else:
+                    self._caught_fish_name = fish_list[0].name
+            except Exception as e:
+                print(f"Erreur FishoDex local : {e}")
+                self._caught_fish_name = "Poisson Inconnu"
             self.request_stop()
-        
 
-    def _select(self, chosen_fish):
+    def _select(self, chosen_fish:Fish):
         self._selected_fish = chosen_fish
         chosen_point = None
         for fish, point in self._pairs:
@@ -225,7 +296,7 @@ class FishingScene:
         self._pairs = [(chosen_fish, chosen_point)]
         self._fish = chosen_fish
         self._point = chosen_point
-        self._pressure = 0.5
+        self._pressure = 1.0
         invoke(self._destroy_fleeing, delay=1.2)
         invoke(lambda: self._show_bars(chosen_fish), delay=1.2)
 
@@ -259,10 +330,37 @@ class FishingScene:
         self._stopping = True
         if self.on_end:
             self.on_end('caught')
+    
+    def update_parallax(self):
+        screen_ratio = 1.778
+        limit_y = 0.5
+        limit_x = 0.5 * screen_ratio
+
+        target_x = max(min(mouse.x, limit_x), -limit_x)
+        target_z = max(min(mouse.y, limit_y), -limit_y)
+        
+        self.parallax_container.x = lerp(self.parallax_container.x, -target_x * 2.0, time.dt * 10)
+        self.parallax_container.z = lerp(self.parallax_container.z, -target_z * 2.0, time.dt * 10)
+        
+        if hasattr(self, '_water_entity'):
+            self._water_entity.x = -target_x
+            self._water_entity.z = -target_z
 
     def update(self):
         if not self.enabled or self._stopping:
             return
+        if self._cursor:
+            self._cursor.position = mouse.position
+            
+            self._cursor.rotation_z += 180 * time.dt
+            
+            target_scale = 0.065 if mouse.left else 0.05
+            self._cursor.scale = lerp(self._cursor.scale, Vec2(target_scale, target_scale), time.dt * 15)
+
+        self.update_parallax()
+        if hasattr(self, '_water_entity') and self._water_entity:
+            t = time.perf_counter() - self._water_time_start
+            self._water_entity.model.set_shader_input("iTime", t % 4096.0)
 
         for fish in self._fleeing:
             dx, dz = fish.flee_dir
@@ -312,20 +410,20 @@ class FishingScene:
     def stop(self):
         if not self.enabled:
             return
-        self.enabled   = False
+        self.enabled = False
         self._stopping = False
+
         camera.position = self._saved_cam_pos
         camera.rotation = self._saved_cam_rot
-        camera.fov      = self._saved_cam_fov
-        for e in self._entities: # On reset tout mdr   # ya que joël pour faire des vannes en com de son code mdr
-            if hasattr(e, '_splash'):
-                destroy(e._splash)
+        data.player.enable()
+        #camera.fov = self._saved_cam_fov
+
+        for e in self._entities:
             destroy(e)
         self._entities = []
         self._pairs = []
         self._fish = None
         self._point = None
-        self._selected_fish = None
         self._fleeing = []
         self._pressure = 0.5
         self._hp_bar_bg = None
@@ -335,3 +433,64 @@ class FishingScene:
         self._press_bar = None
         self._label_top = None
         self._label_bot = None
+
+        if self._cursor:
+            destroy(self._cursor)
+            self._cursor = None
+        mouse.hotspot = (0, 0)
+        mouse.visible = True
+
+        bannertext = "Le poisson a fui... La prochaine fois sera la bonne!"
+        text_color = color.white
+        fish_id = None
+        
+        if hasattr(self, '_caught_fish_name') and self._caught_fish_name:
+            from shared.registry import fish_list
+            fish_data = fish_list[self._selected_fish.fish_id]
+            
+            bannertext = f"Tu as attrapé un {self._caught_fish_name} !!"
+            text_color = RARITY_COLORS.get(fish_data.rarity, color.white)
+            fish_id = self._selected_fish.fish_id
+            self._caught_fish_name = None
+
+        banner = Text(
+            text=bannertext,
+            position=(0, -0.4),
+            origin=(0, 0),
+            scale=1.5,
+            color=text_color,
+            parent=camera.ui,
+            ignore_paused=True,
+            font=data.fisho_font
+        )
+        
+        def cleanup():
+            banner.animate_scale(0, duration=0.5, curve=curve.in_out_expo)
+            if 'fish_img' in locals():
+                fish_img.animate_scale(0, duration=0.5, curve=curve.in_out_expo)
+                if anim_sequence: anim_sequence.finish()
+            
+            destroy(banner, delay=0.5)
+            if 'fish_img' in locals():
+                destroy(fish_img, delay=0.5)
+
+        if fish_id is not None:
+            fish_img = Entity(
+                parent=camera.ui,
+                model='quad',
+                texture=f"assets/textures/fish/{fish_list[fish_id].id}.png",
+                scale=(0.3, 0.3),
+                position=(0, -0.25),
+                ignore_paused=True
+            )
+            anim_sequence = Sequence(
+                Func(fish_img.animate, 'rotation_z', 15, duration=0.8, curve=curve.in_out_sine),
+                Wait(0.8),
+                Func(fish_img.animate, 'rotation_z', -15, duration=0.8, curve=curve.in_out_sine),
+                Wait(0.8),
+                loop=True
+            )
+            anim_sequence.start()
+        invoke(cleanup, delay=2.5)
+        data.hud.show()
+        self._selected_fish = None

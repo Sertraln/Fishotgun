@@ -35,7 +35,7 @@ def getServerBoundPacket(data:bytes) ->tuple[list[ServerBoundPacket],bytes]:
         packet = pl.serverBoundPacketList[id]
         if issubclass(packet,ServerBoundDataPacket):
             result.append(packet(decode))
-        else :
+        else:
             result.append(packet())
     print("server : serverboundget :",result)
     return result,trailing_data

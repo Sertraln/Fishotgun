@@ -25,6 +25,7 @@ if TYPE_CHECKING:
     from client.world import World
     from client.transitions import IrisTransition
     from client.fish import FishingScene
+    from client.menus.hud import Hud
 
 player : 'ThirdPersonController' = None
 network : 'Network' = None
@@ -34,6 +35,7 @@ app : 'Ursina' = None
 world : 'World' = None
 iris: 'IrisTransition' = None
 fishing_scene: 'FishingScene' = None
+hud: 'Hud' = None
 
 #Audios
 main_theme = Audio(

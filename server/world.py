@@ -34,24 +34,40 @@ class World:
         player.client.send(ClientBoundPlayerListPacket(list(self.players.values())))
         pid = player.client.id
         self.players[pid] = player
-        print(f"World: player joined {pid}")
+        print(f"World: player joined {pid} - {player.player_name}")
         data.server.broadcast(ClientBoundSpawnPlayerPacket(player),[player.client.id]) 
         return pid
 
     def left_player(self, pid:int):
+        print(f"DEBUG: Tentative de déconnexion pour le joueur {pid}")
+        
         if pid in self.players:
-            data.server.broadcast(ClientBoundPlayerLeavePacket(pid),[pid])
             player = self.players.pop(pid)
-            player.save()
+            
+            if player is not None:
+                print(f"DEBUG: Appel de la méthode save() pour le joueur {player.unique_id}")
+                player.save()
+            else:
+                print(f"DEBUG: Erreur, le joueur {pid} était None dans le dictionnaire")
+                
+            data.server.broadcast(ClientBoundPlayerLeavePacket(pid),[pid])
             print(f"World: player left {pid}")
+        else:
+            print(f"DEBUG: Le joueur {pid} n'était pas dans self.players (déjà déconnecté ?)")
 
     def stop(self):
-        for pid, player in list(self.players.items()):
-            try:
-                player.client.kick()
-            except Exception:
-                pass
+        print("World: Arret du monde, sauvegarde de tous les joueurs connectes...")
+        for player in self.players.values():
+            player.client.kick()
         self.players.clear()
+
+    def save(self):
+        print("World: Sauvegarde generale declenchee...")
+        for player in self.players.values():
+            try:
+                player.save()
+            except Exception as e:
+                print(f"World: Echec de sauvegarde de secours pour {player.client.id} : {e}")
 
     def add_entity(self, entity:'Entity') -> int:
         entity_id = self.get_next_entity_id()
@@ -107,11 +123,3 @@ class World:
         player = self.players.get(client.id)
         if player:
             player.rotation_z = rotation
-
-    def save(self):
-        #totdo : save world state to disk
-        pass    
-
-    def save_player_data(self):
-        #todo : save player data to disk
-        pass

@@ -9,6 +9,7 @@ from client import data
 import time
 import collections
 import math
+from shared.parsedata.fishlist import FishInventory
 
 class Player(Entity):
     def __init__(self, id : int, name : str, position :Vec3 = Vec3(0,0,0)):
@@ -140,7 +141,7 @@ class Player(Entity):
 
 
 class ThirdPersonController(Player):
-    def __init__(self,id:int, name :str, position:Vec3 = Vec3(0,0,0)):
+    def __init__(self,id:int, name :str, position:Vec3 = Vec3(0,0,0), fish_inventory: FishInventory = FishInventory(), currency: int = 0,level: int = 1):
         super().__init__(id,name,position)
         self.name = "ThirdPersonController"
         self._auto_face_movement = True
@@ -165,6 +166,18 @@ class ThirdPersonController(Player):
         self._reconcile_speed = 100.0
         #th.Thread(target=self.constant_update, daemon=True).start()
         self.on_destroy = self.on_disable
+        self.fish_inventory = fish_inventory
+        self.currency = currency
+        self.level = level
+
+    @property
+    def currency(self):
+        return self._currency
+    
+    @currency.setter
+    def currency(self, value):
+        self._currency = value
+        data.hud.update_currency(self._currency)
 
     def _attach_camera_to_pivot(self):
         # Reset scale before parenting to avoid cumulative stretch across reconnects.
@@ -172,11 +185,10 @@ class ThirdPersonController(Player):
         camera.parent = self.camera_pivot
         camera.position = Vec3(0, 0, self.camera_offset)
         camera.rotation = Vec3(0, 0, 0)
-        
 
     def update(self):
         #super().update()
-        if menu._currentMenu is not None and data.network != None:
+        if menu.ispausing():
             return
         self.update_cam()
         self.update_mouv_input()
@@ -271,13 +283,16 @@ class ThirdPersonController(Player):
         if held_keys['control']:
             key_strokes.press(KeyStates.SNEAK)
         if key_strokes != self._last_input:
-            if key_strokes.is_idle():
+            self._update_input(key_strokes)
+            
+    def _update_input(self, key_strokes: KeyStates):
+        if key_strokes.is_idle():
                 self.play_idle_animation()
-            elif self._last_input.is_idle():
-                self.play_walk_animation()
-            self._last_input = key_strokes
-            self._last_input_time = time.time_ns()
-            self._send_input()
+        elif self._last_input.is_idle():
+            self.play_walk_animation()
+        self._last_input = key_strokes
+        self._last_input_time = time.time_ns()
+        self._send_input()
 
     def on_enable(self):
         mouse.locked = True
@@ -290,8 +305,7 @@ class ThirdPersonController(Player):
         mouse.locked = False
         if hasattr(self, 'cursor') and self.cursor:
             self.cursor.enabled = False
-        self._original_camera_transform = camera.transform  # store original position and rotation
-        camera.world_parent = scene
+        camera.parent = scene
         camera.scale = Vec3(1, 1, 1)
 
     #probably useless but keep for now
@@ -302,6 +316,8 @@ class ThirdPersonController(Player):
         
     def _send_input(self):
         new_packet = ServerBoundMovementPacket(self._last_input, self._last_input_time)
+        if data.network is None:
+            return
         data.network.send(new_packet)
     
         

@@ -33,6 +33,7 @@ def init():
     global _id_type
     import shared.parsedata.vec3data
     import shared.parsedata.input
+    import shared.parsedata.fishing
     # Générer type_id avec les indices
     global _type_id
     _type_id = {cls: idx for idx, cls in enumerate(_id_type)}

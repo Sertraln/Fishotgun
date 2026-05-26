@@ -1,45 +1,45 @@
-from ursina import Button, mouse, Vec2,Vec3,Entity,camera,TextField,Text,color,application,InputField,Shader,time,Texture,invoke
+from ursina import Button, mouse, Vec2,Vec3,Entity,camera,TextField,Text,color,application,InputField,Shader,time,Texture
 import client.data as data
 from panda3d.core import SamplerState
+from shared.parsedata.input import KeyStates
 
 def set_color():
     return f'''
-#version 120
+    #version 120
 
-uniform sampler2D p3d_Texture0;
-uniform vec3 color;
+    uniform sampler2D p3d_Texture0;
+    uniform vec3 color;
 
-varying vec2 uv;
-    
-void main() {{
-     gl_FragColor = vec4(1.0)*texture2D(p3d_Texture0, uv) + vec4(color,0.0);
-}}
+    varying vec2 uv;
+        
+    void main() {{
+        gl_FragColor = vec4(1.0)*texture2D(p3d_Texture0, uv) + vec4(color,0.0);
+    }}
 
-'''
+    '''
 
 def set_static_color(color:color):
     return f'''
-#version 120
+    #version 120
 
-uniform sampler2D p3d_Texture0;
+    uniform sampler2D p3d_Texture0;
 
-varying vec2 uv;
-    
-void main() {{
-     gl_FragColor = vec4(1.0)*texture2D(p3d_Texture0, uv) + vec4({color[0]},{color[1]},{color[2]},0.0);
-}}
-
-'''
-
+    varying vec2 uv;
+        
+    void main() {{
+        gl_FragColor = vec4(1.0)*texture2D(p3d_Texture0, uv) + vec4({color[0]},{color[1]},{color[2]},0.0);
+    }}
+    '''
 
 class FixedButton(Button):
-    def __init__(self, **kwargs):
+    def __init__(self, origin: Vec2 = Vec2(0, 0), **kwargs):
         super().__init__(**kwargs)
         if self.text_entity:
             self.text_entity.position = Vec3(0,0,-1)
+            self.origin = origin
             self.text_entity.font = data.fisho_font
-            print(type(self.text_entity))  # vérifie le type
-            print(self.children)
+            #print(type(self.text_entity))  # vérifie le type
+            #print(self.children)
             test = Shader(fragment=set_color(),vertex=data.default_vertex)
             self.text_entity.set_shader_input("color",color.white)
             self.model.hide()
@@ -68,7 +68,7 @@ class BackGround(Entity):
         self.to_run = []
         self.rotation_direction = 1
         self.rotation_speed = 400
-        self.disable()
+        self.hide()
         
     def update(self):
         if self.rotate_page:
@@ -86,21 +86,33 @@ class BackGround(Entity):
         self.rotation_direction = rotation_direction
 
 class Menu(Entity):
-    def __init__(self,id:str,pause=True):
+    def __init__(self,id:str,pause=True, anim=False):
         super().__init__(parent=camera.ui,position=(0,0,0),scale=(1,1,0),ignore_paused=True,enabled=False)
         self.elements : list[Entity]  = []
         self.pause = pause
         self.id :str = id
         self.ignore_paused = True
+        self.anim = anim
+    
+    def enable(self):
+        if self.anim:
+            self.scale = 0
+            super().enable()
+            self.animate_scale(1, duration=0.2, curve=curve.out_back)
+        else:
+            self.scale = 1
+            super().enable()
+    
+    def disable(self):
+        if self.anim:
+            self.animate_scale(0, duration=0.15, curve=curve.in_sine)
+            invoke(super().disable, delay=0.15)
+        else:
+            super().disable()
 
     def add_element(self, element : Entity):
         self.elements.append(element)
         element.parent = self
-
-    def update(self):
-        for child in self.children:
-            if isinstance(child, FixedButton) and hasattr(child, 'text_entity') and child.text_entity:
-                child.text_entity.color = color.white
 
 class LinkingButton(FixedButton):
     def __init__(self, menu : Menu, **kwargs):
@@ -127,14 +139,17 @@ def register_menu(menu : Menu):
 def show(menu : Menu | str):
     if isinstance(menu, str):
         global _menus
-        print(_menus)
+        #print(_menus)
         menu = _menus[menu]
     global _currentMenu
     if _currentMenu is not None:
         _currentMenu.disable()
     _currentMenu = menu
     menu.enable()
-    application.paused = menu.pause
+    if data.player and not data.player._last_input.is_idle():
+        last_input = data.player._last_input
+        data.player._update_input(KeyStates())
+        data.player._last_input = last_input
 
 def ispausing():
     return _currentMenu is not None and _currentMenu.pause
@@ -147,9 +162,14 @@ def hide():
     global _currentMenu
     if _currentMenu is not None:
         _currentMenu.disable()
-        _background_menu.disable()
+        _background_menu.hide()
     _currentMenu = None
     application.resume()
+    if data.player and not data.player._last_input.is_idle():
+        #print("last input:",data.player._last_input)
+        last_input =data.player._last_input
+        data.player._last_input = KeyStates()
+        data.player._update_input(last_input)
 
 class CustomTextField(InputField):
 
@@ -179,9 +199,12 @@ def getMenu(menu_id:str) -> Menu | None:
 
 def init():
     from ursina import application
-    # quit_button.on_click = application.quit
+    quit_button.on_click = application.quit
     import client.menus.mainmenu as mainmenu
 
 def rotate_page_and_run(func : list[callable],rotation_speed=1):
     if _background_menu.enabled:
         _background_menu.rotate_and_run(func,rotation_speed)
+
+def hasMenuShow():
+    return _currentMenu is not None and _currentMenu.enabled

@@ -26,4 +26,17 @@ class ServerBoundRotationPacket(ServerBoundDataPacket):
         super().__init__(rotation, timestamp)
         self.rotation : float = rotation
         self.timestamp : int = timestamp
-        
+
+class ServerBoundRequestFishingPacket(ServerBoundPacket):
+    pass
+
+class ServerBoundCatchFishPacket(ServerBoundDataPacket):
+    def __init__(self, fish_id: int):
+        super().__init__(fish_id)
+        self.fish_id = fish_id
+
+class ServerBoundSellFishPacket(ServerBoundPacket):
+    pass
+
+class ServerBoundUpgradePacket(ServerBoundPacket):
+    pass
