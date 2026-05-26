@@ -13,7 +13,7 @@ class Chat(menu.Menu):
         self.textfield.ignore_paused = True
         self.textfield.text_field.cursor.position = (0,0,-0.1)
         self.message_background = Entity(model='quad',scale=(0.8,0.6),color=color.black66,position=(-0.5,0),parent=self)
-        self.message_display = Text(text="",position=(-0.85,-0.25), parent=self,)
+        self.message_display = Text(text="",position=(-0.85,-0.25), parent=self,font=data.fisho_font)
         self.message_display.text_colors = {"player": color.orange, "default": color.white}
         self.messages = []
         self.message_display

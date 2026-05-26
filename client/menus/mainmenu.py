@@ -186,7 +186,7 @@ class ServerListMenu(menu.Menu):
         self.button_list.unselected = self.unselected
         add_server.server_list_menu = self
         self.button_list.position=Vec3(0.0,0,0.0)
-        self.error_label = Text("", parent=self, position=(0, -0.28, -0.1), origin=(0, 0), scale=0.7, color=color.rgba32(220, 80, 80))
+        self.error_label = Text("", parent=self, position=(0, -0.28, -0.1), origin=(0, 0), scale=0.7, color=color.rgba32(220, 80, 80),font=data.fisho_font)
         self.back_but = menu.FixedButton(text="< Retour",
                         position=(-0.19, -0.3),scale=(0.22, 0.07),
                         text_size=1.2, parent=self, color=color.rgba32(70, 70, 80),

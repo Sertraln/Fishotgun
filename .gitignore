@@ -4,3 +4,7 @@
 __pycache__
 .pyc
 data/
+build/
+dist/
+main.exe
+main.cmd

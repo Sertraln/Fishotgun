@@ -1,5 +1,22 @@
 from typing import TYPE_CHECKING
 from ursina import application,Path,Audio
+import sys
+import os
+
+def resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and for Nuitka/PyInstaller """
+    if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
+        # PyInstaller bundle
+        base_path = sys._MEIPASS
+        return os.path.join(base_path, relative_path)
+    elif getattr(sys, 'frozen', False):
+        # Nuitka bundle
+        base_path = os.path.dirname(sys.executable)
+        return os.path.join(base_path, relative_path)
+    else:
+        # Development mode
+        return os.path.join('client', relative_path)
+
 if TYPE_CHECKING:
     from client.player import ThirdPersonController
     from client.network import Network
@@ -19,7 +36,7 @@ fishing_scene: 'FishingScene' = None
 
 #Audios
 main_theme = Audio(
-    "assets/musics/fishotgun_main_theme.wav",
+    resource_path("assets/musics/fishotgun_main_theme.wav"),
     # "assets/musics/shot.wav",
     loop=True,
     autoplay=False,
@@ -27,14 +44,14 @@ main_theme = Audio(
     ignore_paused=True
 )
 life_is_awesome = Audio(
-    "assets/musics/life_is_awesome.wav",
+    resource_path("assets/musics/life_is_awesome.wav"),
     autoplay=False,
     loop=True,
     volume=0.4,
     ignore_paused=True
 )
 birds = Audio(
-    "assets/musics/birds.wav",
+    resource_path("assets/musics/birds.wav"),
     autoplay=False,
     loop=True,
     volume=0.2,
@@ -42,7 +59,7 @@ birds = Audio(
 )
 
 #const
-fisho_font = "assets/font/FishoFont.ttf"
+fisho_font = resource_path("assets/font/FishoFont.ttf")
 default_vertex = '''
 #version 120
 
@@ -59,9 +76,16 @@ void main() {
 }
 '''
 
-dataPath = application.asset_folder / "data/"
+# Data folder for user saves (not in assets, which is read-only)
+if getattr(sys, 'frozen', False):
+    # Compiled: store in user's AppData/Local
+    dataPath = os.path.join(os.path.expanduser("~"), "AppData", "Local", "Fishotgun", "data")
+else:
+    # Development: store in project's data folder
+    dataPath = "data"
+
 dataName = "main.dat"
-total_path = dataPath / dataName
+total_path = os.path.join(dataPath, dataName)
 
 def init():
     Path(dataPath).mkdir(parents=True, exist_ok=True)

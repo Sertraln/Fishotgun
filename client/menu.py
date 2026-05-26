@@ -151,11 +151,6 @@ def hide():
     _currentMenu = None
     application.resume()
 
-
-
-quit_button = FixedButton(text='Quitter', scale=(0.2, 0.1), position=(0,-0.1))
-quit_button.disable()
-
 class CustomTextField(InputField):
 
     def __init__(self, bg_color=color.black,scale=(0.4,0.1), position=(0,0,0), text_color=color.black, naming_box=None, **kwargs):
@@ -184,7 +179,7 @@ def getMenu(menu_id:str) -> Menu | None:
 
 def init():
     from ursina import application
-    quit_button.on_click = application.quit
+    # quit_button.on_click = application.quit
     import client.menus.mainmenu as mainmenu
 
 def rotate_page_and_run(func : list[callable],rotation_speed=1):

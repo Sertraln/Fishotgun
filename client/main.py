@@ -34,7 +34,6 @@ from fish import FishingScene
 from transitions import IrisTransition,_exit_black
 import client.save as save
 
-
 def custom_quit():
     print("quit")
     if data.network:
@@ -110,7 +109,9 @@ class MenuLogic(Entity):
     def __init__(self):
         super().__init__(ignore_paused=True)
     def input(self,key):
-        if key == 'escape' and not menu._background_menu.enabled:
+        if menu._background_menu.enabled:
+            return
+        if key == 'escape' :
             if menu.ispausing() :
                 mouse.locked = True
                 menu.hide()

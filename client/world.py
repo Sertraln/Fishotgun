@@ -1,7 +1,7 @@
 from client import data,menu,network
 from client.menus.chat import Chat
 from client.spot import FishingSpot
-from ursina import Shader,Button,destroy,color,Sky,mouse,Vec3,Text,camera,scene,application,Entity,invoke
+from ursina import Shader,Button,destroy,color,Sky,mouse,Vec3,Text,camera,scene,application,Entity,invoke,Path
 from client.player import Player
 import threading
 import shared.world as world
@@ -92,8 +92,8 @@ def join_world(ip:str, port:int, name:str) -> Exception | None:
 
 def init_assets():
     global _sky_entity, _water_time_start
-    water_shader_path = application.asset_folder / 'assets' / 'shader' / 'water.fsh'
-    water_shader_fragment = water_shader_path.read_text(encoding='utf-8')
+    water_shader_path = data.resource_path('assets/shader/water.fsh')
+    water_shader_fragment = Path(water_shader_path).read_text(encoding='utf-8')
     _sky_entity = Sky(color=color.violet,parent=_world)
     world.init_world(_world)
 
@@ -105,7 +105,8 @@ def init_assets():
         scale=1.2,
         origin=(0, 0),
         background=True,
-        parent=_world.ui
+        parent=_world.ui,
+        font=data.fisho_font
     )
     spot = FishingSpot(position=(0,2,0),parent=_world)
     data.world_entities = [spot]

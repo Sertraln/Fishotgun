@@ -1,6 +1,7 @@
 from ursina import *
 from math import pi,atan2,sqrt,degrees,sin,cos
 from random import randrange, shuffle
+from client import data
 
 Y_OFFSET = -30
 shot = Audio(
@@ -152,7 +153,7 @@ class FishingScene:
         # BARRE HP DU POISCAILLE
         self._hp_bar_bg = Entity(parent=camera.ui, model='quad', color=color.dark_gray, scale=(0.4, 0.03), position=(-0.2, 0.42), origin=(-0.5, 0), enabled=False)
         self._hp_bar = Entity(parent=camera.ui, model='quad', color=color.lime, scale=(0.4, 0.03), position=(-0.2, 0.42), origin=(-0.5, 0), enabled=False, z=-0.01)
-        self._hp_text = Text('', parent=camera.ui, position=(0, 0.46), origin=(0, 0), scale=1, enabled=False)
+        self._hp_text = Text('', parent=camera.ui, position=(0, 0.46), origin=(0, 0), scale=1, enabled=False,font=data.fisho_font)
 
         # BARRE "PRESSION" DU JOUEUR
         self._press_bar_bg = Entity(
@@ -165,8 +166,8 @@ class FishingScene:
             scale=(self.BAR_W, self.BAR_H * self._pressure),
             position=(self.BAR_X, self.BAR_BOTTOM),
             origin=(0, -0.5), enabled=False, z=-0.01)
-        self._label_top = Text('x2 DMG', parent=camera.ui, position=(self.BAR_X, self.BAR_TOP + 0.03), origin=(0, 0), scale=0.8, color=color.yellow, enabled=False)
-        self._label_bot = Text('Fuite',  parent=camera.ui, position=(self.BAR_X, self.BAR_BOTTOM - 0.04), origin=(0, 0), scale=0.8, color=color.red, enabled=False)
+        self._label_top = Text('x2 DMG', parent=camera.ui, position=(self.BAR_X, self.BAR_TOP + 0.03), origin=(0, 0), scale=0.8, color=color.yellow, enabled=False,font=data.fisho_font)
+        self._label_bot = Text('Fuite',  parent=camera.ui, position=(self.BAR_X, self.BAR_BOTTOM - 0.04), origin=(0, 0), scale=0.8, color=color.red, enabled=False,font=data.fisho_font)
 
         self._entities = [
             water,
