@@ -68,7 +68,7 @@ class BackGround(Entity):
         self.to_run = []
         self.rotation_direction = 1
         self.rotation_speed = 600
-        self.hide()
+        self.disable()
         
     def update(self):
         if self.rotate_page:
@@ -163,7 +163,7 @@ def hide():
     if _currentMenu is not None:
         _currentMenu.disable()
         invoke(lambda: globals().__setitem__('_currentMenu', None), delay=0.16)
-        _background_menu.hide()
+        _background_menu.disable()
     application.resume()
     if data.player and not data.player._last_input.is_idle():
         #print("last input:",data.player._last_input)
