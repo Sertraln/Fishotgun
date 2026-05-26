@@ -1,4 +1,4 @@
-from ursina import Button, mouse, Vec2,Vec3,Entity,camera,TextField,Text,color,application,InputField,Shader,time,Texture,curve,invoke
+from ursina import *
 import client.data as data
 from panda3d.core import SamplerState
 from shared.parsedata.input import KeyStates
@@ -65,7 +65,8 @@ class BackGround(Entity):
         self.rotate_page = False
         self.to_run = []
         self.rotation_direction = 1
-        self.rotation_speed = 400
+        self.rotation_speed = 600
+        self.disable()
         
     def update(self):
         if self.rotate_page:
@@ -159,8 +160,8 @@ def hide():
     global _currentMenu
     if _currentMenu is not None:
         _currentMenu.disable()
+        invoke(lambda: globals().__setitem__('_currentMenu', None), delay=0.16)
         _background_menu.disable()
-    _currentMenu = None
     application.resume()
     if data.player and not data.player._last_input.is_idle():
         #print("last input:",data.player._last_input)

@@ -117,9 +117,9 @@ def init_assets():
     global _sky_entity, _water_time_start,_world
     _world = WorldScene()
     data.hud.parent = _world.ui
-    water_shader_path = application.asset_folder / data.resource_path('assets/shader/water.fsh')
-    water_shader_fragment = Path(water_shader_path).read_text(encoding='utf-8')
-    _sky_entity = Sky(color=color.violet,parent=_world)
+    water_shader_path = application.asset_folder / 'assets' / 'shader' / 'water.fsh'
+    water_shader_fragment = water_shader_path.read_text(encoding='utf-8')
+    _sky_entity = Sky(color=color.rgb(1,1,1), texture='assets/textures/skybox4.png', parent=_world)
     world.init_world(_world)
 
     if world.ground is None or world.water is None:
@@ -182,7 +182,7 @@ def init_assets():
     shopkeeper.set_hpr(90, 360, 0)
     shopkeeper.set_scale(1.2)
     shopkeeper.name = 'shopkeeper'
-    shopkeeper.loop('idle')
+    shopkeeper.loop('reste')
     
 
 def load_world():

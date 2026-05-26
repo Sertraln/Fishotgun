@@ -27,7 +27,7 @@ def get_angle(dx, dz):
 class FishType:
     ABONDANTS   = {'max_hp': 200,  'speed': 4, 'speedrot': 50, 'scale': 1.0}
     DISCRETS = {'max_hp': 500, 'speed': 4,   'speedrot': 80, 'scale': 0.6}
-    INSAISISSABLES = {'max_hp': 1200, 'speed': 16, 'speedrot': 150, 'scale': 2}
+    INSAISISSABLES = {'max_hp': 1200, 'speed': 10, 'speedrot': 300, 'scale': 2}
 
 RARITY_COLORS = {
     Rarity.ABONDANTS: color.white,
@@ -54,6 +54,7 @@ class Fish(Entity):
         self.texture_scale = (1, 1)
         self.speedrot = fish_type['speedrot']
         self.scale = fish_type['scale']
+        self.base_scale = self.scale
         self.speed = fish_type['speed']
         self.max_hp = fish_type['max_hp']
         self.hp = self.max_hp
@@ -108,7 +109,24 @@ class Fish(Entity):
             self.set_rotation(self.angle - speed)
         return False
 
+    def update(self):
+        if not self._splash_playing:
+            return
+        self._splash_timer += time.dt
+        if self._splash_timer > 0.15:
+            self._splash_timer = 0
+            self._splash_frame += 1
+            if self._splash_frame >= 8:
+                self._splash_playing = False
+                self._splash.enabled = False
+                self._splash.texture_offset = (0, 0)
+                return
+            col = self._splash_frame % 4
+            row = self._splash_frame // 4
+            self._splash.texture_offset = (col / 4, 1 - (row + 1) / 2)
+
 _water_time_start = None
+
 class FishingScene:
     BAR_X = 0.8
     BAR_BOTTOM = -0.3
@@ -225,7 +243,14 @@ class FishingScene:
             self._label_top, self._label_bot
             ] + [e for pair in self._pairs for e in pair]
 
-    def _on_fish_click(self, fish:Fish):
+    def _on_fish_click(self, fish):
+        # fish shot
+        shot.play()
+        fish.alpha_setter(0.2)
+        fish.play_splash()
+
+        fish.scale = fish.scale/1.75
+
         if self._stopping:
             return
         
@@ -234,10 +259,6 @@ class FishingScene:
 
         elif self._selected_fish == fish:
             self._deal_damage()
-
-    def _get_shot(self):
-        fish   = self._selected_fish
-        fish
 
     def _spawn_damage_text(self, amount, position):
         damage_text = Text(
@@ -275,7 +296,7 @@ class FishingScene:
                 print(f"Erreur FishoDex local : {e}")
                 self._caught_fish_name = "Poisson Inconnu"
             self.request_stop()
-
+            
     def _select(self, chosen_fish:Fish):
         self._selected_fish = chosen_fish
         chosen_point = None
@@ -372,8 +393,9 @@ class FishingScene:
 
             # fait réaparaitre le poisson
             if (fish.alpha_getter() < 1) :
-                    new_alpha = min(1.0, fish.alpha_getter() + 0.02 * time.dt * 60) # clamp à 1
-                    new_scale = min(fish.fish_type['scale'], fish.scale_x + 0.02 * time.dt * 60) # clamp
+                    new_alpha = min(1.0, fish.alpha_getter() + 0.02 * time.dt * 60) # clamp à 1.0
+                    #fish.scale.x = max(fish.scale.x, fish.base_scale/2) # clamp
+                    new_scale = min(fish.base_scale, fish.scale.x + 0.02 * time.dt * 60) # clamp
 
                     fish.scale = new_scale
                     fish.alpha_setter(new_alpha)
@@ -412,7 +434,9 @@ class FishingScene:
         data.player.enable()
         #camera.fov = self._saved_cam_fov
 
-        for e in self._entities:
+        for e in self._entities:   # ya que joël pour faire des vannes en com de son code mdr
+            if hasattr(e, '_splash'):
+                destroy(e._splash)
             destroy(e)
         self._entities = []
         self._pairs = []
