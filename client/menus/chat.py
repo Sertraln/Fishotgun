@@ -17,7 +17,7 @@ class Chat(menu.Menu):
         self.message_display.text_colors = {"player": color.orange, "default": color.white}
         self.messages = []
         self.message_display
-        self.max_messages = 20
+        self.max_lines = 40
         self.max_characters = 24
         self.line_step = 0.025
         self.full_text = ""
@@ -69,9 +69,10 @@ class Chat(menu.Menu):
     def add_message(self,origine, message):
         # Limit the number of messages displayed to prevent overflow
         self.messages.append(f"<player>{origine}: <default>{message}")
-        self.message_display.text = "\n".join(self.messages[-self.max_messages:])
-        if len(self.messages) < self.max_messages:
-            self.message_display.y += self.line_step
+        self.message_display.text = "\n".join(self.messages[-self.max_lines:])
+        self.message_display.wordwrap_setter(54)
+        if self.message_display.y < self.max_lines*self.line_step:
+            self.message_display.y += self.line_step*len(self.message_display.lines)
 
     def enable(self):
         self.textfield.active=True
