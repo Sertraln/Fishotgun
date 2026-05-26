@@ -99,7 +99,7 @@ class FishPage(Entity):
 
 class FishodexMenu(menu.Menu):
     def __init__(self):
-        super().__init__("fishodex",True)
+        super().__init__("fishodex",True, anim=True)
         self.parent = camera.ui
         self.leftpage = FishPage(fish_list[0:6],True,"Poisson Commun",parent=self,name="leftpage",position=(-0.31,0,0.01))
         self.middlepage = FishPage(fish_list[6:18],False,"Crustace","Requin",0.2,parent=self,name="middlepage",position=(0.31,0,-0.15))
