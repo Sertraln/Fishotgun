@@ -25,9 +25,9 @@ def get_angle(dx, dz):
     return (-degrees(atan2(dz, dx))) % 360
 
 class FishType:
-    ABONDANTS   = {'max_hp': 200,  'speed': 4, 'speedrot': 50, 'scale': 1.0}
-    DISCRETS = {'max_hp': 500, 'speed': 4,   'speedrot': 80, 'scale': 0.6}
-    INSAISISSABLES = {'max_hp': 1200, 'speed': 10, 'speedrot': 300, 'scale': 2}
+    ABONDANTS   = {'max_hp': 200,  'speed': 4, 'speedrot': 50, 'scale': 1.5}
+    DISCRETS = {'max_hp': 500, 'speed': 4,   'speedrot': 80, 'scale': 1.0}
+    INSAISISSABLES = {'max_hp': 1200, 'speed': 10, 'speedrot': 300, 'scale': 2.5}
 
 RARITY_COLORS = {
     Rarity.ABONDANTS: color.white,
@@ -391,14 +391,16 @@ class FishingScene:
 
         for fish, point in self._pairs:
 
-            # fait réaparaitre le poisson
-            if (fish.alpha_getter() < 1) :
-                    new_alpha = min(1.0, fish.alpha_getter() + 0.02 * time.dt * 60) # clamp à 1.0
-                    #fish.scale.x = max(fish.scale.x, fish.base_scale/2) # clamp
-                    new_scale = min(fish.base_scale, fish.scale.x + 0.02 * time.dt * 60) # clamp
+            if fish.alpha_getter() < 1:
+                new_alpha = min(1.0, fish.alpha_getter() + 0.02 * time.dt * 60)
 
-                    fish.scale = new_scale
-                    fish.alpha_setter(new_alpha)
+                min_scale = fish.base_scale * 0.7
+
+                target_scale = fish.scale_x + 0.02 * time.dt * 60
+                new_scale = max(min_scale, min(fish.base_scale, target_scale))
+
+                fish.scale = new_scale
+                fish.alpha_setter(new_alpha)
 
             if self._selected_fish and fish == self._selected_fish:
                 if mouse.world_point:
