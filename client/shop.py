@@ -1,25 +1,25 @@
 from ursina import *
 from client import menu
 from client.menu import FixedButton
-from client.packet.serverbound import ServerBoundSellFishPacket
+from client.packet.serverbound import ServerBoundSellFishPacket, ServerBoundUpgradePacket
 import client.data as data
 
 class UpgradeItemMenu(menu.Menu):
     def __init__(self, max_level=10, **kwargs):
         super().__init__("upgrade", pause=True, anim=True)
         self.bg = Entity(parent=self, model='quad', color=color.rgba(0, 0, 0, 0.5), scale=(1.5, 0.8), position=(0, 0))
-        self.btn_back = FixedButton(parent=self, text="Back", scale=(0.2, 0.1), position=(0, -0.3))
+        self.btn_back = FixedButton(parent=self, text="Back", scale=(0.2, 0.1), position=(0, -0.25))
         self.btn_back.on_click = lambda: menu.show("shop")
         self.max_level = max_level
-        self.icon = Entity(parent=self, model='quad', texture="assets/textures/Shotgun.png",scale=(0.6, 0.6), position=(-0.4, -0.1))
-        self.btn = FixedButton(parent=self, text="Upgrade", color=color.white, text_size=1.5, position=(0.4, -0.3))
+        self.icon = Entity(parent=self, model='quad', texture="assets/textures/Shotgun.png",scale=(0.6, 0.6), position=(-0.4, 0))
+        self.btn = FixedButton(parent=self, text="Upgrade", color=color.white, text_size=1.5, position=(0.4, -0.1))
         self.btn.on_click = self.upgrade
         self.level_bar = Entity(parent=self, model='quad', color=color.white, scale=(0.05, 0.6), position=(-0.1, 0))
         self.progress_bar = Entity(parent=self.level_bar, model='quad', color=color.green, scale_y=0, origin_y=-0.5, position=(0, -0.5))
         self.dmg_text = Text(
             text="", 
             parent=self, 
-            position=(-0.6, -0.35),
+            position=(-0.5, -0.15),
             scale=1.5, 
             color=color.white, 
             font=data.fisho_font
@@ -27,7 +27,7 @@ class UpgradeItemMenu(menu.Menu):
         self.lvl_text = Text(
             text="", 
             parent=self, 
-            position=(-0.6, -0.3),
+            position=(-0.5, -0.1),
             scale=1.5, 
             color=color.white, 
             font=data.fisho_font
@@ -35,7 +35,7 @@ class UpgradeItemMenu(menu.Menu):
         self.price_text = Text(
             text="", 
             parent=self, 
-            position=(0.4, -0.2),
+            position=(0.35, 0),
             scale=1.5,
             font=data.fisho_font
         )
@@ -63,13 +63,15 @@ class UpgradeItemMenu(menu.Menu):
             self.lvl_text.text = f"Lvl.{data.player.level} (MAX)"
         
         if data.player.level < self.max_level:
-            self.price_text.text = f"<image:assets/textures/fish_scale.png> {data.player.level * 1000}"
+            self.price_text.text = f"<image:assets/textures/fish_scale.png>   {data.player.level * 1000}"
         else:
             self.price_text.text = ""
+            self.btn.disable()
 
     def upgrade(self):
         if data.player.level < self.max_level:
-            self.update_level_bar()
+            data.network.send(ServerBoundUpgradePacket())
+            invoke(self.update_level_bar, delay=0.2)  # Update the level bar shortly after sending the upgrade request
 
 def hide_dialogue():
     menu.hide()
@@ -108,6 +110,9 @@ class ShopMenu(menu.Menu):
         if hasattr(data, 'player') and hasattr(data.player, 'fish_inventory'):
             data.player.fish_inventory.clear_inventory()
 
+        self.update_sell_button()
+    
+    def on_enable(self):
         self.update_sell_button()
 
     def buy_upgrade(self):

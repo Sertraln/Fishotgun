@@ -22,7 +22,7 @@ class Player(Physic):
         self.fish_inventory = FishInventory()
         self._currency: int = 0
         self.position = Vec3(0, 0, 0)
-        self._level = 0
+        self._level = 1
         self.load()
 
     @property

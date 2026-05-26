@@ -17,9 +17,9 @@ def get_angle(dx, dz):
     return (-degrees(atan2(dz, dx))) % 360
 
 class FishType:
-    ABONDANTS   = {'max_hp': 100,  'speed': 4, 'speedrot': 50, 'scale': 1.0}
-    DISCRETS = {'max_hp': 200, 'speed': 4,   'speedrot': 80, 'scale': 0.7}
-    INSAISISSABLES = {'max_hp': 500, 'speed': 8, 'speedrot': 130, 'scale': 1.6}
+    ABONDANTS   = {'max_hp': 200,  'speed': 4, 'speedrot': 50, 'scale': 1.0}
+    DISCRETS = {'max_hp': 500, 'speed': 4,   'speedrot': 80, 'scale': 0.6}
+    INSAISISSABLES = {'max_hp': 1200, 'speed': 16, 'speedrot': 150, 'scale': 2}
 
 RARITY_COLORS = {
     Rarity.ABONDANTS: color.white,
@@ -114,6 +114,8 @@ class FishingScene:
         self._saved_cam_pos = camera.position
         self._saved_cam_rot = camera.rotation
 
+        self.player_damage = 5*data.player.level
+
         mouse.visible = False
         self._cursor = Entity(
             parent=camera.ui,
@@ -201,9 +203,24 @@ class FishingScene:
         elif self._selected_fish == fish:
             self._deal_damage()
 
+    def _spawn_damage_text(self, amount, position):
+        damage_text = Text(
+            text=f"-{amount}",
+            position=position + Vec3(0, 2, 0),
+            scale=2,
+            color=color.red,
+            billboard=True
+        )
+
+        damage_text.animate_position(damage_text.position + Vec3(0, 2, 0), duration=0.5, curve=curve.out_expo)
+        damage_text.animate_scale(0, duration=0.5, delay=0.3, curve=curve.in_expo)
+        
+        destroy(damage_text, delay=0.8)
+
     def _deal_damage(self):
         fish   = self._selected_fish
         damage = self.player_damage * 2 if self._pressure >= 0.8 else self.player_damage
+        self._spawn_damage_text(damage, fish.position)
         fish.hp -= damage
         self._update_hp_bar(fish)
         if fish.hp <= 0:

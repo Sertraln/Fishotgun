@@ -141,7 +141,7 @@ class Player(Entity):
 
 
 class ThirdPersonController(Player):
-    def __init__(self,id:int, name :str, position:Vec3 = Vec3(0,0,0), fish_inventory: FishInventory = FishInventory(), currency: int = 0,level: int = 0):
+    def __init__(self,id:int, name :str, position:Vec3 = Vec3(0,0,0), fish_inventory: FishInventory = FishInventory(), currency: int = 0,level: int = 1):
         super().__init__(id,name,position)
         self.name = "ThirdPersonController"
         self._auto_face_movement = True

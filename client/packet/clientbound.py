@@ -154,7 +154,7 @@ class ClientBoundUpdateMoneyPacket(ClientBoundDataPacket):
         self.currency: int = data[0]
 
     def handle(self):
-        if hasattr(data, 'player') and data.player:
+        if data.player:
             data.player.currency = self.currency
 
 class ClientBoundUpdateLevelPacket(ClientBoundDataPacket):
@@ -163,4 +163,6 @@ class ClientBoundUpdateLevelPacket(ClientBoundDataPacket):
         self.level : int = data[0]
 
     def handle(self):
-        print("client : upgrade received", flush=True)
+        if data.player:
+            data.player.level = self.level
+            data.fishing_scene.player_damage = 5*data.player.level
