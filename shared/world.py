@@ -1,6 +1,7 @@
-from ursina import Entity, Vec3
+from ursina import *
 from panda3d.bullet import BulletBoxShape, BulletRigidBodyNode, BulletWorld
 from panda3d.core import Vec3 as PVec3, NodePath
+from client.spot import FishingSpot
 import csv
 import os
 
@@ -92,7 +93,6 @@ def init_world(base_scene:'NodePath'=None):
         position=(28, 2.3*1.5, -10),
         rotation=(0, 270, 0),
         scale=(1,1.5,1),
-        collider='mesh',
         name='shop_building',
         parent=world_scene
     )
@@ -121,7 +121,22 @@ def spawn_trees():
                     collider='box',
                     parent=world_scene
                 )
-    print("Arbres chargés avec succès !")
+
+def spawn_trees():
+    _ROOT = os.path.dirname(os.path.dirname(__file__))
+    file_path = os.path.join(_ROOT, 'shared', 'data', 'pdpeche.csv')
+    
+    if not os.path.exists(file_path):
+        print(f"Erreur : Le fichier est introuvable à : {file_path}")
+        return
+
+    with open(file_path, mode='r', encoding='utf-8') as f:
+            reader = csv.DictReader(f, delimiter=';')
+            for row in reader:
+                FishingSpot(
+                    position=(-float(row['x'])*scale_factor, 2, -float(row['y'])*scale_factor),
+                    color = color.rgba(0, 0, 0, 1)
+                )
 
 # --- Bullet helpers -------------------------------------------------------
 def add_static_box(entity: Entity, bullet_world: BulletWorld, parent_np: NodePath, friction: float = 0.8, mass: float = 0.0):
