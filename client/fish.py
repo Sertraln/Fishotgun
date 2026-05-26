@@ -103,7 +103,7 @@ class FishingScene:
         self._hp_text = None
         self._press_bar_bg = None
         self._press_bar = None
-        #self._saved_cam_fov = camera.fov
+        self._cursor = None
 
     def start(self, server_fish_ids: list[int]):
         self.enabled = True
@@ -113,6 +113,16 @@ class FishingScene:
         self._pressure = 0.8
         self._saved_cam_pos = camera.position
         self._saved_cam_rot = camera.rotation
+
+        mouse.visible = False
+        self._cursor = Entity(
+            parent=camera.ui,
+            model='quad',
+            texture='assets/textures/crosshair.png',
+            scale=0.05,
+            z=-1
+        )
+        mouse.hotspot = (0.5, 0.5)
 
         camera.world_position = (0, Y_OFFSET, 0)
         camera.world_rotation = (90, 0, 0)
@@ -282,6 +292,14 @@ class FishingScene:
     def update(self):
         if not self.enabled or self._stopping:
             return
+        if self._cursor:
+            self._cursor.position = mouse.position
+            
+            self._cursor.rotation_z += 180 * time.dt
+            
+            target_scale = 0.065 if mouse.left else 0.05
+            self._cursor.scale = lerp(self._cursor.scale, Vec2(target_scale, target_scale), time.dt * 15)
+
         self.update_parallax()
         if hasattr(self, '_water_entity') and self._water_entity:
             t = time.perf_counter() - self._water_time_start
@@ -340,6 +358,12 @@ class FishingScene:
         self._press_bar = None
         self._label_top = None
         self._label_bot = None
+
+        if self._cursor:
+            destroy(self._cursor)
+            self._cursor = None
+        mouse.hotspot = (0, 0)
+        mouse.visible = True
 
         bannertext = "Le poisson a fui... La prochaine fois sera la bonne!"
         text_color = color.white

@@ -11,7 +11,7 @@ class Hud(menu.Menu):
         self.scales = Entity(model="quad", texture="assets/textures/fish_scale.png", parent=self, position=(0.3, 0.4), scale=0.1)
         self.fishodex = Entity(model="quad", texture="assets/textures/fishodex.png", parent=self, position=(-0.75, 0), scale=(0.2,0.3), z=0)
         self.fishodex_text = Text(parent=self.fishodex, text="F", position=(-0.1, -0.2), scale=(14,10), color=color.white, font=data.fisho_font, z=-1)
-        self.currency_text = Text(parent=self, text=": 0", position=(0.5, 0.425), origin=(0, 0.5), scale=2, font=data.fisho_font)
+        self.currency_text = Text(parent=self, text=": 0", position=(0.35, 0.4), origin = (-0.5, 0), scale=2, font=data.fisho_font)
 
     def update_currency(self, amount: int):
         self.currency_text.text = f": {amount}"
