@@ -11,8 +11,8 @@ class UpgradeItem(Entity):
         self.icon = Entity(parent=self, model='quad', texture="assets/textures/Shotgun.png",scale=(0.6, 0.6), position=(-0.4, -0.1))
         self.btn = Button(parent=self, text="Upgrade", scale=(0.2, 0.1), position=(0.4, 0))
         self.btn.on_click = self.upgrade
-        data.player.level_bar = Entity(parent=self, model='quad', color=color.gray, scale=(0.05, 0.6), position=(-0.1, 0))
-        self.progress_bar = Entity(parent=data.player.level_bar, model='quad', color=color.green, scale_y=0, origin_y=-0.5, position=(0, -0.5))
+        self.level_bar = Entity(parent=self, model='quad', color=color.gray, scale=(0.05, 0.6), position=(-0.1, 0))
+        self.progress_bar = Entity(parent=self.level_bar, model='quad', color=color.green, scale_y=0, origin_y=-0.5, position=(0, -0.5))
         self.dmg_text = Text(
             text="", 
             parent=self, 
