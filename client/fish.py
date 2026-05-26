@@ -216,8 +216,6 @@ class FishingScene:
             origin=(0, -0.5), enabled=False, z=-0.01)
         self._label_top = Text('x2 DMG', parent=camera.ui, position=(self.BAR_X, self.BAR_TOP + 0.03), origin=(0, 0), scale=0.8, color=color.yellow, enabled=False,font=data.fisho_font)
         self._label_bot = Text('Fuite',  parent=camera.ui, position=(self.BAR_X, self.BAR_BOTTOM - 0.04), origin=(0, 0), scale=0.8, color=color.red, enabled=False,font=data.fisho_font)
-        self._label_top = Text('x2 DMG', parent=camera.ui, position=(self.BAR_X, self.BAR_TOP + 0.03), origin=(0, 0), scale=0.8, color=color.yellow, enabled=False, font=data.fisho_font)
-        self._label_bot = Text('Fuite',  parent=camera.ui, position=(self.BAR_X, self.BAR_BOTTOM - 0.04), origin=(0, 0), scale=0.8, color=color.red, enabled=False, font=data.fisho_font)
 
         self._entities = [
             water,
@@ -369,12 +367,8 @@ class FishingScene:
                 fish.position[1],
                 fish.position[2] + dz*10*time.dt)
             fish.set_rotation((-degrees(atan2(dz, dx))) % 360)
-            fish.update()
 
         for fish, point in self._pairs:
-
-            # Splash !
-            fish.update()
 
             # fait réaparaitre le poisson
             if (fish.alpha_getter() < 1) :

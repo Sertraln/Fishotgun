@@ -32,14 +32,12 @@ class WorldScene(Entity):
         data.main_theme.play()
         data.life_is_awesome.stop()
         data.birds.stop()
-        data.hud.disable()
 
     def enable(self):
         print("Enabling world scene")
         super().enable()
         self.ui.enable()
         menu._background_menu.disable()
-        data.hud.enable()
         #manage music
         data.main_theme.stop()
         data.life_is_awesome.play()

@@ -38,8 +38,6 @@ class FixedButton(Button):
             self.text_entity.position = Vec3(0,0,-1)
             self.origin = origin
             self.text_entity.font = data.fisho_font
-            #print(type(self.text_entity))  # vérifie le type
-            #print(self.children)
             test = Shader(fragment=set_color(),vertex=data.default_vertex)
             self.text_entity.set_shader_input("color",color.white)
             self.model.hide()
@@ -68,7 +66,6 @@ class BackGround(Entity):
         self.to_run = []
         self.rotation_direction = 1
         self.rotation_speed = 400
-        self.hide()
         
     def update(self):
         if self.rotate_page:
@@ -162,7 +159,7 @@ def hide():
     global _currentMenu
     if _currentMenu is not None:
         _currentMenu.disable()
-        _background_menu.hide()
+        _background_menu.disable()
     _currentMenu = None
     application.resume()
     if data.player and not data.player._last_input.is_idle():
@@ -199,7 +196,6 @@ def getMenu(menu_id:str) -> Menu | None:
 
 def init():
     from ursina import application
-    quit_button.on_click = application.quit
     import client.menus.mainmenu as mainmenu
 
 def rotate_page_and_run(func : list[callable],rotation_speed=1):
