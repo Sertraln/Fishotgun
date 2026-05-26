@@ -163,7 +163,7 @@ def init_assets():
     shopkeeper.set_hpr(90, 360, 0)
     shopkeeper.set_scale(1.2)
     shopkeeper.name = 'shopkeeper'
-    shopkeeper.loop('idle')
+    shopkeeper.loop('reste')
     
 
 def load_world():

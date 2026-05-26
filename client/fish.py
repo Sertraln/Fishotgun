@@ -19,7 +19,7 @@ def get_angle(dx, dz):
 class FishType:
     ABONDANTS   = {'max_hp': 200,  'speed': 4, 'speedrot': 50, 'scale': 1.0}
     DISCRETS = {'max_hp': 500, 'speed': 4,   'speedrot': 80, 'scale': 0.6}
-    INSAISISSABLES = {'max_hp': 1200, 'speed': 16, 'speedrot': 150, 'scale': 2}
+    INSAISISSABLES = {'max_hp': 1200, 'speed': 10, 'speedrot': 300, 'scale': 2}
 
 RARITY_COLORS = {
     Rarity.ABONDANTS: color.white,
