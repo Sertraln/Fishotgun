@@ -127,7 +127,7 @@ def update():
 
     for spot in fishing_spots:
         if distance(spot.position, player.position) < spot.interaction_range:
-            if held_keys['e'] and not fish_done:
+            if held_keys['e'] and not fish_done and not menu.hasMenuShow():
                 enter_fishing()
                 data.hud.hide()
                 fish_done = True
