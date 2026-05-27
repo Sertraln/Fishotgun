@@ -137,7 +137,6 @@ def register_menu(menu : Menu):
 def show(menu : Menu | str):
     if isinstance(menu, str):
         global _menus
-        #print(_menus)
         menu = _menus[menu]
     global _currentMenu
     if _currentMenu is not None:
@@ -200,7 +199,6 @@ def init():
     import client.menus.mainmenu as mainmenu
 
 def rotate_page_and_run(func : list[callable],rotation_speed=1):
-    print("background enabled",_background_menu.enabled, flush=True)
     if _background_menu.enabled:
         _background_menu.rotate_and_run(func,rotation_speed)
 
