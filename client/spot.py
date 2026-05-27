@@ -1,11 +1,12 @@
 from ursina import *
+from direct.actor.Actor import Actor
 
 class FishingSpot(Entity):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.model = 'sphere'
         self.color = color.white
-        self.interaction_range = 5
+        self.interaction_range = 35
         self._scene = None
         for key, value in kwargs.items():
             setattr(self, key, value)
@@ -27,9 +28,9 @@ class FishingSpot(Entity):
 class BusSpot(Entity):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.model = 'sphere'
-        self.color = color.white
         self.interaction_range = 5
+        self._actor = Actor('assets/models/Bus_Sign.glb')
+        self._actor.reparent_to(self)
         for key, value in kwargs.items():
             setattr(self, key, value)
 
@@ -37,7 +38,7 @@ class BusSpot(Entity):
         from client import data
         from client.packet.serverbound import ServerBoundTeleportPacket
         if data.player:
-            pos = Vec3(10, 0, -40) # <- changer ici par l emplacement voulu pour le shop les guys
+            pos = Vec3(20, 0, -10) # <- changer ici par l emplacement voulu pour le shop les guys
             data.player.position = pos
             data.player.physic.position = pos
             data.player._queue_pos.clear()
