@@ -2,7 +2,6 @@ import socket
 import os
 import sys
 
-# Ensure project root is on sys.path so sibling packages like `shared` can be imported
 _ROOT = os.path.dirname(os.path.dirname(__file__))
 if _ROOT not in sys.path:
     sys.path.insert(0, _ROOT)
@@ -30,6 +29,7 @@ class Server:
         self.threadlist : list[th.Thread] = []
         self.lastpid = 0
         self.stopevent = th.Event()
+        data.server = self
         self.world = World()
         try:
             self.soket.bind(("0.0.0.0", port))
@@ -44,7 +44,6 @@ class Server:
         self.soket.listen(5)
         self.connectionthread = th.Thread(name="connlistener",target=self.connectionListener)
         self.connectionthread.start()
-        data.server = self
 
     def startTread(self,thread:th.Thread):
         self.threadlist.append(thread)

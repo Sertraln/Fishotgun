@@ -29,10 +29,20 @@ class Client:
     def sendRecv(self,packet:ClientBoundPacket) -> ServerBoundPacket:
         print("packet : sending",flush=True)
         packet.send(self.conn)
-        (result,self.buffer) = getServerBoundPacket(self.buffer+self.conn.recv(2048))
+        result = []
+        while not result:
+            chunk = self.conn.recv(2048)
+            if not chunk:
+                raise ConnectionError("Connection closed while waiting for response")
+            self.buffer += chunk
+            result, self.buffer = getServerBoundPacket(self.buffer)
+ 
         while self.buffer:
-            more_result,self.buffer = getServerBoundPacket(self.buffer)
+            more_result, self.buffer = getServerBoundPacket(self.buffer)
+            if not more_result:
+                break
             result.extend(more_result)
+
         return result
     
     def paketListener(self):
@@ -66,7 +76,7 @@ class Client:
         finally:
             try:
                 self.kick()
-            except:
+            except Exception:
                 pass
     
     def kick(self):

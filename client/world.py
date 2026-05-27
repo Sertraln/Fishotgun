@@ -10,6 +10,7 @@ from client.fish import FishingScene
 import time
 from panda3d.core import PandaNode, NodePath
 import copy
+from panda3d.bullet import BulletWorld
 
 _sky_entity = None
 _water_time_start = None
@@ -18,6 +19,8 @@ class WorldScene(Entity):
         super().__init__()
         self.name="world_base"
         self.ui = Entity(parent=camera.ui)
+        self.bullet_world = BulletWorld()
+        self.bullet_world.setGravity(Vec3(0, 0, -25.0))
         self.disable()
 
     def disable(self):
@@ -40,10 +43,11 @@ class WorldScene(Entity):
         data.main_theme.stop()
         data.life_is_awesome.play()
         invoke(data.birds.play, delay=3)
-        
 
 _world = WorldScene()
     
+def get_bullet_world() -> BulletWorld:
+        return _world.bullet_world
 
 class World:
     def __init__(self):
@@ -78,7 +82,7 @@ def join_world(ip:str, port:int, name:str) -> Exception | None:
         ClientBoundInitPlayerPacket.player = None
         data.world.player_init.clear()
         data.network = network.Network(ip,port,name)
-        if(not data.world.player_init.wait(5)):  # Wait for player initialization before starting the game loop
+        if(not data.world.player_init.wait(5)):
             print("Player initialization timed out. Exiting.")
             data.network.disconnect()
             raise PlayerInitializationError("Player initialization timed out.")
@@ -95,7 +99,7 @@ def init_assets():
     water_shader_path = application.asset_folder / 'assets' / 'shader' / 'water.fsh'
     water_shader_fragment = water_shader_path.read_text(encoding='utf-8')
     _sky_entity = Sky(color=color.violet,parent=_world)
-    world.init_world(_world)
+    world.init_world(_world, bullet_world=_world.bullet_world)
 
     if world.ground is None or world.water is None:
         raise RuntimeError("world.init_world() n'a pas initialisé ground/water")
@@ -159,7 +163,6 @@ def quit_to_menu():
     _world.disable()
 
     if data.network is not None:
-        # Avoid recursive quit_to_menu calls from Network.disconnect().
         data.network.disconnect(trigger_quit_to_menu=False)
 
     if data.player:
@@ -173,14 +176,12 @@ def quit_to_menu():
     if data.world is not None:
         data.world.players.clear()
 
-    # Prevent stale references across sessions.
     ClientBoundInitPlayerPacket.player = None
 
 def update():
     if not world.water or not world.water.model:
         return
 
-    # Relative monotonic time keeps animation smooth on GLSL 120 by avoiding huge epoch values.
     if _water_time_start is None:
         t = 0.0
     else:
@@ -188,5 +189,4 @@ def update():
 
     world.water.model.set_shader_input("iTime", t % 4096.0)
 
-# Initialize the world instance after defining the World class
 data.world = World()

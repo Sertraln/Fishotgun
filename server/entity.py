@@ -9,5 +9,5 @@ class Entity:
     def __init__(self,enity_type:'EntityType',id:int=-1,position:Vec3=Vec3(0,0,0)):
         self.type = enity_type
         self.id = id
-        self.position = self.body_np.getPos()
+        self.position = position
         data.server.world.add_entity(self)

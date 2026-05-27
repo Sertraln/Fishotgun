@@ -10,7 +10,6 @@ if __name__ == "__main__":
 import server.packet.clientbound as cb
 from server.packet.packetstruct import ServerBoundDataPacket,ServerBoundPacket
 from typing import TYPE_CHECKING
-from shared.movement import Physic
 
 if TYPE_CHECKING:
     from server.client import Client
