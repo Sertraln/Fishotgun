@@ -95,7 +95,7 @@ def update():
         elif isinstance(spot, BusSpot):
             if distance(spot.position, player.position) < spot.interaction_range:
                 if held_keys['e']:
-                    data.iris.play(spot.interact())
+                    spot.interact()
                 else:
                     spot.color = color.yellow
             else:
