@@ -154,7 +154,11 @@ def play_random_music():
     global current_music
     if current_music:
         current_music.stop()
+    
     choices = [m for m in music_playlist if m != current_music]
+    if not choices:  # Si une seule musique dans la playlist
+        choices = music_playlist
+    
     current_music = random.choice(choices)
     current_music.play()
 
