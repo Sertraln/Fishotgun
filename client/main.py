@@ -171,6 +171,5 @@ class MenuLogic(Entity):
 
 
 MenuLogic()
-
 try: app.run()
 except SystemExit: custom_quit()

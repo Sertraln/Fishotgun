@@ -61,16 +61,14 @@ class BackGround(Entity):
         self.paper = Entity(parent=self.paper_pivot,model="cube",
                             scale=(0.75,0.923188406,0.0),color=color.white,texture="assets/ui/menu.png",
                             ignore_paused=True,position=(0.3,0,0))
-        self.paper._texture._texture.setMagfilter(SamplerState.FT_nearest)
         self.paper.parent = self.paper_pivot
         self.backgound = Entity(model="cube",parent=self,position=(0,0,4),rotation=(0,0,0),
                                 texture="assets/ui/menu_bg.png",scale=(2,1,0.1),ignore_paused=True)
-        self.paper._texture._texture.setMagfilter(SamplerState.FT_nearest)
         self.rotate_page = False
         self.to_run = []
         self.rotation_direction = 1
         self.rotation_speed = 600
-        self.hide()
+        self.disable()
         
     def update(self):
         if self.rotate_page:
@@ -157,7 +155,7 @@ def ispausing():
     return _currentMenu is not None and _currentMenu.pause
 
 def show_background():
-    _background_menu.show()
+    _background_menu.enable()
 
 def hide():
     mouse.position = Vec2(0,0)
@@ -165,7 +163,7 @@ def hide():
     if _currentMenu is not None:
         _currentMenu.disable()
         invoke(lambda: globals().__setitem__('_currentMenu', None), delay=0.16)
-        _background_menu.hide()
+        _background_menu.disable()
     application.resume()
     if data.player and not data.player._last_input.is_idle():
         #print("last input:",data.player._last_input)
