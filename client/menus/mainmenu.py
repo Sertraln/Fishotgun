@@ -181,13 +181,12 @@ class ServerListMenu(menu.Menu):
         self.pause = True
         Text("Rejoindre un serveur", parent=self, position=(0, 0.3, -0.1), origin=(0, 0),
               scale=1.4, color=color.black,font=data.fisho_font)
-        self.button_list = Entity(parent=self,name="button_list")
+        self.button_list = Entity(parent=self,name="button_list",position=(0, 0, 0.6))
         self.button_list.shader = Shader(name='test', vertex=test_vertex, fragment=server_list_shader)
         self.button_list.shader.compile()
         self.button_list.show_error = self.show_error
         self.button_list.unselected = self.unselected
         add_server.server_list_menu = self
-        self.button_list.position=Vec3(0.0,0,0.0)
         self.error_label = Text("", parent=self, position=(0, -0.28, -0.1), origin=(0, 0), scale=0.7, color=color.rgba32(220, 80, 80),font=data.fisho_font)
         self.back_but = menu.FixedButton(text="< Retour",
                         position=(-0.19, -0.3),scale=(0.22, 0.07),
