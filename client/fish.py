@@ -25,9 +25,9 @@ def get_angle(dx, dz):
     return (-degrees(atan2(dz, dx))) % 360
 
 class FishType:
-    ABONDANTS   = {'max_hp': 1,  'speed': 4, 'speedrot': 50, 'scale': 1.5}
-    DISCRETS = {'max_hp': 1, 'speed': 4,   'speedrot': 80, 'scale': 1.0}
-    INSAISISSABLES = {'max_hp': 1, 'speed': 10, 'speedrot': 300, 'scale': 2.5}
+    ABONDANTS   = {'max_hp': 200,  'speed': 4, 'speedrot': 50, 'scale': 1.5}
+    DISCRETS = {'max_hp': 500, 'speed': 4,   'speedrot': 80, 'scale': 1.0}
+    INSAISISSABLES = {'max_hp': 1200, 'speed': 10, 'speedrot': 300, 'scale': 2.5}
 
 RARITY_COLORS = {
     Rarity.ABONDANTS: color.white,
