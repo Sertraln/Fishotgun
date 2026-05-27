@@ -29,6 +29,16 @@ echo Mise a jour de pip...
 python -m pip install --upgrade pip
 
 echo.
+echo Installation des dependances...
+
+if exist "requirements.txt" (
+    pip install -r requirements.txt
+    echo Dependances installees depuis requirements.txt
+) else (
+    echo Aucun requirements.txt trouve
+)
+
+echo.
 echo Environnement pret
 
 cmd /k
