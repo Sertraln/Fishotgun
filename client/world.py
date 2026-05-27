@@ -37,6 +37,8 @@ class WorldScene(Entity):
         # data.life_is_awesome.stop()
         music_manager.pause_playlist()
         data.birds.stop()
+        if data.fishing_scene and data.fishing_scene.enabled:
+            data.fishing_scene.stop()
 
     def enable(self):
         print("Enabling world scene")

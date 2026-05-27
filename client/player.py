@@ -16,7 +16,7 @@ class Player(Entity):
         super().__init__()
         self._position_tracking_ready = False
         self._suppress_position_rotation = False
-        self.position = position
+        self.position = Vec3(position)
         self.last_position = Vec3(position)
         self.last_position_update = time.time()
         self.name = name
@@ -43,6 +43,7 @@ class Player(Entity):
         self.actor.loop('reste')
         self.actor.setPlayRate(1.5,'walk')
         self.animation = 'reste'
+        self._set_position_without_rotation_update(position)
 
     def play_walk_animation(self):
         if hasattr(self.actor, 'loop'):
@@ -268,10 +269,6 @@ class ThirdPersonController(Player):
     def update_mouv_input(self):
         # make key configurable later
         key_strokes:KeyStates = KeyStates()
-        if held_keys['shift']:
-            key_strokes.press(KeyStates.SPRINT)
-        if held_keys['space']:
-            key_strokes.press(KeyStates.JUMP)
         if held_keys['w']:
             key_strokes.press(KeyStates.FORWARD)
         if held_keys['s']:
@@ -280,8 +277,6 @@ class ThirdPersonController(Player):
             key_strokes.press(KeyStates.LEFT)
         if held_keys['d']:
             key_strokes.press(KeyStates.RIGHT)
-        if held_keys['control']:
-            key_strokes.press(KeyStates.SNEAK)
         if key_strokes != self._last_input:
             self._update_input(key_strokes)
             
