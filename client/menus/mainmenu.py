@@ -102,11 +102,12 @@ class AddServerMenu(menu.Menu):
         if lst[0] == "localhost":
             lst[0] = get_local_ip()
         if self.server_list_menu is not None:
-            self.server_list_menu.add_server_to_list(self.te_name.text, lst[0], int(lst[1]))
+            name = self.te_name.text if self.te_name.text != "" else "Serveur"
+            self.server_list_menu.add_server_to_list(name, lst[0], int(lst[1]))
         else:
             print("Erreur : server_list_menu is None")
         self.clear()
-        menu.hide()
+        self.hide()
         menu.rotate_page_and_run([lambda: menu.show(self.server_list_menu),lambda: self.show()],-1)
 
 
@@ -242,13 +243,13 @@ class ServerListMenu(menu.Menu):
             self.button_list.y = 0
             return
         top_button_y = SCROLL_MAX_Y - 0.05
-        last_button_y = top_button_y - (num_buttons - 1) * 0.12
+        last_button_y = top_button_y - (num_buttons - 1) * 0.058
         max_offset = max(0, SCROLL_MIN_Y - last_button_y + 0.05)
 
         if key == 'scroll down':
-            self.button_list.y = min(max_offset, self.button_list.y + 0.015)
+            self.button_list.y = min(max_offset, self.button_list.y + 0.01)
         elif key == 'scroll up':
-            self.button_list.y = max(0, self.button_list.y - 0.015)
+            self.button_list.y = max(0, self.button_list.y - 0.01)
 
     def unselected(self):
         for but in self.button_list.children:

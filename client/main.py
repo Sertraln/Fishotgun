@@ -152,17 +152,21 @@ def update():
 class MenuLogic(Entity):
     def __init__(self):
         super().__init__(ignore_paused=True)
+        self.last_cursor_lock_state = None
 
     def input(self,key):
         if not world._world.enabled:
             return
         if key == 'escape':
             if menu.hasMenuShow():
-                mouse.locked = True
+                mouse.locked = self.last_cursor_lock_state
                 menu.hide()
             else:
+                self.last_cursor_lock_state = mouse.locked
                 mouse.locked = False
                 menu.show("menu1")
+        if data.fishing_scene.enabled:
+            return
         chat_menu = menu.getMenu("chat")
         if key == 't up' and chat_menu and not chat_menu.enabled:
                 menu.show(chat_menu)

@@ -130,17 +130,6 @@ def init_assets():
 
     if world.ground is None or world.water is None:
         raise RuntimeError("world.init_world() n'a pas initialisé ground/water")
-    data.instructions = Text(
-        text='Contrôles:\nZ/Q/S/D - Déplacement\nEspace - Sauter\nSouris - Regarder\nÉchap - Déverrouiller souris',
-        position=(-0.5, 0.4),
-        scale=1.2,
-        origin=(0, 0),
-        background=True,
-        parent=_world.ui,
-        font=data.fisho_font
-    )
-    spot = FishingSpot(position=(0,2,0),parent=_world)
-    data.world_entities = [spot]
     data.world_entities = []
     spawn_spots(data.world_entities)
     camera.fov = 90

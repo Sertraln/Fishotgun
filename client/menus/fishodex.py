@@ -83,7 +83,6 @@ class FishPage(Entity):
     def update_display(self,fish_inventory:FishInventory):
         for fish_display in self.fish_displays:
             if fish_inventory.fish_list.is_unlocked(fish_display.fish_instance.fishid):
-                print("client : updating fish display for fish id",fish_display.fish_instance.fishid, flush=True)
                 fish_display.unlocked()
                 fish_display.quantity = fish_inventory.capacity[fish_display.fish_instance.fishid.ordinal()]
 

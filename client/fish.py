@@ -25,9 +25,9 @@ def get_angle(dx, dz):
     return (-degrees(atan2(dz, dx))) % 360
 
 class FishType:
-    ABONDANTS   = {'max_hp': 200,  'speed': 4, 'speedrot': 50, 'scale': 1.5}
-    DISCRETS = {'max_hp': 500, 'speed': 4,   'speedrot': 80, 'scale': 1.0}
-    INSAISISSABLES = {'max_hp': 1200, 'speed': 10, 'speedrot': 300, 'scale': 2.5}
+    ABONDANTS   = {'max_hp': 1,  'speed': 4, 'speedrot': 50, 'scale': 1.5}
+    DISCRETS = {'max_hp': 1, 'speed': 4,   'speedrot': 80, 'scale': 1.0}
+    INSAISISSABLES = {'max_hp': 1, 'speed': 10, 'speedrot': 300, 'scale': 2.5}
 
 RARITY_COLORS = {
     Rarity.ABONDANTS: color.white,
@@ -305,7 +305,10 @@ class FishingScene:
                 chosen_point = point
             else:
                 destroy(point)
-                self._entities.remove(point)
+                try:
+                    self._entities.remove(point)
+                except:
+                    pass
                 self._fleeing.append(fish)
                 fish.on_click = lambda f=fish: None
                 dx  = fish.position[0] - chosen_fish.position[0]
@@ -328,6 +331,8 @@ class FishingScene:
         self._fleeing = []
 
     def _show_bars(self, fish):
+        if self._fish == None:
+            return
         for e in [self._hp_bar_bg, self._hp_bar, self._hp_text, self._press_bar_bg, self._press_bar, self._label_top, self._label_bot]:
             e.enabled = True
         self._update_hp_bar(fish)
