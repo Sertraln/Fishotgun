@@ -35,7 +35,7 @@ class Player(Entity):
         self.target_position = position
         self.target_rotation = 0
         self.interpolation_start_time = 0
-        self.interpolation_duration = 0.05
+        self.interpolation_duration = 0.1
         self._position_tracking_ready = True
 
         self.actor.loop('reste')
@@ -159,7 +159,7 @@ class ThirdPersonController(Player):
         self._last_input = KeyStates()
         self._max_prediction_history = 256
         self._hard_snap_distance = 4.0
-        self._reconcile_speed = 100.0
+        self._reconcile_speed = 10.0
         self.on_destroy = self.on_disable
 
     def _attach_camera_to_pivot(self):

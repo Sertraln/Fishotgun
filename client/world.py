@@ -20,7 +20,7 @@ class WorldScene(Entity):
         self.name="world_base"
         self.ui = Entity(parent=camera.ui)
         self.bullet_world = BulletWorld()
-        self.bullet_world.setGravity(Vec3(0, 0, -25.0))
+        self.bullet_world.setGravity(Vec3(0, 0, -50.0))
         self.disable()
 
     def disable(self):

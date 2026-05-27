@@ -4,7 +4,7 @@ from panda3d.core import NodePath, Vec3 as PVec3
 from shared.parsedata.input import KeyStates
 from ursina import Vec3
 
-VELOCITY_SMOOTH = 18.0
+VELOCITY_SMOOTH = 8.0
 
 def ursina_to_panda(v: Vec3) -> PVec3:
     return PVec3(v.x, v.z, v.y)

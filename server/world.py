@@ -25,7 +25,7 @@ class World:
         self._lock = th.Lock()
 
         self.bullet_world = BulletWorld()
-        self.bullet_world.setGravity(PVec3(0, 0, -25.0))
+        self.bullet_world.setGravity(PVec3(0, 0, -50.0))
 
         from panda3d.core import NodePath
         _root = NodePath("server_root")
