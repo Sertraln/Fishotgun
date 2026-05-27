@@ -149,18 +149,49 @@ music_playlist = [
     road_story, take_a_nap, the_bus_crashed
 ]
 current_music = None
+current_music_path = None
+remaining_music = []
+
+music_playlist_paths = [
+    resource_path("assets/musics/birds.wav"),
+    resource_path("assets/musics/casino_magouilles.wav"),
+    resource_path("assets/musics/life_is_awesome.wav"),
+    resource_path("assets/musics/life_is_awesome_v2.wav"),
+    resource_path("assets/musics/flying_away_bossa.wav"),
+    resource_path("assets/musics/flying_away.wav"),
+    resource_path("assets/musics/kalimba.wav"),
+    resource_path("assets/musics/pouette_pouette.wav"),
+    resource_path("assets/musics/road_story.wav"),
+    resource_path("assets/musics/take_a_nap.wav"),
+    resource_path("assets/musics/the_bus_crashed.wav"),
+]
+
+life_is_awesome_path = resource_path("assets/musics/life_is_awesome.wav")
 
 def play_random_music():
-    global current_music
+    global current_music, remaining_music
+
     if current_music:
         current_music.stop()
-    
-    choices = [m for m in music_playlist if m != current_music]
-    if not choices:  # Si une seule musique dans la playlist
-        choices = music_playlist
-    
-    current_music = random.choice(choices)
-    current_music.play()
+        destroy(current_music)  # Détruire proprement l'ancien Audio
+
+    if not remaining_music:
+        remaining_music = music_playlist_paths.copy()
+
+    choices = [m for m in remaining_music if m != current_music_path]
+    if not choices:
+        choices = remaining_music
+
+    current_music_path = random.choice(choices)
+    remaining_music.remove(current_music_path)
+
+    current_music = Audio(
+        current_music_path,
+        autoplay=True,
+        loop=False,
+        volume=0.4,
+        ignore_paused=True
+    )
 
 
 #const
