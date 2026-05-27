@@ -1,7 +1,8 @@
 from client import data,menu,network
+import os, csv
 from client.menus.chat import Chat
 from client.spot import FishingSpot, BusSpot
-from ursina import Shader,Button,destroy,color,Sky,mouse,Vec3,Text,camera,scene,application,Entity
+from ursina import Shader,Button,destroy,color,Sky,mouse,Vec3,Text,camera,scene,application,Entity,invoke,Path
 from client.player import Player
 import threading
 import shared.world as world
@@ -9,7 +10,12 @@ from client.transitions import IrisTransition,_exit_black
 from client.fish import FishingScene
 import time
 from panda3d.core import PandaNode, NodePath
+from direct.actor.Actor import Actor
 import copy
+from client.music_manager import MusicManager
+
+music_manager = MusicManager()
+
 
 _sky_entity = None
 _water_time_start = None
@@ -25,15 +31,28 @@ class WorldScene(Entity):
         super().disable()
         self.ui.disable()
         menu.show_background()
+        print("main_theme.play()")
+        #manage music
+        data.main_theme.play()
+        # data.life_is_awesome.stop()
+        music_manager.pause_playlist()
+        data.birds.stop()
 
     def enable(self):
         print("Enabling world scene")
         super().enable()
         self.ui.enable()
-        menu._background_menu.hide()
+        menu._background_menu.disable()
+        #manage music
+        data.main_theme.stop()
+        # data.life_is_awesome.play()
+        music_manager.start()
+        invoke(data.birds.play, delay=3)
+        
 
-_world = WorldScene()
+_world =None
     
+shopkeeper = None
 
 class World:
     def __init__(self):
@@ -80,110 +99,133 @@ def join_world(ip:str, port:int, name:str) -> Exception | None:
     load_world()
     return None
 
+def spawn_spots(l):
+    _ROOT = os.path.dirname(os.path.dirname(__file__))
+    file_path = os.path.join(_ROOT, 'shared', 'data', 'pdpeche.csv')
+    scale_factor = 3
+    
+    if not os.path.exists(file_path):
+        print(f"Erreur : Le fichier est introuvable à : {file_path}")
+        return
+
+    with open(file_path, mode='r', encoding='utf-8') as f:
+            reader = csv.DictReader(f, delimiter=';')
+            for row in reader:
+                l.append(FishingSpot(
+                    position=(-float(row['x'])*scale_factor, 2, -float(row['y'])*scale_factor),
+                    color = color.rgba(0, 0, 0, 0),
+                    parent=scene
+                ))
+
 def init_assets():
-    global _sky_entity, _water_time_start
+    from client.menus.hud import Hud
+    global _sky_entity, _water_time_start,_world
+    _world = WorldScene()
+    data.hud.parent = _world.ui
     water_shader_path = application.asset_folder / 'assets' / 'shader' / 'water.fsh'
     water_shader_fragment = water_shader_path.read_text(encoding='utf-8')
-    _sky_entity = Sky(color=color.violet,parent=_world)
+    _sky_entity = Sky(color=color.rgb(1,1,1), texture='assets/textures/skybox4.png', parent=_world)
     world.init_world(_world)
 
     if world.ground is None or world.water is None:
         raise RuntimeError("world.init_world() n'a pas initialisé ground/water")
-    data.instructions = Text(
-        text='Contrôles:\nZ/Q/S/D - Déplacement\nEspace - Sauter\nSouris - Regarder\nÉchap - Déverrouiller souris',
-        position=(-0.5, 0.4),
-        scale=1.2,
-        origin=(0, 0),
-        background=True,
-        parent=_world.ui
-    )
+    data.world_entities = []
+    spawn_spots(data.world_entities)
 
     #north = BusSpot(position=(50, 2, 0),parent=_world)
     #south = BusSpot(position=(0, 2, -50),parent=_world)
     #east = BusSpot(position=(-50, 2, 0),parent=_world)
     #west = BusSpot(position=(0, 2, 50),parent=_world)
-
-    shop = BusSpot(position=(10, 2, -40),parent=_world)
     spot_bus_1 = BusSpot(position=(-20, 2, 100),parent=_world)
     spot_bus_2 = BusSpot(position=(-67, 2, 0),parent=_world)
     spot_bus_3 = BusSpot(position=(120, 2, -25),parent=_world)
     spot_bus_4 = BusSpot(position=(100, 2, 50),parent=_world)
-
-    spot = FishingSpot(position=(0,2,0),parent=_world)
-
-    data.world_entities = [spot, spot_bus_1, spot_bus_2, spot_bus_3, spot_bus_4, shop]
+    data.world_entities = [spot_bus_1, spot_bus_2, spot_bus_3, spot_bus_4]
     camera.fov = 90
 
     data.iris = IrisTransition(close_duration=0.8, black_duration=0.5, open_duration=0.8)
 
-    
     def on_fishing_end(result):
         data.iris.play(on_black=_exit_black)
 
     data.fishing_scene = FishingScene(on_end=on_fishing_end)
-    spot.set_scene(data.fishing_scene)
     #loading textures
     world.ground.texture = 'assets/textures/grass.png'
     world.ground.texture_scale = (64,64)
+
     world.water.texture = 'assets/textures/water.png'
     world.water.texture_scale = (64,64)
     water_shader = Shader(name="water", vertex=data.default_vertex, fragment=water_shader_fragment)
     water_shader.compile()
+    world.water.model.set_shader_input("texScale", 128.0)
     world.water.model.setShader(water_shader._shader)
     _water_time_start = time.perf_counter()
     world.water.model.set_shader_input("iTime", 0.0)
+
     #registering menus
-    menu1 = menu.Menu("menu1", False)
+    menu1 = menu.Menu("menu1", True, True)
     node = copy.deepcopy(menu._background_menu.paper)
     node.parent = menu1
     node.position = (0,0,1)
-    resume = menu.FixedButton(text='Resume', scale=(0.3, 0.1), position=(0,0.1),text_size=2)
+    resume = menu.FixedButton(text='Continuer', scale=(0.3, 0.1), position=(0,0.1),text_size=2)
     def resume_game():
         menu.hide()
         mouse.locked = True
     resume.on_click = resume_game
     menu1.add_element(resume)
-    quit = menu.FixedButton(text='Quit', scale=(0.3, 0.1), position=(0,-0.1),text_size=2)
+    quit = menu.FixedButton(text='Quitter', scale=(0.3, 0.1), position=(0,-0.1),text_size=2)
     quit.on_click = quit_to_menu
     menu1.add_element(quit)
     ChatMenu = Chat()
     menu.register_menu(ChatMenu)
     menu.register_menu(menu1)
+    global shopkeeper
+    shopkeeper = Actor('assets/models/Shopkeeper.glb')
+    shopkeeper.reparent_to(_world)
+    shopkeeper.set_pos(world.get_shopkeeper_pos())
+    shopkeeper.set_hpr(90, 360, 0)
+    shopkeeper.set_scale(1.2)
+    shopkeeper.name = 'shopkeeper'
+    shopkeeper.loop('reste')
+    
 
 def load_world():
     _world.enable()
 
 def quit_to_menu():
-    from ursina import destroy
-    from client.packet.clientbound import ClientBoundInitPlayerPacket
+    def on_black():
+        from ursina import destroy
+        from client.packet.clientbound import ClientBoundInitPlayerPacket
 
-    menu.show("main_menu")
-    menu.show_background()
-    _world.disable()
+        menu.show("main_menu")
+        menu.show_background()
+        _world.disable()
 
-    if data.network is not None:
-        # Avoid recursive quit_to_menu calls from Network.disconnect().
-        data.network.disconnect(trigger_quit_to_menu=False)
+        if data.network is not None:
+            data.network.disconnect(trigger_quit_to_menu=False)
+            data.network = None
 
-    if data.player:
-        try:
-            data.player.disable()
-        except Exception:
-            pass
-        destroy(data.player)
-        data.player = None
+        if data.player:
+            try:
+                data.player.disable()
+            except Exception:
+                pass
+            destroy(data.player)
+            data.player = None
 
-    if data.world is not None:
-        data.world.players.clear()
+        if data.world is not None:
+            data.world.players.clear()
 
-    # Prevent stale references across sessions.
-    ClientBoundInitPlayerPacket.player = None
+        data.world_entities.clear()
+        ClientBoundInitPlayerPacket.player = None
+
+    # Lance la transition en passant la fonction on_black comme callback
+    data.iris.play(on_black=on_black)
 
 def update():
     if not world.water or not world.water.model:
         return
 
-    # Relative monotonic time keeps animation smooth on GLSL 120 by avoiding huge epoch values.
     if _water_time_start is None:
         t = 0.0
     else:
@@ -191,5 +233,4 @@ def update():
 
     world.water.model.set_shader_input("iTime", t % 4096.0)
 
-# Initialize the world instance after defining the World class
 data.world = World()
