@@ -1,5 +1,5 @@
 from typing import TYPE_CHECKING
-from ursina import application,Path,Audio
+from ursina import application, Path, Audio, destroy
 import sys
 import os
 import random
@@ -169,17 +169,20 @@ music_playlist_paths = [
 life_is_awesome_path = resource_path("assets/musics/life_is_awesome.wav")
 
 def play_random_music():
-    global current_music, remaining_music
+    global current_music, remaining_music, current_music_path
 
     if current_music:
         current_music.stop()
-        destroy(current_music)  # Détruire proprement l'ancien Audio
+        destroy(current_music)
 
     if not remaining_music:
         remaining_music = music_playlist_paths.copy()
 
-    choices = [m for m in remaining_music if m != current_music_path]
-    if not choices:
+    if current_music_path and current_music_path in remaining_music:
+        choices = [m for m in remaining_music if m != current_music_path]
+        if not choices:
+            choices = remaining_music
+    else:
         choices = remaining_music
 
     current_music_path = random.choice(choices)

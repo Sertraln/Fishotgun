@@ -10,24 +10,23 @@ class MusicManager(Entity):
 
     def start(self):
         """Démarre ou reprend la playlist."""
-        def start(self):
-            if self._started:
-                if self._paused and g.current_music:
-                    g.current_music.resume()
-                    self._paused = False
-            else:
-                self._started = True
+        if self._started:
+            if self._paused and g.current_music:
+                g.current_music.resume()
                 self._paused = False
-                g.remaining_music = g.music_playlist_paths.copy()
-                g.remaining_music.remove(g.life_is_awesome_path)
-                g.current_music_path = g.life_is_awesome_path
-                g.current_music = Audio(
-                    g.current_music_path,
-                    autoplay=True,
-                    loop=False,
-                    volume=0.4,
-                    ignore_paused=True
-                )
+        else:
+            self._started = True
+            self._paused = False
+            g.remaining_music = g.music_playlist_paths.copy()
+            g.remaining_music.remove(g.life_is_awesome_path)
+            g.current_music_path = g.life_is_awesome_path
+            g.current_music = Audio(
+                g.current_music_path,
+                autoplay=True,
+                loop=False,
+                volume=0.4,
+                ignore_paused=True
+            )
 
     def pause_playlist(self):
         if self._started and not self._paused and g.current_music:
